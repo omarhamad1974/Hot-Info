@@ -3,1268 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Portal - Hot Info Control Center</title>
-    <!-- Tailwind CSS -->
+    <title>Admin Dashboard - Tender Platform</title>
+    <!-- Tailwind CSS for clean, responsive UI -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SheetJS (XLSX Parser & Exporter) -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
-        .glass-effect { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); }
-        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    </style>
+    <!-- SheetJS for Excel/CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-gray-100 font-sans antialiased">
 
-    <!-- Top Admin Navigation Bar -->
-    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="bg-blue-600 p-2 rounded-lg text-white">
-                    <i class="fa-solid fa-user-shield text-xl"></i>
-                </div>
-                <div>
-                    <span class="font-bold text-lg tracking-tight block leading-tight">Hot-Info Control Center</span>
-                    <span class="text-[10px] text-slate-400 font-medium">System Administration</span>
-                </div>
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between">
+            <div class="p-6">
+                <h1 class="text-xl font-bold tracking-wider text-indigo-400 mb-8">Admin Panel</h1>
+                <nav class="space-y-2">
+                    <button onclick="switchTab('dashboard')" class="tab-btn w-full text-left px-4 py-2.5 rounded-lg bg-indigo-600 font-medium transition" data-tab="dashboard">Dashboard</button>
+                    <button onclick="switchTab('leads')" class="tab-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition" data-tab="leads">Leads Management</button>
+                    <button onclick="switchTab('hot-issues')" class="tab-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition" data-tab="hot-issues">HOT Info Issues</button>
+                    <button onclick="switchTab('sectors')" class="tab-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition" data-tab="sectors">Sectors</button>
+                    <button onclick="switchTab('users')" class="tab-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition" data-tab="users">Users & Subscriptions</button>
+                    <button onclick="switchTab('github-content')" class="tab-btn w-full text-left px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-300 font-medium transition" data-tab="github-content">GitHub Content</button>
+                </nav>
             </div>
-            
-            <!-- Quick Actions Toolbar -->
-            <div class="flex items-center space-x-3">
-                <button onclick="openModal('integrationModal')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition flex items-center space-x-1.5">
-                    <i class="fa-solid fa-plug text-emerald-400"></i>
-                    <span class="hidden sm:inline">Database & Sync</span>
-                </button>
-                <a href="index.html" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white transition flex items-center space-x-1.5 shadow">
-                    <i class="fa-solid fa-eye"></i>
-                    <span>Client Portal</span>
-                </a>
+            <div class="p-6 border-t border-slate-800 text-sm text-slate-400">
+                Logged in as Admin
             </div>
-        </div>
-    </header>
+        </aside>
 
-    <!-- MAIN ADMIN CONTENT CONTAINER -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col overflow-y-auto">
+            <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center">
+                <h2 id="page-title" class="text-xl font-bold text-gray-800">Dashboard Overview</h2>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-gray-600">System Active</span>
+                </div>
+            </header>
 
-        <!-- Admin Overview Stats Header -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                <div>
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Leads</span>
-                    <h3 id="statTotalLeads" class="text-2xl font-bold text-slate-800 mt-1">0</h3>
-                </div>
-                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-filter-circle-dollar"></i>
-                </div>
-            </div>
-
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                <div>
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subscribed Clients</span>
-                    <h3 id="statSubscribedClients" class="text-2xl font-bold text-emerald-600 mt-1">0</h3>
-                </div>
-                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-user-check"></i>
-                </div>
-            </div>
-
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                <div>
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Sectors</span>
-                    <h3 id="statActiveSectors" class="text-2xl font-bold text-blue-600 mt-1">0</h3>
-                </div>
-                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-folder-tree"></i>
-                </div>
-            </div>
-
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                <div>
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">HOT Info Tenders</span>
-                    <h3 id="statTotalIssues" class="text-2xl font-bold text-indigo-600 mt-1">0</h3>
-                </div>
-                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
-                    <i class="fa-solid fa-table-list"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Admin Section Tabs Navigation -->
-        <div class="flex border-b border-slate-200 space-x-8 bg-white px-6 rounded-t-xl shadow-sm overflow-x-auto">
-            <button onclick="switchAdminTab('leads')" id="tabLeads" class="py-4 text-sm font-medium tab-active transition-all flex items-center space-x-2 shrink-0">
-                <i class="fa-solid fa-users text-base"></i>
-                <span>Leads Funnel & Subscriptions</span>
-                <span id="leadBadgeCount" class="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full font-semibold">0</span>
-            </button>
-            <button onclick="switchAdminTab('sectors')" id="tabSectors" class="py-4 text-sm font-medium text-slate-500 hover:text-slate-700 transition-all flex items-center space-x-2 shrink-0">
-                <i class="fa-solid fa-folder-open text-base"></i>
-                <span>Sector Files Management</span>
-            </button>
-            <button onclick="switchAdminTab('issues')" id="tabIssues" class="py-4 text-sm font-medium text-slate-500 hover:text-slate-700 transition-all flex items-center space-x-2 shrink-0">
-                <i class="fa-solid fa-table-cells text-base"></i>
-                <span>HOT Info Tenders Spreadsheet</span>
-                <span id="issueBadgeCount" class="ml-2 bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full font-semibold">0</span>
-            </button>
-        </div>
-
-        <!-- ================= TAB 1: LEADS FUNNEL & SUBSCRIPTIONS ================= -->
-        <div id="adminLeadsContent" class="space-y-6">
-            <!-- Filter & Action Controls -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Search & Filter Card -->
-                <div class="md:col-span-2 bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="relative w-full sm:w-72">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="leadSearchInput" onkeyup="filterLeads()" placeholder="Search by name, company, or mobile..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
-                        <label class="text-xs text-slate-500 font-medium">Status Filter:</label>
-                        <select id="leadStatusFilter" onchange="filterLeads()" class="bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="all">All Statuses</option>
-                            <option value="lead">Lead</option>
-                            <option value="potential">Potential</option>
-                            <option value="subscribed">Subscribed Client</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Add & Import Actions Card -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-end space-x-3">
-                    <button onclick="openModal('importExcelModal')" class="flex-1 sm:flex-none px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg text-sm font-medium transition flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-file-excel text-emerald-600"></i>
-                        <span>Import Excel</span>
-                    </button>
-                    <button onclick="openModal('addLeadModal')" class="flex-1 sm:flex-none px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center justify-center space-x-2 shadow-sm">
-                        <i class="fa-solid fa-plus"></i>
-                        <span>New Lead</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Leads Table Card -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-semibold uppercase text-slate-500">
-                                <th class="py-3.5 px-4">Contact Info</th>
-                                <th class="py-3.5 px-4">Company</th>
-                                <th class="py-3.5 px-4">Current Status</th>
-                                <th class="py-3.5 px-4">Assigned Sectors</th>
-                                <th class="py-3.5 px-4">Notes / Description</th>
-                                <th class="py-3.5 px-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leadsTableBody" class="divide-y divide-slate-100 text-sm">
-                            <!-- Dynamic Render -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="emptyLeadsMessage" class="hidden p-8 text-center text-slate-400">
-                    <i class="fa-solid fa-inbox text-4xl mb-2"></i>
-                    <p>No leads found matching criteria.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= TAB 2: SECTORS & FILE PUBLISHING ================= -->
-        <div id="adminSectorsContent" class="hidden space-y-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-4 mb-6 gap-4">
-                    <div>
-                        <h3 class="text-lg font-bold text-slate-900">Sector File Distribution System</h3>
-                        <p class="text-sm text-slate-500">Files uploaded here are automatically synced to clients subscribed to the target sector.</p>
-                    </div>
-                    <button onclick="openModal('addSectorModal')" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 self-start md:self-auto">
-                        <i class="fa-solid fa-plus text-blue-600"></i>
-                        <span>Add New Sector Category</span>
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Sector Overview List -->
-                    <div class="space-y-3 lg:border-r border-slate-100 lg:pr-6">
-                        <h4 class="font-semibold text-xs text-slate-400 uppercase tracking-wider mb-2">Configured Sectors</h4>
-                        <div id="sectorButtonList" class="space-y-2">
-                            <!-- Dynamic Sector list cards -->
-                        </div>
-                    </div>
-
-                    <!-- Upload Form to Sector -->
-                    <div class="lg:col-span-2">
-                        <h4 class="font-semibold text-xs text-slate-400 uppercase tracking-wider mb-3">Publish Document to Sector</h4>
-                        <form id="uploadSectorFileForm" onsubmit="handleSectorFileUpload(event)" class="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-200">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Target Sector *</label>
-                                    <select id="uploadTargetSector" required class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                                        <!-- Dynamic options -->
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Document Category</label>
-                                    <select id="docCategory" class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                                        <option value="Reports">Market Reports</option>
-                                        <option value="Tenders">Tender Briefs</option>
-                                        <option value="Legal">Legal & Regulatory</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Document Title *</label>
-                                    <input type="text" id="docTitle" required placeholder="e.g. Q4 Real Estate Market Insights" class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">File Format</label>
-                                    <select id="docType" class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                                        <option value="PDF">PDF Document</option>
-                                        <option value="XLSX">Excel Spreadsheet</option>
-                                        <option value="DOCX">Word Document</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Select File Attachment</label>
-                                <input type="file" id="docFileInput" class="w-full bg-white border border-slate-200 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                            </div>
-
-                            <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition flex items-center space-x-2 shadow-sm">
-                                <i class="fa-solid fa-cloud-arrow-up"></i>
-                                <span>Publish File to Sector</span>
-                            </button>
-                        </form>
-
-                        <!-- Sector Published Files Table -->
-                        <div class="mt-8">
-                            <h4 class="font-semibold text-xs text-slate-400 uppercase tracking-wider mb-3">Recently Published Sector Files</h4>
-                            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                                <table class="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase text-slate-500">
-                                            <th class="py-2.5 px-3">Title</th>
-                                            <th class="py-2.5 px-3">Sector</th>
-                                            <th class="py-2.5 px-3">Category</th>
-                                            <th class="py-2.5 px-3">Date</th>
-                                            <th class="py-2.5 px-3 text-right">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="publishedFilesTableBody" class="divide-y divide-slate-100 text-xs">
-                                        <!-- Dynamic Render -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= TAB 3: HOT INFO TENDERS (SPREADSHEET) ================= -->
-        <div id="adminIssuesContent" class="hidden space-y-6">
-            <!-- Toolbar & Actions Bar -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                    <!-- Search input -->
-                    <div class="relative flex-1 md:w-64">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="issueSearchInput" onkeyup="renderIssuesTable()" placeholder="Search tenders..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <!-- Filter Sector -->
-                    <select id="issueSectorFilter" onchange="renderIssuesTable()" class="bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="all">All Sectors</option>
-                    </select>
-                    <!-- Filter Source -->
-                    <select id="issueSourceFilter" onchange="renderIssuesTable()" class="bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="all">All Sources</option>
-                        <option value="Newspapers">Newspapers</option>
-                        <option value="Manzooma">Manzooma</option>
-                        <option value="Private">Private</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
-                    <button onclick="exportIssuesToExcel()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 border border-slate-200">
-                        <i class="fa-solid fa-file-export text-emerald-600"></i>
-                        <span>Export Sheet</span>
-                    </button>
-                    <button onclick="openModal('addIssueModal')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition flex items-center space-x-2 shadow-sm">
-                        <i class="fa-solid fa-plus"></i>
-                        <span>Add Issue Row</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Spreadsheet Grid Container -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="overflow-x-auto max-h-[600px] custom-scrollbar">
-                    <table class="w-full text-left border-collapse min-w-[1250px]">
-                        <thead>
-                            <tr class="bg-slate-100 border-b border-slate-300 text-xs font-semibold uppercase text-slate-600 tracking-wider sticky top-0 z-10 shadow-sm">
-                                <th class="py-3 px-3 border-r border-slate-200 w-12 text-center bg-slate-100">#</th>
-                                <th class="py-3 px-3 border-r border-slate-200 min-w-[120px]">Sector</th>
-                                <th class="py-3 px-3 border-r border-slate-200 min-w-[120px]">Source</th>
-                                <th class="py-3 px-3 border-r border-slate-200 min-w-[220px]">Tender Brief</th>
-                                <th class="py-3 px-3 border-r border-slate-200 min-w-[140px]">Tender Source</th>
-                                <th class="py-3 px-3 border-r border-slate-200 min-w-[100px]">TB Price</th>
-                                <th class="py-3 px-3 border-r border-slate-200 min-w-[110px]">Tender Date</th>
-                                <th class="py-3 px-3 border-r border-slate-200 min-w-[110px]">Publishing Date</th>
-                                <th class="py-3 px-3 border-r border-slate-200 min-w-[110px]">Insurance Value</th>
-                                <th class="py-3 px-3 border-r border-slate-200 min-w-[90px] text-center">Image</th>
-                                <th class="py-3 px-3 border-r border-slate-200 min-w-[130px] text-center">Tender Folder</th>
-                                <th class="py-3 px-3 text-center min-w-[80px]">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="issuesTableBody" class="divide-y divide-slate-200 font-mono text-xs">
-                            <!-- Dynamic Render -->
-                        </tbody>
-                    </table>
-                </div>
-                <div id="emptyIssuesMessage" class="hidden p-8 text-center text-slate-400">
-                    <i class="fa-solid fa-table-cells text-4xl mb-2"></i>
-                    <p>No tender entries found matching criteria.</p>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- ================= MODALS ================= -->
-
-    <!-- Integrations & Sync Modal -->
-    <div id="integrationModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-database text-blue-600 text-lg"></i>
-                    <h3 class="font-bold text-slate-800">Database & Deployment Synchronization</h3>
-                </div>
-                <button onclick="closeModal('integrationModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="p-6 space-y-6 overflow-y-auto">
-                <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center space-x-2">
-                            <i class="fa-brands fa-github text-xl text-slate-800"></i>
-                            <h4 class="font-bold text-sm text-slate-800">Deploying Admin Portal (`admin.html`)</h4>
-                        </div>
-                        <span class="text-[10px] uppercase font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">GitHub Sync</span>
-                    </div>
-                    <ul class="text-xs text-slate-600 space-y-2 list-disc pl-4">
-                        <li>Commit `admin.html` alongside `index.html` in your GitHub repository.</li>
-                        <li>Access live admin panel directly via <span class="font-mono bg-white px-1 border border-slate-200 rounded">https://your-domain.com/admin.html</span>.</li>
-                    </ul>
-                </div>
-
-                <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center space-x-2">
-                            <i class="fa-solid fa-server text-xl text-emerald-600"></i>
-                            <h4 class="font-bold text-sm text-slate-800">Supabase SQL Table Schema</h4>
-                        </div>
-                        <span class="text-[10px] uppercase font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Ready</span>
-                    </div>
-                    <pre class="bg-slate-900 text-emerald-400 p-3 rounded-lg text-[11px] overflow-x-auto font-mono">
-CREATE TABLE IF NOT EXISTS hot_info_issues (
-  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  sector TEXT NOT NULL,
-  source TEXT NOT NULL,
-  brief TEXT NOT NULL,
-  tender_source TEXT,
-  price TEXT,
-  tender_date DATE,
-  publish_date DATE,
-  insurance_value TEXT,
-  image_url TEXT,
-  docs JSONB DEFAULT '[]'::jsonb,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);</pre>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 1. Add Single Lead Modal -->
-    <div id="addLeadModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="font-bold text-slate-800">Add New Lead</h3>
-                <button onclick="closeModal('addLeadModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form id="addLeadForm" onsubmit="handleManualLeadSubmit(event)" class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Full Name *</label>
-                    <input type="text" id="newLeadName" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Mobile Number *</label>
-                    <input type="tel" id="newLeadMobile" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="+201012345678">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email Address</label>
-                    <input type="email" id="newLeadEmail" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Company Name</label>
-                    <input type="text" id="newLeadCompany" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Notes / Initial Details</label>
-                    <textarea id="newLeadDesc" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Initial contact details..."></textarea>
-                </div>
-                <div class="pt-2 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('addLeadModal')" class="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">Save Lead</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 2. Import Excel Modal -->
-    <div id="importExcelModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="font-bold text-slate-800">Import Leads from Excel</h3>
-                <button onclick="closeModal('importExcelModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="p-6 space-y-4">
-                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs text-blue-800 space-y-1">
-                    <p class="font-semibold text-blue-900"><i class="fa-solid fa-circle-info mr-1"></i> Excel Column Guidelines:</p>
-                    <p>Required headers: <span class="font-mono bg-blue-100 px-1 rounded">Name</span>, <span class="font-mono bg-blue-100 px-1 rounded">Mobile</span>, <span class="font-mono bg-blue-100 px-1 rounded">Email</span>, <span class="font-mono bg-blue-100 px-1 rounded">Company</span>.</p>
-                </div>
-
-                <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:bg-slate-50 transition relative">
-                    <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" onchange="handleExcelFileUpload(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    <i class="fa-solid fa-file-excel text-4xl text-emerald-500 mb-2"></i>
-                    <p class="text-sm font-medium text-slate-700">Click to upload or drag Excel sheet here</p>
-                    <p class="text-xs text-slate-400 mt-1">Supports .xlsx, .xls, or .csv</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. Edit Lead Modal -->
-    <div id="editLeadModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="font-bold text-slate-800">Update Lead Status</h3>
-                <button onclick="closeModal('editLeadModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form id="editLeadForm" onsubmit="handleLeadUpdateSubmit(event)" class="p-6 space-y-4">
-                <input type="hidden" id="editLeadId">
-                <div>
-                    <span class="text-xs text-slate-400 block uppercase">Lead Name</span>
-                    <span id="editLeadNameDisplay" class="font-bold text-slate-800 text-base"></span>
-                </div>
+            <div class="p-8 flex-1">
                 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Status</label>
-                    <select id="editLeadStatus" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        <option value="lead">Lead (Funnel Start)</option>
-                        <option value="potential">Potential Client</option>
-                        <option value="subscribed">Subscribed Client</option>
-                    </select>
+                <!-- 1. DASHBOARD TAB -->
+                <div id="tab-dashboard" class="tab-content space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                            <p class="text-sm text-gray-500 font-medium">Total Leads</p>
+                            <h3 id="stat-leads" class="text-2xl font-bold text-gray-800 mt-1">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                            <p class="text-sm text-gray-500 font-medium">HOT Info Issues</p>
+                            <h3 id="stat-issues" class="text-2xl font-bold text-gray-800 mt-1">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                            <p class="text-sm text-gray-500 font-medium">Active Sectors</p>
+                            <h3 id="stat-sectors" class="text-2xl font-bold text-gray-800 mt-1">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                            <p class="text-sm text-gray-500 font-medium">Subscribed Users</p>
+                            <h3 id="stat-users" class="text-2xl font-bold text-gray-800 mt-1">0</h3>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Status Description / Notes</label>
-                    <textarea id="editLeadDesc" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter reason for status update..."></textarea>
+                <!-- 2. LEADS MANAGEMENT TAB -->
+                <div id="tab-leads" class="tab-content hidden space-y-6">
+                    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex gap-4 items-center">
+                            <input type="text" id="lead-search" placeholder="Search leads..." class="border rounded-lg px-3 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <select id="lead-filter-status" class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">All Statuses</option>
+                                <option value="Lead">Lead</option>
+                                <option value="Potential">Potential</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-3">
+                            <label class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer shadow transition">
+                                Import Excel / CSV
+                                <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleLeadExcelImport(event)">
+                            </label>
+                            <button onclick="openAddLeadModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">+ Add Lead</button>
+                        </div>
+                    </div>
+
+                    <!-- Leads Table -->
+                    <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50 text-gray-700 font-semibold">
+                                <tr>
+                                    <th class="p-3 text-left">Name *</th>
+                                    <th class="p-3 text-left">Mobile Number *</th>
+                                    <th class="p-3 text-left">Email</th>
+                                    <th class="p-3 text-left">Company</th>
+                                    <th class="p-3 text-left">Status</th>
+                                    <th class="p-3 text-left">Status Description / Notes</th>
+                                    <th class="p-3 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leads-table-body" class="divide-y divide-gray-200">
+                                <!-- Dynamically populated -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <div class="pt-2 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('editLeadModal')" class="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">Update Lead</button>
+                <!-- 3. HOT INFO ISSUES TAB -->
+                <div id="tab-hot-issues" class="tab-content hidden space-y-6">
+                    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex gap-4 items-center">
+                            <select id="filter-issue-sector" class="border rounded-lg px-3 py-2 text-sm" onchange="renderHotIssuesTable()">
+                                <option value="">All Sectors</option>
+                            </select>
+                            <select id="filter-issue-source" class="border rounded-lg px-3 py-2 text-sm" onchange="renderHotIssuesTable()">
+                                <option value="">All Sources</option>
+                                <option value="Newspapers">Newspapers</option>
+                                <option value="Manzooma">Manzooma</option>
+                                <option value="Private">Private</option>
+                            </select>
+                        </div>
+                        <button onclick="openAddHotIssueModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow transition">+ Add Hot Info Issue</button>
+                    </div>
+
+                    <!-- Excel-like Tabular Grid View -->
+                    <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50 text-gray-700 font-semibold">
+                                <tr>
+                                    <th class="p-3 text-left">Sector</th>
+                                    <th class="p-3 text-left">Source</th>
+                                    <th class="p-3 text-left">Tender Brief</th>
+                                    <th class="p-3 text-left">Tender Source</th>
+                                    <th class="p-3 text-right">TB Price</th>
+                                    <th class="p-3 text-center">Tender Date</th>
+                                    <th class="p-3 text-center">Publishing Date</th>
+                                    <th class="p-3 text-right">Insurance Value</th>
+                                    <th class="p-3 text-center">Image</th>
+                                    <th class="p-3 text-center">Docs Folder</th>
+                                    <th class="p-3 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hot-issues-table-body" class="divide-y divide-gray-200">
+                                <!-- Spreadsheet rows dynamically rendered -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </form>
-        </div>
+
+                <!-- 4. SECTORS TAB -->
+                <div id="tab-sectors" class="tab-content hidden space-y-6">
+                    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="font-bold text-gray-800">Manage Sectors</h3>
+                        <button onclick="promptAddSector()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium">+ Add Sector</button>
+                    </div>
+                    <div id="sectors-list" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Sector cards -->
+                    </div>
+                </div>
+
+                <!-- 5. USERS & SUBSCRIPTIONS TAB (Bucket-free, Multi-sector subscription) -->
+                <div id="tab-users" class="tab-content hidden space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="font-bold text-gray-800 mb-4">User Sector Subscriptions</h3>
+                        <p class="text-sm text-gray-500 mb-4">Old bucket assignments have been removed. Users subscribe directly to one or more sectors.</p>
+                        <div id="users-subscription-list" class="space-y-4">
+                            <!-- User subscription rows -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. GITHUB CONTENT TAB -->
+                <div id="tab-github-content" class="tab-content hidden space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="font-bold text-gray-800 mb-4">GitHub Synced Content CRUD</h3>
+                        <p class="text-sm text-gray-500 mb-4">Manage and sync content coming directly from your GitHub repository.</p>
+                        <button onclick="triggerGitHubSync()" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium">Sync with GitHub Now</button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
     </div>
 
-    <!-- 4. Manage Client Sector Subscriptions Modal -->
-    <div id="subscribeSectorsModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                    <h3 class="font-bold text-slate-800">Manage Sector Subscriptions</h3>
-                    <p class="text-xs text-slate-500">Assign sectors to control file access for this client</p>
-                </div>
-                <button onclick="closeModal('subscribeSectorsModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form id="subscribeSectorsForm" onsubmit="handleSaveSubscriptions(event)" class="p-6 space-y-4">
-                <input type="hidden" id="subscribeLeadId">
-                
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <span class="text-xs text-slate-500 block">Target Client</span>
-                    <span id="subscribeClientName" class="font-semibold text-slate-800"></span>
-                </div>
-
-                <div id="sectorCheckboxesContainer" class="space-y-2 max-h-60 overflow-y-auto">
-                    <!-- Dynamic sector checkboxes -->
-                </div>
-
-                <div class="pt-2 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('subscribeSectorsModal')" class="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">Save Subscriptions</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 5. Add New Sector Category Modal -->
-    <div id="addSectorModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="font-bold text-slate-800">Add New Sector</h3>
-                <button onclick="closeModal('addSectorModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form onsubmit="handleAddNewSector(event)" class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Sector Name *</label>
-                    <input type="text" id="newSectorName" required placeholder="e.g. Telecommunications" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                </div>
-                <div class="pt-2 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('addSectorModal')" class="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">Create Sector</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 6. Add HOT Info Issue Modal -->
-    <div id="addIssueModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
-                <h3 class="font-bold text-slate-800">Add HOT Info Issue Entry</h3>
-                <button onclick="closeModal('addIssueModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form id="addIssueForm" onsubmit="handleIssueSubmit(event)" class="p-6 space-y-4 overflow-y-auto flex-1">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Sector *</label>
-                        <select id="issueSectorInput" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <!-- Dynamic sector options -->
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Source *</label>
-                        <select id="issueSourceInput" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <option value="Newspapers">Newspapers</option>
-                            <option value="Manzooma">Manzooma</option>
-                            <option value="Private">Private</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tender Brief *</label>
-                    <textarea id="issueBriefInput" required rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Short description of tender..."></textarea>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tender Source Authority</label>
-                        <input type="text" id="issueTenderSourceInput" placeholder="e.g. Ministry of Housing" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">TB Price ($ / EGP)</label>
-                        <input type="text" id="issuePriceInput" placeholder="e.g. 5,000 EGP" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tender Date</label>
-                        <input type="date" id="issueTenderDateInput" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Publishing Date</label>
-                        <input type="date" id="issuePublishDateInput" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Insurance Value</label>
-                        <input type="text" id="issueInsuranceInput" placeholder="e.g. 250,000 EGP" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Tender Cover Image</label>
-                    <input type="file" id="issueImageInput" accept="image/*" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-
-                <div class="pt-2 flex justify-end space-x-3 shrink-0">
-                    <button type="button" onclick="closeModal('addIssueModal')" class="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium">Add Row</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- 7. Issue Documents Folder Modal -->
-    <div id="issueFolderModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
-                <div>
-                    <h3 class="font-bold text-slate-800">Connected Tender Folder</h3>
-                    <p id="folderModalSub" class="text-xs text-slate-500"></p>
-                </div>
-                <button onclick="closeModal('issueFolderModal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="p-6 space-y-4">
-                <div class="flex items-center space-x-2">
-                    <input type="file" id="folderDocUpload" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs">
-                    <button onclick="addDocumentToFolder()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition">Upload File</button>
-                </div>
-
-                <div>
-                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Folder Documents</h4>
-                    <div id="issueFolderFileList" class="space-y-2 max-h-60 overflow-y-auto">
-                        <!-- Documents rendered dynamically -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JavaScript logic for Admin Panel -->
     <script>
-        // ================= APPLICATION STATE =================
-        let leads = [
-            { id: 1, name: "Ahmed Mansour", email: "ahmed@techcorp.com", mobile: "+201012345678", company: "TechCorp", status: "lead", desc: "Inquired via contact form", sectors: ["Technology"] },
-            { id: 2, name: "Sarah Hassan", email: "sarah.h@fintech.io", mobile: "+201198765432", company: "Fintech Solutions", status: "potential", desc: "Demo meeting scheduled for Tuesday", sectors: ["Finance", "Technology"] },
-            { id: 3, name: "Khaled Omar", email: "k.omar@buildco.com", mobile: "+201233445566", company: "BuildCo Global", status: "subscribed", desc: "Full subscription active", sectors: ["Real Estate", "Energy"] }
-        ];
-
-        let sectors = ["Technology", "Finance", "Real Estate", "Energy", "Healthcare"];
-
-        let files = [
-            { id: 101, title: "Commercial Real Estate Development Brief", sector: "Real Estate", category: "Reports", type: "PDF", date: "2026-10-20", size: "2.4 MB" },
-            { id: 102, title: "Solar Power Tender Specifications 2026", sector: "Energy", category: "Tenders", type: "PDF", date: "2026-10-22", size: "4.1 MB" },
-            { id: 103, title: "Fintech Regulatory Framework Guidelines", sector: "Finance", category: "Legal", type: "DOCX", date: "2026-10-24", size: "1.2 MB" },
-            { id: 104, title: "Smart Infrastructure Hardware Specs", sector: "Technology", category: "Tenders", type: "XLSX", date: "2026-10-25", size: "850 KB" }
-        ];
-
-        let hotInfoIssues = [
-            {
-                id: 1,
-                sector: "Real Estate",
-                source: "Newspapers",
-                brief: "Construction of Commercial Center & Parking Structure",
-                tenderSource: "Ministry of Housing",
-                price: "5,000 EGP",
-                tenderDate: "2026-11-10",
-                publishDate: "2026-10-25",
-                insuranceValue: "250,000 EGP",
-                image: "https://placehold.co/100x100/e2e8f0/475569?text=Tender+Img",
-                docs: [{ name: "Tender_Terms_and_Conditions.pdf", size: "1.8 MB" }]
-            },
-            {
-                id: 2,
-                sector: "Technology",
-                source: "Manzooma",
-                brief: "Supply & Implementation of Smart City IoT Sensors",
-                tenderSource: "NTRA Egypt",
-                price: "12,000 EGP",
-                tenderDate: "2026-12-01",
-                publishDate: "2026-10-26",
-                insuranceValue: "500,000 EGP",
-                image: null,
-                docs: [{ name: "IoT_Hardware_Specs.pdf", size: "3.2 MB" }, { name: "Financial_Bid_Form.xlsx", size: "800 KB" }]
-            }
-        ];
-
-        let activeFolderIssueId = null;
-
-        // ================= INITIALIZATION =================
-        window.onload = function() {
-            updateOverviewStats();
-            renderLeadsTable();
-            renderSectorsAdmin();
-            renderPublishedFilesTable();
-            renderIssuesTable();
-            populateSectorDropdowns();
-        };
-
-        function updateOverviewStats() {
-            document.getElementById('statTotalLeads').innerText = leads.length;
-            document.getElementById('statSubscribedClients').innerText = leads.filter(l => l.status === 'subscribed').length;
-            document.getElementById('statActiveSectors').innerText = sectors.length;
-            document.getElementById('statTotalIssues').innerText = hotInfoIssues.length;
-        }
-
-        // ================= TAB SWITCHING =================
-        function switchAdminTab(tab) {
-            const tabLeads = document.getElementById('tabLeads');
-            const tabSectors = document.getElementById('tabSectors');
-            const tabIssues = document.getElementById('tabIssues');
-
-            const contentLeads = document.getElementById('adminLeadsContent');
-            const contentSectors = document.getElementById('adminSectorsContent');
-            const contentIssues = document.getElementById('adminIssuesContent');
-
-            tabLeads.className = "py-4 text-sm font-medium text-slate-500 hover:text-slate-700 transition-all flex items-center space-x-2 shrink-0";
-            tabSectors.className = "py-4 text-sm font-medium text-slate-500 hover:text-slate-700 transition-all flex items-center space-x-2 shrink-0";
-            tabIssues.className = "py-4 text-sm font-medium text-slate-500 hover:text-slate-700 transition-all flex items-center space-x-2 shrink-0";
-
-            contentLeads.classList.add('hidden');
-            contentSectors.classList.add('hidden');
-            contentIssues.classList.add('hidden');
-
-            if (tab === 'leads') {
-                tabLeads.className = "py-4 text-sm font-medium tab-active transition-all flex items-center space-x-2 shrink-0";
-                contentLeads.classList.remove('hidden');
-            } else if (tab === 'sectors') {
-                tabSectors.className = "py-4 text-sm font-medium tab-active transition-all flex items-center space-x-2 shrink-0";
-                contentSectors.classList.remove('hidden');
-            } else if (tab === 'issues') {
-                tabIssues.className = "py-4 text-sm font-medium tab-active transition-all flex items-center space-x-2 shrink-0";
-                contentIssues.classList.remove('hidden');
-            }
-        }
-
-        // ================= LEADS & CLIENTS MANAGEMENT =================
-        function renderLeadsTable() {
-            const tbody = document.getElementById('leadsTableBody');
-            const emptyMsg = document.getElementById('emptyLeadsMessage');
-            const leadBadge = document.getElementById('leadBadgeCount');
-
-            const searchValue = (document.getElementById('leadSearchInput')?.value || '').toLowerCase();
-            const statusFilter = document.getElementById('leadStatusFilter')?.value || 'all';
-
-            const filteredLeads = leads.filter(l => {
-                const matchesSearch = l.name.toLowerCase().includes(searchValue) ||
-                                     l.company.toLowerCase().includes(searchValue) ||
-                                     l.mobile.toLowerCase().includes(searchValue) ||
-                                     l.email.toLowerCase().includes(searchValue);
-                const matchesStatus = statusFilter === 'all' || l.status === statusFilter;
-                return matchesSearch && matchesStatus;
+        // Tab Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600');
+                btn.classList.add('hover:bg-slate-800', 'text-slate-300');
             });
+            const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-indigo-600');
+                activeBtn.classList.remove('hover:bg-slate-800', 'text-slate-300');
+            }
+            document.getElementById('page-title').innerText = activeBtn ? activeBtn.innerText : 'Admin Panel';
+        }
 
-            if (leadBadge) leadBadge.innerText = leads.length;
+        // Mock data structures for demonstration and step-by-step verification
+        let sectors = [
+            { id: 'sec-1', name: 'Information Technology' },
+            { id: 'sec-2', name: 'Construction & Infrastructure' },
+            { id: 'sec-3', name: 'Medical & Healthcare' }
+        ];
+
+        let leads = [
+            { id: 'lead-1', name: 'Ahmed Hassan', mobile: '+201001234567', email: 'ahmed@company.com', company: 'Cairo Tech', status: 'Lead', description: 'Initial inquiry received via website form.' },
+            { id: 'lead-2', name: 'Mona Mohamed', mobile: '+201229876543', email: 'mona@buildcorp.eg', company: 'BuildCorp', status: 'Potential', description: 'Very interested in Construction tenders subscription.' }
+        ];
+
+        let hotIssues = [
+            {
+                id: 'issue-1',
+                sectorId: 'sec-2',
+                source: 'Newspapers',
+                tenderBrief: 'Supply and installation of water pipelines in Giza',
+                tenderSource: 'Al-Ahram Daily',
+                tbPrice: 1500,
+                tenderDate: '2026-11-15',
+                publishingDate: '2026-10-05',
+                insuranceValue: 50000,
+                tenderImageUrl: 'https://via.placeholder.com/150',
+                folderLink: 'https://drive.google.com/drive/folders/mock-folder-1'
+            }
+        ];
+
+        // Initialize view renders
+        function init() {
+            renderDashboardStats();
+            renderLeadsTable();
+            populateSectorDropdowns();
+            renderHotIssuesTable();
+            renderSectorsList();
+        }
+
+        function renderDashboardStats() {
+            document.getElementById('stat-leads').innerText = leads.length;
+            document.getElementById('stat-issues').innerText = hotIssues.length;
+            document.getElementById('stat-sectors').innerText = sectors.length;
+            document.getElementById('stat-users').innerText = 12; // Example count
+        }
+
+        // Render Leads
+        function renderLeadsTable() {
+            const tbody = document.getElementById('leads-table-body');
             tbody.innerHTML = '';
+            leads.forEach(lead => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-3 font-medium text-gray-900">${lead.name}</td>
+                        <td class="p-3 text-gray-600">${lead.mobile}</td>
+                        <td class="p-3 text-gray-600">${lead.email || '-'}</td>
+                        <td class="p-3 text-gray-600">${lead.company || '-'}</td>
+                        <td class="p-3">
+                            <select onchange="updateLeadStatus('${lead.id}', this.value)" class="border rounded px-2 py-1 text-xs font-semibold ${lead.status === 'Potential' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">
+                                <option value="Lead" ${lead.status === 'Lead' ? 'selected' : ''}>Lead</option>
+                                <option value="Potential" ${lead.status === 'Potential' ? 'selected' : ''}>Potential</option>
+                            </select>
+                        </td>
+                        <td class="p-3">
+                            <input type="text" value="${lead.description || ''}" onchange="updateLeadDescription('${lead.id}', this.value)" placeholder="Enter status notes..." class="border rounded px-2 py-1 text-xs w-full focus:ring-1 focus:ring-indigo-500">
+                        </td>
+                        <td class="p-3 text-center">
+                            <button onclick="convertLeadToUser('${lead.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-xs font-medium">Convert to User</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
 
-            if (filteredLeads.length === 0) {
-                emptyMsg.classList.remove('hidden');
+        function updateLeadStatus(id, newStatus) {
+            const lead = leads.find(l => l.id === id);
+            if(lead) lead.status = newStatus;
+            renderLeadsTable();
+        }
+
+        function updateLeadDescription(id, newDesc) {
+            const lead = leads.find(l => l.id === id);
+            if(lead) lead.description = newDesc;
+        }
+
+        function convertLeadToUser(id) {
+            const lead = leads.find(l => l.id === id);
+            if(!lead.email) {
+                alert('Email is required to convert a lead to a subscribed user.');
                 return;
             }
-            emptyMsg.classList.add('hidden');
-
-            filteredLeads.forEach(lead => {
-                let statusBadge = '';
-                if (lead.status === 'lead') {
-                    statusBadge = `<span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold">Lead</span>`;
-                } else if (lead.status === 'potential') {
-                    statusBadge = `<span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">Potential</span>`;
-                } else if (lead.status === 'subscribed') {
-                    statusBadge = `<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">Subscribed</span>`;
-                }
-
-                const userSectorsBadges = (lead.sectors || []).map(s => 
-                    `<span class="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-600 rounded text-[10px] font-medium mr-1 inline-block mb-1">${escapeHtml(s)}</span>`
-                ).join('') || `<span class="text-slate-400 text-xs italic">None</span>`;
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
-                tr.innerHTML = `
-                    <td class="py-3.5 px-4">
-                        <div class="font-bold text-slate-800">${escapeHtml(lead.name)}</div>
-                        <div class="text-xs text-slate-400">${escapeHtml(lead.mobile)} • ${escapeHtml(lead.email || 'No email')}</div>
-                    </td>
-                    <td class="py-3.5 px-4 text-slate-600 font-medium">${escapeHtml(lead.company || '-')}</td>
-                    <td class="py-3.5 px-4">${statusBadge}</td>
-                    <td class="py-3.5 px-4 max-w-xs">${userSectorsBadges}</td>
-                    <td class="py-3.5 px-4 text-xs text-slate-500 max-w-xs truncate">${escapeHtml(lead.desc || '-')}</td>
-                    <td class="py-3.5 px-4 text-right space-x-1.5">
-                        <button onclick="openSubscribeModal(${lead.id})" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-medium transition" title="Manage Sector Access">
-                            <i class="fa-solid fa-folder-plus mr-1"></i>Sectors (${(lead.sectors || []).length})
-                        </button>
-                        <button onclick="openEditLeadModal(${lead.id})" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs transition">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
-                        <button onclick="deleteLead(${lead.id})" class="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs transition">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+            alert(`Lead "${lead.name}" successfully converted to an active user with sector subscriptions!`);
         }
 
-        function filterLeads() {
-            renderLeadsTable();
-        }
-
-        function handleManualLeadSubmit(e) {
-            e.preventDefault();
-            const name = document.getElementById('newLeadName').value.trim();
-            const mobile = document.getElementById('newLeadMobile').value.trim();
-            const email = document.getElementById('newLeadEmail').value.trim();
-            const company = document.getElementById('newLeadCompany').value.trim();
-            const desc = document.getElementById('newLeadDesc').value.trim();
-
-            if (!name || !mobile) return;
-
-            const newLead = {
-                id: Date.now(),
-                name: name,
-                mobile: mobile,
-                email: email,
-                company: company,
-                status: 'lead',
-                desc: desc,
-                sectors: []
-            };
-
-            leads.unshift(newLead);
-            updateOverviewStats();
-            renderLeadsTable();
-            closeModal('addLeadModal');
-            document.getElementById('addLeadForm').reset();
-        }
-
-        function handleExcelFileUpload(event) {
+        // Excel / CSV Import Handling using SheetJS
+        function handleLeadExcelImport(event) {
             const file = event.target.files[0];
-            if (!file) return;
+            if(!file) return;
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const json = XLSX.utils.sheet_to_json(worksheet);
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonRows = XLSX.utils.sheet_to_json(worksheet);
 
-                    let importedCount = 0;
-                    json.forEach(row => {
-                        const nameKey = Object.keys(row).find(k => k.toLowerCase().includes('name'));
-                        const mobileKey = Object.keys(row).find(k => k.toLowerCase().includes('mobile') || k.toLowerCase().includes('phone'));
-                        const emailKey = Object.keys(row).find(k => k.toLowerCase().includes('email'));
-                        const companyKey = Object.keys(row).find(k => k.toLowerCase().includes('company'));
+                let importedCount = 0;
+                jsonRows.forEach(row => {
+                    const name = row['Name'] || row['name'];
+                    const mobile = row['Mobile'] || row['mobile'] || row['Mobile Number'];
+                    if(name && mobile) {
+                        leads.push({
+                            id: 'lead-' + Date.now() + Math.random(),
+                            name: String(name).trim(),
+                            mobile: String(mobile).trim(),
+                            email: row['Email'] || row['email'] || '',
+                            company: row['Company'] || row['company'] || '',
+                            status: 'Lead',
+                            description: row['Description'] || row['description'] || 'Imported via Excel'
+                        });
+                        importedCount++;
+                    }
+                });
 
-                        const nameVal = nameKey ? row[nameKey] : null;
-                        const mobileVal = mobileKey ? String(row[mobileKey]) : null;
-
-                        if (nameVal && mobileVal) {
-                            leads.unshift({
-                                id: Date.now() + Math.random(),
-                                name: nameVal,
-                                mobile: mobileVal,
-                                email: emailKey ? row[emailKey] : '',
-                                company: companyKey ? row[companyKey] : '',
-                                status: 'lead',
-                                desc: 'Imported via Excel Sheet',
-                                sectors: []
-                            });
-                            importedCount++;
-                        }
-                    });
-
-                    updateOverviewStats();
-                    renderLeadsTable();
-                    closeModal('importExcelModal');
-                } catch (err) {
-                    // Handled gracefully without standard alert dialogs
-                }
+                renderLeadsTable();
+                renderDashboardStats();
+                alert(`Successfully imported ${importedCount} leads from spreadsheet!`);
             };
             reader.readAsArrayBuffer(file);
         }
 
-        function openEditLeadModal(id) {
-            const lead = leads.find(l => l.id === id);
-            if (!lead) return;
-
-            document.getElementById('editLeadId').value = lead.id;
-            document.getElementById('editLeadNameDisplay').innerText = lead.name;
-            document.getElementById('editLeadStatus').value = lead.status;
-            document.getElementById('editLeadDesc').value = lead.desc || '';
-
-            openModal('editLeadModal');
-        }
-
-        function handleLeadUpdateSubmit(e) {
-            e.preventDefault();
-            const id = parseFloat(document.getElementById('editLeadId').value);
-            const lead = leads.find(l => l.id === id);
-            if (!lead) return;
-
-            lead.status = document.getElementById('editLeadStatus').value;
-            lead.desc = document.getElementById('editLeadDesc').value.trim();
-
-            updateOverviewStats();
-            renderLeadsTable();
-            closeModal('editLeadModal');
-        }
-
-        function deleteLead(id) {
-            leads = leads.filter(l => l.id !== id);
-            updateOverviewStats();
-            renderLeadsTable();
-        }
-
-        function openSubscribeModal(id) {
-            const lead = leads.find(l => l.id === id);
-            if (!lead) return;
-
-            document.getElementById('subscribeLeadId').value = lead.id;
-            document.getElementById('subscribeClientName').innerText = lead.name;
-
-            const container = document.getElementById('sectorCheckboxesContainer');
-            container.innerHTML = '';
-
-            sectors.forEach(sec => {
-                const isChecked = (lead.sectors || []).includes(sec);
-                const label = document.createElement('label');
-                label.className = "flex items-center p-2.5 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition cursor-pointer text-sm font-medium text-slate-700";
-                label.innerHTML = `
-                    <input type="checkbox" name="userSectorOption" value="${sec}" ${isChecked ? 'checked' : ''} class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 mr-2.5">
-                    <span>${sec}</span>
-                `;
-                container.appendChild(label);
-            });
-
-            openModal('subscribeSectorsModal');
-        }
-
-        function handleSaveSubscriptions(e) {
-            e.preventDefault();
-            const id = parseFloat(document.getElementById('subscribeLeadId').value);
-            const lead = leads.find(l => l.id === id);
-            if (!lead) return;
-
-            const checkedBoxes = document.querySelectorAll('input[name="userSectorOption"]:checked');
-            const selectedSectors = Array.from(checkedBoxes).map(cb => cb.value);
-
-            lead.sectors = selectedSectors;
-            
-            if (selectedSectors.length > 0 && lead.status !== 'subscribed') {
-                lead.status = 'subscribed';
-            }
-
-            updateOverviewStats();
-            renderLeadsTable();
-            closeModal('subscribeSectorsModal');
-        }
-
-
-        // ================= SECTORS & FILES MANAGEMENT =================
-        function renderSectorsAdmin() {
-            const container = document.getElementById('sectorButtonList');
-            container.innerHTML = '';
-
-            sectors.forEach(sec => {
-                const fileCount = files.filter(f => f.sector === sec).length;
-                const div = document.createElement('div');
-                div.className = "flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm";
-                div.innerHTML = `
-                    <span class="font-semibold text-slate-700"><i class="fa-solid fa-folder text-amber-500 mr-2"></i>${sec}</span>
-                    <span class="bg-slate-200 text-slate-700 text-xs px-2.5 py-0.5 rounded-full font-bold">${fileCount} files</span>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function handleAddNewSector(e) {
-            e.preventDefault();
-            const nameInput = document.getElementById('newSectorName');
-            const name = nameInput.value.trim();
-
-            if (name && !sectors.includes(name)) {
-                sectors.push(name);
-                populateSectorDropdowns();
-                renderSectorsAdmin();
-                updateOverviewStats();
-                closeModal('addSectorModal');
-                nameInput.value = '';
-            }
-        }
-
-        function renderPublishedFilesTable() {
-            const tbody = document.getElementById('publishedFilesTableBody');
-            tbody.innerHTML = '';
-
-            files.forEach(file => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 border-b border-slate-100";
-                tr.innerHTML = `
-                    <td class="py-2.5 px-3 font-semibold text-slate-800">${escapeHtml(file.title)}</td>
-                    <td class="py-2.5 px-3"><span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded font-medium">${escapeHtml(file.sector)}</span></td>
-                    <td class="py-2.5 px-3 text-slate-500">${escapeHtml(file.category)}</td>
-                    <td class="py-2.5 px-3 text-slate-400">${file.date}</td>
-                    <td class="py-2.5 px-3 text-right">
-                        <button onclick="deletePublishedFile(${file.id})" class="text-red-400 hover:text-red-600 transition"><i class="fa-solid fa-trash-can"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function deletePublishedFile(id) {
-            files = files.filter(f => f.id !== id);
-            renderSectorsAdmin();
-            renderPublishedFilesTable();
-        }
-
+        // Populate Sector Dropdowns
         function populateSectorDropdowns() {
-            const targetSelect = document.getElementById('uploadTargetSector');
-            const issueSectorFilter = document.getElementById('issueSectorFilter');
-            const issueSectorInput = document.getElementById('issueSectorInput');
-
-            if (targetSelect) targetSelect.innerHTML = '';
-            if (issueSectorFilter) issueSectorFilter.innerHTML = '<option value="all">All Sectors</option>';
-            if (issueSectorInput) issueSectorInput.innerHTML = '';
-
+            const filterSec = document.getElementById('filter-issue-sector');
+            filterSec.innerHTML = '<option value="">All Sectors</option>';
             sectors.forEach(sec => {
-                if (targetSelect) targetSelect.innerHTML += `<option value="${sec}">${sec}</option>`;
-                if (issueSectorFilter) issueSectorFilter.innerHTML += `<option value="${sec}">${sec}</option>`;
-                if (issueSectorInput) issueSectorInput.innerHTML += `<option value="${sec}">${sec}</option>`;
+                filterSec.innerHTML += `<option value="${sec.id}">${sec.name}</option>`;
             });
         }
 
-        function handleSectorFileUpload(e) {
-            e.preventDefault();
-            const sector = document.getElementById('uploadTargetSector').value;
-            const title = document.getElementById('docTitle').value.trim();
-            const category = document.getElementById('docCategory').value;
-            const type = document.getElementById('docType').value;
+        // Render HOT Info Issues Table (Excel-like tabular view)
+        function renderHotIssuesTable() {
+            const tbody = document.getElementById('hot-issues-table-body');
+            const selectedSector = document.getElementById('filter-issue-sector').value;
+            const selectedSource = document.getElementById('filter-issue-source').value;
 
-            if (!title) return;
-
-            const newFile = {
-                id: Date.now(),
-                title: title,
-                sector: sector,
-                category: category,
-                type: type,
-                date: new Date().toISOString().split('T')[0],
-                size: (Math.random() * 3 + 0.5).toFixed(1) + " MB"
-            };
-
-            files.unshift(newFile);
-            renderSectorsAdmin();
-            renderPublishedFilesTable();
-            document.getElementById('uploadSectorFileForm').reset();
-        }
-
-
-        // ================= HOT INFO ISSUES SPREADSHEET TABLE =================
-        function renderIssuesTable() {
-            const tbody = document.getElementById('issuesTableBody');
-            const emptyMsg = document.getElementById('emptyIssuesMessage');
-            const issueBadge = document.getElementById('issueBadgeCount');
-
-            const searchValue = (document.getElementById('issueSearchInput')?.value || '').toLowerCase();
-            const sectorFilter = document.getElementById('issueSectorFilter')?.value || 'all';
-            const sourceFilter = document.getElementById('issueSourceFilter')?.value || 'all';
-
-            const filteredIssues = hotInfoIssues.filter(item => {
-                const matchesSearch = item.brief.toLowerCase().includes(searchValue) ||
-                                     item.tenderSource.toLowerCase().includes(searchValue);
-                const matchesSector = sectorFilter === 'all' || item.sector === sectorFilter;
-                const matchesSource = sourceFilter === 'all' || item.source === sourceFilter;
-                return matchesSearch && matchesSector && matchesSource;
-            });
-
-            if (issueBadge) issueBadge.innerText = hotInfoIssues.length;
             tbody.innerHTML = '';
-
-            if (filteredIssues.length === 0) {
-                emptyMsg.classList.remove('hidden');
-                return;
-            }
-            emptyMsg.classList.add('hidden');
-
-            filteredIssues.forEach((issue, index) => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-indigo-50/40 transition bg-white border-b border-slate-200";
-
-                const docCount = issue.docs ? issue.docs.length : 0;
-                const imgThumb = issue.image 
-                    ? `<img src="${issue.image}" class="w-8 h-8 rounded object-cover mx-auto border border-slate-300">`
-                    : `<span class="text-slate-300 text-[10px]">No img</span>`;
-
-                tr.innerHTML = `
-                    <td class="py-2.5 px-3 border-r border-slate-200 text-center font-bold text-slate-400 bg-slate-50">${index + 1}</td>
-                    <td class="py-2.5 px-3 border-r border-slate-200 font-semibold text-indigo-700 bg-indigo-50/20">${escapeHtml(issue.sector)}</td>
-                    <td class="py-2.5 px-3 border-r border-slate-200 font-medium text-slate-700">
-                        <span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 border border-slate-200">${escapeHtml(issue.source)}</span>
-                    </td>
-                    <td class="py-2.5 px-3 border-r border-slate-200 text-slate-800 font-sans font-medium line-clamp-2" title="${escapeHtml(issue.brief)}">${escapeHtml(issue.brief)}</td>
-                    <td class="py-2.5 px-3 border-r border-slate-200 text-slate-600">${escapeHtml(issue.tenderSource || '-')}</td>
-                    <td class="py-2.5 px-3 border-r border-slate-200 text-slate-700 font-semibold">${escapeHtml(issue.price || '-')}</td>
-                    <td class="py-2.5 px-3 border-r border-slate-200 text-slate-600">${issue.tenderDate || '-'}</td>
-                    <td class="py-2.5 px-3 border-r border-slate-200 text-slate-600">${issue.publishDate || '-'}</td>
-                    <td class="py-2.5 px-3 border-r border-slate-200 text-emerald-700 font-semibold">${escapeHtml(issue.insuranceValue || '-')}</td>
-                    <td class="py-2.5 px-3 border-r border-slate-200 text-center">${imgThumb}</td>
-                    <td class="py-2.5 px-3 border-r border-slate-200 text-center">
-                        <button onclick="openIssueFolderModal(${issue.id})" class="px-2.5 py-1 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-md transition font-sans font-medium flex items-center justify-center space-x-1 mx-auto">
-                            <i class="fa-solid fa-folder-open text-indigo-500"></i>
-                            <span>Files (${docCount})</span>
-                        </button>
-                    </td>
-                    <td class="py-2.5 px-3 text-center">
-                        <button onclick="deleteIssue(${issue.id})" title="Delete Row" class="text-red-400 hover:text-red-600 transition p-1">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function handleIssueSubmit(e) {
-            e.preventDefault();
-            const sector = document.getElementById('issueSectorInput').value;
-            const source = document.getElementById('issueSourceInput').value;
-            const brief = document.getElementById('issueBriefInput').value.trim();
-            const tenderSource = document.getElementById('issueTenderSourceInput').value.trim();
-            const price = document.getElementById('issuePriceInput').value.trim();
-            const tenderDate = document.getElementById('issueTenderDateInput').value;
-            const publishDate = document.getElementById('issuePublishDateInput').value;
-            const insuranceValue = document.getElementById('issueInsuranceInput').value.trim();
-            const imageFile = document.getElementById('issueImageInput').files[0];
-
-            let imageUrl = null;
-            if (imageFile) {
-                imageUrl = URL.createObjectURL(imageFile);
-            }
-
-            const newIssue = {
-                id: Date.now(),
-                sector,
-                source,
-                brief,
-                tenderSource,
-                price,
-                tenderDate,
-                publishDate,
-                insuranceValue,
-                image: imageUrl,
-                docs: []
-            };
-
-            hotInfoIssues.unshift(newIssue);
-            updateOverviewStats();
-            renderIssuesTable();
-            closeModal('addIssueModal');
-            document.getElementById('addIssueForm').reset();
-        }
-
-        function deleteIssue(id) {
-            hotInfoIssues = hotInfoIssues.filter(i => i.id !== id);
-            updateOverviewStats();
-            renderIssuesTable();
-        }
-
-        function openIssueFolderModal(id) {
-            activeFolderIssueId = id;
-            const issue = hotInfoIssues.find(i => i.id === id);
-            if (!issue) return;
-
-            document.getElementById('folderModalSub').innerText = `${issue.sector} | ${issue.brief.slice(0, 35)}...`;
-            renderFolderFiles();
-            openModal('issueFolderModal');
-        }
-
-        function renderFolderFiles() {
-            const issue = hotInfoIssues.find(i => i.id === activeFolderIssueId);
-            const listContainer = document.getElementById('issueFolderFileList');
-            listContainer.innerHTML = '';
-
-            if (!issue || !issue.docs || issue.docs.length === 0) {
-                listContainer.innerHTML = `<p class="text-xs text-slate-400 italic">No tender documents in folder yet.</p>`;
-                return;
-            }
-
-            issue.docs.forEach((doc, idx) => {
-                const item = document.createElement('div');
-                item.className = "flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs";
-                item.innerHTML = `
-                    <div class="flex items-center space-x-2 truncate">
-                        <i class="fa-solid fa-file-pdf text-red-500"></i>
-                        <span class="font-medium text-slate-700 truncate">${escapeHtml(doc.name)}</span>
-                        <span class="text-[10px] text-slate-400">(${doc.size})</span>
-                    </div>
-                    <button onclick="removeDocFromFolder(${idx})" class="text-slate-400 hover:text-red-500 transition ml-2">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                `;
-                listContainer.appendChild(item);
-            });
-        }
-
-        function addDocumentToFolder() {
-            const fileInput = document.getElementById('folderDocUpload');
-            const file = fileInput.files[0];
-            if (!file || !activeFolderIssueId) return;
-
-            const issue = hotInfoIssues.find(i => i.id === activeFolderIssueId);
-            if (!issue.docs) issue.docs = [];
-
-            issue.docs.push({
-                name: file.name,
-                size: (file.size / (1024 * 1024)).toFixed(1) + " MB"
-            });
-
-            fileInput.value = '';
-            renderFolderFiles();
-            renderIssuesTable();
-        }
-
-        function removeDocFromFolder(idx) {
-            const issue = hotInfoIssues.find(i => i.id === activeFolderIssueId);
-            if (issue && issue.docs) {
-                issue.docs.splice(idx, 1);
-                renderFolderFiles();
-                renderIssuesTable();
-            }
-        }
-
-        function exportIssuesToExcel() {
-            const exportData = hotInfoIssues.map(item => ({
-                Sector: item.sector,
-                Source: item.source,
-                "Tender Brief": item.brief,
-                "Tender Source": item.tenderSource,
-                Price: item.price,
-                "Tender Date": item.tenderDate,
-                "Publishing Date": item.publishDate,
-                "Insurance Value": item.insuranceValue,
-                "Documents Count": item.docs ? item.docs.length : 0
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "HOT_Info_Tenders");
-            XLSX.writeFile(wb, `HOT_Info_Tenders_${new Date().toISOString().split('T')[0]}.xlsx`);
-        }
-
-        // ================= UTILITIES & MODALS =================
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-    </script>
-</body>
-</html>
+            
+            const filtered = hotIssues.filter(issue => {
+                if(selectedSector && issue.sectorId !== selectedSector) return false;
+                if(
