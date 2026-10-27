@@ -471,7 +471,7 @@ const K=(()=>{
       await sb.auth.signOut();return;
     }
     me=user;err('');
-    $('k-login').classList.add('hidden');$('k-app').classList.remove('hidden');$('k-who').textContent='Signed in as '+user.email;
+    $('k-login').classList.add('hidden');$('k-app').classList.remove('hidden');$('k-who').textContent='Signed in as '+user.email+' \u00b7 page version 27-Oct-b';
     cur=null;path=[];home();
   }
 
@@ -818,6 +818,8 @@ const K=(()=>{
     if(v==='dragover')box.classList.add('drop');else box.classList.remove('drop');
     if(v==='drop')uploadFiles(e.dataTransfer.files);
   }));
+  // A form the browser refuses to submit used to fail silently; now it says which field is the problem.
+  document.addEventListener('invalid',e=>{const t=e.target;toast('Cannot continue: please check "'+(t.name||t.id||'a field')+'" ('+(t.validationMessage||'invalid')+')',false)},true);
   return {start};
 })();
 
