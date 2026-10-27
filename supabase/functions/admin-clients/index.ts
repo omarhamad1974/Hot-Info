@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
   if (isAdmin !== true) return json({ error: "This account is not an admin." }, 403);
 
   const admin = createClient(url, service, { auth: { persistSession: false } });
-  let b: Record<string, string> = {};
+  let b: Record<string, string> = {};   // email, password, action ...
   try { b = await req.json(); } catch { /* empty body */ }
   const email = String(b.email ?? "").trim().toLowerCase();
   // The invite link may only return to the site the admin is using.
@@ -98,6 +98,29 @@ Deno.serve(async (req) => {
         const { error } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo });
         if (error) return json({ error: error.message }, 400);
         return json({ ok: true, kind: "invite" });
+      }
+
+      // Create an account with a password chosen by the admin (no invitation email). The user can change it later.
+      case "create": {
+        if (!EMAIL.test(email)) return json({ error: "Enter a valid email address." }, 400);
+        const pw = String(b.password ?? "");
+        if (pw.length < 8) return json({ error: "The password needs at least 8 characters." }, 400);
+        if (await findUser(email)) return json({ error: "This email already has an account." }, 409);
+        const { data, error } = await admin.auth.admin.createUser({ email, password: pw, email_confirm: true });
+        if (error) return json({ error: error.message }, 400);
+        return json({ ok: true, id: data.user?.id });
+      }
+
+      // Set or reset the password of an existing account.
+      case "setpassword": {
+        if (!EMAIL.test(email)) return json({ error: "Enter a valid email address." }, 400);
+        const pw = String(b.password ?? "");
+        if (pw.length < 8) return json({ error: "The password needs at least 8 characters." }, 400);
+        const u = await findUser(email);
+        if (!u) return json({ error: "No account for this email." }, 404);
+        const { error } = await admin.auth.admin.updateUserById(u.id, { password: pw, email_confirm: true });
+        if (error) return json({ error: error.message }, 400);
+        return json({ ok: true });
       }
 
       case "remove": {
