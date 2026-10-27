@@ -62,6 +62,7 @@ Client sign-in is no longer in the bar: clients open `my-stuff.html` directly, w
 
 ## Client area: users and subscriptions (in steps)
 - **Step 1 (done)**: run `supabase-step1-subscriptions.sql` once in Supabase (SQL Editor). In the admin, Client files > Users: create, edit and delete users (email, name, mobile, company), subscribe one or more sectors for 1 week, 1 year or 2 years from a start date you choose (the end date is calculated), and renew at any time: a new period can only start after the current one ends. Sectors can be added, renamed, deleted and filled with files and folders. Users see only their running sectors under **My files**, with the date it is available until.
+- **Passwords**: in New user you can type a password (or press Generate) instead of sending an invitation; the account is created ready to use. Edit user lets you set a new password later. Users change their own password with the key icon on the My files page. This needs the updated `admin-clients` function: run `supabase functions deploy admin-clients` again.
 - **Status filter** (Users tab): currently subscribed, ends in 5 days, ended, starts later, no subscription.
 - **Step 2 (next)**: the "renewal reminder" email for users whose subscription ends in 5 days.
 

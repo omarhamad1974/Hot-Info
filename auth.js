@@ -13,9 +13,10 @@
   const wrap=document.querySelector('header .wrap');
   if(wrap&&wrap.lastElementChild){const last=wrap.lastElementChild,w=document.createElement('div');w.className='flex items-center gap-2 md:gap-3';wrap.replaceChild(w,last);w.append(box,last)}
   // Sign-in lives behind the "My files" button in the bottom bar; the header only offers sign-out once signed in.
-  const paint=()=>{box.innerHTML=user?'<button class="auth-ico" data-a="out" aria-label="Sign out" title="Sign out"><i class="ph-light ph-sign-out"></i></button>':''};
+  const paint=()=>{box.innerHTML=user?'<button class="auth-ico" data-a="pw" aria-label="Change password" title="Change password"><i class="ph-light ph-key"></i></button><button class="auth-ico" data-a="out" aria-label="Sign out" title="Sign out"><i class="ph-light ph-sign-out"></i></button>':''};
   box.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;
     if(b.dataset.a==='login')open('login');
+    else if(b.dataset.a==='pw')open('newpw');
     else{await sb.auth.signOut();if(/my-stuff/.test(location.pathname))location.href='index.html'}});
 
   // Sign-in dialog

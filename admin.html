@@ -439,8 +439,8 @@ const K=(()=>{
   }
   const cleanFolder=n=>clean(n).replace(/\./g,'-');
 
-  async function fn(action,email){
-    const {data,error}=await sb.functions.invoke('admin-clients',{body:{action,email,redirectTo:redirect}});
+  async function fn(action,email,extra){
+    const {data,error}=await sb.functions.invoke('admin-clients',{body:{action,email,redirectTo:redirect,...(extra||{})}});
     if(error){
       let m=error.message,st=error.context&&error.context.status;
       try{const j=await error.context.json();m=j.error||j.message||m}catch{}
@@ -625,12 +625,12 @@ const K=(()=>{
   const userFields=(p,editing)=>`<label class="${fl}">Email<input name="email" type="email" required ${editing?'readonly':''} value="${esc(p.email||'')}" autocomplete="off" class="${mt} ${editing?'bg-gray-100':''}"></label>
     <label class="${fl}">Name<input name="full_name" maxlength="80" value="${esc(p.full_name||'')}" class="${mt}"></label>
     <label class="${fl}">Mobile number<input name="mobile" type="tel" maxlength="30" value="${esc(p.mobile||'')}" class="${mt}"></label>
-    <label class="${fl}">Company<input name="company" maxlength="80" value="${esc(p.company||'')}" class="${mt}"></label>`;
+    <label class="${fl}">Company<input name="company" maxlength="80" value="${esc(p.company||'')}" class="${mt}"></label>
+    <div><label class="${fl}">${editing?'New password':'Password'} <span class="font-normal text-gray-500">${editing?'(leave empty to keep the current one)':'(optional: leave empty to send an invitation email instead)'}</span><span class="flex gap-2 mt-1"><input name="password" type="text" minlength="8" maxlength="72" autocomplete="off" placeholder="At least 8 characters" class="${inp} font-mono"><button type="button" data-k="genpw" class="flex-shrink-0 text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 rounded-lg">Generate</button></span></label><p class="text-[11px] text-gray-500 mt-1">Share it with the user yourself. They can change it later with the key icon on the My files page.</p></div>`;
   function userDialog(uid){
     const r=uid?rowsFor().find(x=>x.id===uid):null,p=uid?{...(profiles[uid]||{}),email:r.email}:{};
     modal(`<h2 class="font-extrabold text-lg mb-3">${uid?'Edit user':'New user'}</h2><form data-k-form="user" data-u="${esc(uid||'')}" class="space-y-3">${userFields(p,!!uid)}
-      ${uid?'':'<p class="text-[11px] text-gray-500">An email invitation is sent so the user can set a password.</p>'}
-      <div class="flex justify-end gap-2 pt-1"><button type="button" data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button class="${btn1}">${uid?'Save':'Create user'}</button></div></form>`);
+            <div class="flex justify-end gap-2 pt-1"><button type="button" data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button class="${btn1}">${uid?'Save':'Create user'}</button></div></form>`);
   }
   async function saveProfile(uid,v){
     const r=await sb.from('client_profiles').upsert({user_id:uid,email:v.email,full_name:v.full_name||null,mobile:v.mobile||null,company:v.company||null,updated_at:new Date().toISOString()});
@@ -638,13 +638,14 @@ const K=(()=>{
   }
   async function createUser(v){ // invite + private folder + details; returns the new user's id
     if(noFn)throw new Error('Deploy the admin-clients function first (README, step 4).');
-    await fn('invite',v.email);
+    if(v.password)await fn('create',v.email,{password:v.password});else await fn('invite',v.email);
     await sb.storage.from(BUCKET).upload(`${v.email}/.keep`,new Blob(['']),{upsert:true,contentType:'text/plain'});
     const r=await fn('list');clients=r.clients||[];
     const c=clients.find(x=>x.email===v.email);if(!c)throw new Error('The user was invited but could not be found. Press Refresh.');
     await saveProfile(c.id,v);return c.id;
   }
-  const formVals=f=>({email:String(f.email.value||'').trim().toLowerCase(),full_name:f.full_name.value.trim(),mobile:f.mobile.value.trim(),company:f.company.value.trim()});
+  const formVals=f=>({email:String(f.email.value||'').trim().toLowerCase(),full_name:f.full_name.value.trim(),mobile:f.mobile.value.trim(),company:f.company.value.trim(),password:(f.password&&f.password.value||'').trim()});
+  const genPw=()=>{const a='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789',r=crypto.getRandomValues(new Uint32Array(12));return [...r].map(x=>a[x%a.length]).join('')};
 
   function subDialog(uid){
     const users=rowsFor().filter(r=>r.account);
@@ -738,6 +739,7 @@ const K=(()=>{
         else subDialog(t.dataset.u||'');
       }
       else if(k==='mclose')closeM();
+      else if(k==='genpw'){const i=t.closest('label').querySelector('input[name=password]');i.value=genPw();i.focus()}
       else if(k==='delper'){const p=periods.find(x=>x.id===t.dataset.id);
         if(p&&confirm(`Delete this subscription period?\n\n${sname(p.sector_id)}: ${fd(p.start_date)} to ${fd(p.end_date)}`)){const r=await sb.from('subscription_periods').delete().eq('id',p.id);if(r.error)throw r.error;toast('Subscription period deleted');await home()}}
       else if(k==='rensector'){const x=sectors.find(v=>v.id===t.dataset.s),nm=prompt('New name for this sector',x.name);
@@ -763,7 +765,11 @@ const K=(()=>{
     const b0=f.querySelector('button:not([type=button])');
     if(f.dataset.kForm==='user'){
       const v=formVals(f),uid=f.dataset.u;b0.disabled=true;
-      try{if(uid){await saveProfile(uid,v);toast('User saved')}else{await createUser(v);toast('User created and invited')}closeM();await home()}
+      try{
+        if(v.password&&v.password.length<8)throw new Error('The password needs at least 8 characters.');
+        if(uid){await saveProfile(uid,v);if(v.password)await fn('setpassword',v.email,{password:v.password});toast(v.password?'User saved and password changed':'User saved')}
+        else{await createUser(v);toast(v.password?'User created with the password you set':'User created and invited')}
+        closeM();await home()}
       catch(x){toast(x.message==='NOFN'?'The admin-clients function is not deployed yet (README, step 4).':x.message,false)}finally{b0.disabled=false}
       return;
     }
@@ -779,7 +785,8 @@ const K=(()=>{
         const clash=chosen.filter(s=>mine.some(p=>p.sector_id===s&&!(end<p.start_date||start>p.end_date)));
         if(clash.length)throw new Error(`${clash.map(sname).join(', ')}: already subscribed during these dates. Choose a later start date.`);
         if(uid==='__new'){
-          const nf={email:f.querySelector('[data-new]')};const v={email:String(nf.email.value||'').trim().toLowerCase(),full_name:f.full_name.value.trim(),mobile:f.mobile.value.trim(),company:f.company.value.trim()};
+          const nf={email:f.querySelector('[data-new]')};const v={email:String(nf.email.value||'').trim().toLowerCase(),full_name:f.full_name.value.trim(),mobile:f.mobile.value.trim(),company:f.company.value.trim(),password:(f.password&&f.password.value||'').trim()};
+          if(v.password&&v.password.length<8)throw new Error('The password needs at least 8 characters.');
           if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email))throw new Error('Enter a valid email for the new user.');
           uid=await createUser(v);
         }
