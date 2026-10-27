@@ -60,6 +60,11 @@ Client sign-in is no longer in the bar: clients open `my-stuff.html` directly, w
 - Shared **sectors** (starter: Construction, Engineering) live in `sectors/<id>/...`. A client reads a sector only while subscribed; any number of subscriptions per client. Manage them in admin: **Client files, Sectors** tab (libraries) and the sector buttons under each client (subscriptions).
 - Only accounts listed in `public.admins` can upload, replace or delete. To add another admin, create the user in the dashboard and run `insert into public.admins (user_id,email) select id,email from auth.users where email='them@khip.com';`
 
+## Client area: users and subscriptions (in steps)
+- **Step 1 (done)**: run `supabase-step1-subscriptions.sql` once in Supabase (SQL Editor). In the admin, Client files > Users: create, edit and delete users (email, name, mobile, company), subscribe one or more sectors for 1 week, 1 year or 2 years from a start date you choose (the end date is calculated), and renew at any time: a new period can only start after the current one ends. Sectors can be added, renamed, deleted and filled with files and folders. Users see only their running sectors under **My files**, with the date it is available until.
+- **Status filter** (Users tab): currently subscribed, ends in 5 days, ended, starts later, no subscription.
+- **Step 2 (next)**: the "renewal reminder" email for users whose subscription ends in 5 days.
+
 ## What changed in this version
 - About page: the Contact card now includes a small Google Maps map of the office.
 - Image uploads in the admin: carousel (about 15:8), news (2:1) and team (square) photos are resized and center-cropped to their frame before upload. The pages also show every image with "cover" fitting, so older images fill their frames too.

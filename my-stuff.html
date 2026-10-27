@@ -57,7 +57,11 @@ async function show(){
   if(error)return note('We could not load your files. Please refresh and try again.');
   // Home level: add a card for every sector this client subscribes to (RLS returns only theirs)
   let cards=[];
-  if(!sec&&!path.length){const r=await sb.from('sectors').select('id,name').order('name');if(!r.error)cards=(r.data||[]).map(x=>({name:x.name,sector:x.id,id:null}))}
+  if(!sec&&!path.length){
+    const [r,pr]=await Promise.all([sb.from('sectors').select('id,name').order('name'),sb.from('subscription_periods').select('sector_id,start_date,end_date')]);
+    const t=new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'}),until={};
+    (pr.data||[]).forEach(p=>{if(t>=p.start_date&&t<=p.end_date&&(!until[p.sector_id]||p.end_date>until[p.sector_id]))until[p.sector_id]=p.end_date});
+    if(!r.error)cards=(r.data||[]).map(x=>({name:x.name,sector:x.id,id:null,until:until[x.id]}))}
   $('crumb').innerHTML=`<button data-home class="underline underline-offset-4">My files</button>`+(sec?`<span>/</span><button data-up="-1" class="underline underline-offset-4">${esc(sec.name)}</button>`:'')+path.map((p,i)=>`<span>/</span><button data-up="${i}" class="underline underline-offset-4">${esc(p)}</button>`).join('');
   all=cards.concat((data||[]).filter(f=>!f.name.startsWith('.')));
   $('q').value='';paint();
@@ -69,7 +73,7 @@ function paint(){
   if(!all.length)return note(sec?'No documents in this sector yet. New material appears here as soon as it is published.':'No files here yet. We will add your documents as soon as they are ready.');
   if(!items.length)return note('No file matches your search.');
   $('files').innerHTML=items.map((f,i)=>{
-    if(f.sector)return `<button data-sec="${esc(f.sector)}" data-name="${esc(f.name)}" class="card p-4 flex items-center gap-4 text-left border-brand-600/30"><i class="ph-light ph-stack text-3xl text-brand-600"></i><span class="flex-1"><span class="block font-display text-xl font-semibold text-title">${esc(f.name)}</span><span class="block text-xs text-stone-500">Sector library</span></span><i class="ph-light ph-caret-right text-stone-400"></i></button>`;
+    if(f.sector)return `<button data-sec="${esc(f.sector)}" data-name="${esc(f.name)}" class="card p-4 flex items-center gap-4 text-left border-brand-600/30"><i class="ph-light ph-stack text-3xl text-brand-600"></i><span class="flex-1"><span class="block font-display text-xl font-semibold text-title">${esc(f.name)}</span><span class="block text-xs text-stone-500">Sector library${f.until?` &middot; available until ${new Date(f.until+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})}`:''}</span></span><i class="ph-light ph-caret-right text-stone-400"></i></button>`;
     if(f.id===null)return `<button data-open="${esc(f.name)}" class="card p-4 flex items-center gap-4 text-left"><i class="ph-light ph-folder text-3xl text-gold"></i><span class="flex-1 font-display text-xl font-semibold text-title">${esc(f.name)}</span><i class="ph-light ph-caret-right text-stone-400"></i></button>`;
     const ext=f.name.split('.').pop().toLowerCase(),[ic,co]=X[ext]||['ph-file','text-stone-600'],m=f.metadata||{},d=f.updated_at||f.created_at;
     return `<div class="card p-4 flex items-center gap-4"><i class="ph-light ${ic} text-4xl ${co}"></i><div class="flex-1 min-w-0"><p class="font-medium text-ink truncate">${esc(f.name)}</p><p class="text-xs text-stone-500">${m.size?size(m.size)+' &middot; ':''}${d?new Date(d).toLocaleDateString():''}</p></div><button data-dl="${esc(f.name)}" class="text-sm bg-ink hover:bg-stone-800 text-white px-5 py-2 rounded-full transition whitespace-nowrap"><i class="ph-light ph-download-simple"></i> Download</button></div>`}).join('');

@@ -106,6 +106,8 @@ details[open]>summary .chev{transform:rotate(90deg)}
   </section>
 </div>
 
+<div id="k-modal" class="hidden fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-3"><div id="k-modal-box" role="dialog" aria-modal="true" class="bg-white rounded-2xl w-full max-w-md max-h-[92vh] overflow-y-auto p-5 shadow-2xl"></div></div>
+
 <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 hidden max-w-sm px-4 py-2.5 rounded-xl text-sm font-bold shadow-xl text-white" role="status"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -425,7 +427,7 @@ if(tk&&$('f-o').value){$('f-t').value=tk;$('f-s').checked=true;connect({o:$('f-o
 const K=(()=>{
   const C=window.KHIP_SUPABASE||{},BUCKET=C.bucket||'client-files';
   const configured=!!(C.url&&C.anonKey&&!/YOUR-/.test(C.url)&&window.supabase);
-  let sb=null,me=null,clients=[],folders=[],noFn=false,cur=null,curLabel='',path=[],started=false,sectors=[],subs={},sectErr=false,tabK='clients',recovery=/type=recovery/.test(location.hash);
+  let sb=null,me=null,clients=[],folders=[],noFn=false,cur=null,curLabel='',path=[],started=false,sectors=[],sectErr=false,tabK='clients',recovery=/type=recovery/.test(location.hash);
   const redirect=location.origin+location.pathname.replace(/[^/]*$/,'')+'my-stuff.html';
   const adminUrl=location.origin+location.pathname+'#clients';
   const main=()=>$('k-main');
@@ -502,64 +504,110 @@ const K=(()=>{
     }catch(x){err(x.message)}finally{btn.disabled=false}
   };
 
-  // ---- client list ----
+  // ---- users, sectors, subscriptions ----
+  let periods=[],profiles={},subErr=false,stFilter='all',filter='';
+  const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
+  const addDays=(d,n)=>{const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
+  const fd=d=>new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+  const DUR=[['1 week','1 week'],['1 year','1 year'],['2 years','2 years']];
+  // end date = start + duration - 1 day (same rule as the database trigger)
+  function endOf(start,dur){
+    if(dur==='1 week')return addDays(start,6);
+    const x=new Date(start+'T00:00:00Z'),m=x.getUTCMonth();
+    x.setUTCFullYear(x.getUTCFullYear()+(dur==='2 years'?2:1));if(x.getUTCMonth()!==m)x.setUTCDate(0);
+    return addDays(x.toISOString().slice(0,10),-1);
+  }
+  const pstate=(p,t)=>t<p.start_date?'upcoming':t>p.end_date?'ended':'active';
+  const sname=id=>(sectors.find(x=>x.id===id)||{name:id}).name;
+  // Overall state of one user: none | active | soon (an active sector ends within 5 days, not renewed) | upcoming | ended
+  function ustate(uid){
+    const t=today(),ps=periods.filter(p=>p.user_id===uid);
+    if(!ps.length)return {k:'none'};
+    const act=ps.filter(p=>pstate(p,t)==='active');
+    if(act.length){
+      let soon=null;
+      for(const p of act){
+        const last=ps.filter(q=>q.sector_id===p.sector_id).map(q=>q.end_date).sort().pop();
+        const days=Math.round((Date.parse(last)-Date.parse(t))/864e5);
+        if(days<=5&&(soon===null||days<soon))soon=days;
+      }
+      return soon!==null?{k:'soon',days:soon}:{k:'active'};
+    }
+    return {k:ps.some(p=>pstate(p,t)==='upcoming')?'upcoming':'ended'};
+  }
+  const pill=(c,t)=>`<span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${c}">${t}</span>`;
+  const ubadge=s=>({none:pill('bg-gray-100 text-gray-600','No subscription'),active:pill('bg-emerald-100 text-emerald-800','Currently subscribed'),
+    soon:pill('bg-amber-100 text-amber-800',s.days<=0?'Ends today':`Ends in ${s.days} day${s.days===1?'':'s'}`),
+    upcoming:pill('bg-blue-100 text-blue-800','Starts later'),ended:pill('bg-red-100 text-red-700','Ended')}[s.k]);
+
   async function load(){
-    main().innerHTML='<p class="text-sm text-gray-500 p-4">Loading clients...</p>';
+    main().innerHTML='<p class="text-sm text-gray-500 p-4">Loading...</p>';
     noFn=false;clients=[];folders=[];
-    const [fr,sr,br]=await Promise.all([
+    const [fr,sr,br,pr]=await Promise.all([
       sb.storage.from(BUCKET).list('',{limit:1000,sortBy:{column:'name',order:'asc'}}),
       sb.from('sectors').select('id,name').order('name'),
-      sb.from('subscriptions').select('user_id,sector_id'),
+      sb.from('subscription_periods').select('id,user_id,sector_id,duration,start_date,end_date,reminder_sent_at'),
+      sb.from('client_profiles').select('user_id,email,full_name,mobile,company'),
       fn('list').then(r=>{clients=r.clients||[]}).catch(e=>{if(e.message==='NOFN')noFn=true;else toast(e.message,false)})
     ]);
     folders=(fr.data||[]).filter(f=>f.id===null&&f.name!=='sectors').map(f=>f.name);
-    sectErr=!!(sr.error||br.error);sectors=sectErr?[]:(sr.data||[]);subs={};
-    (br.data||[]).forEach(r=>(subs[r.user_id]=subs[r.user_id]||new Set()).add(r.sector_id));
+    sectErr=!!sr.error;sectors=sectErr?[]:(sr.data||[]);
+    subErr=!!(br.error||pr.error);periods=subErr?[]:(br.data||[]);
+    profiles={};(pr.data||[]).forEach(x=>profiles[x.user_id]=x);
     if(fr.error)toast('Could not read the bucket: '+fr.error.message,false);
   }
   const rowsFor=()=>{
     const m=new Map();
     clients.forEach(c=>m.set(c.email,{id:c.id,email:c.email,account:true,confirmed:c.confirmed,last:c.last_sign_in_at,folder:false}));
     folders.forEach(n=>{const k=n.toLowerCase(),r=m.get(k);if(r)r.folder=true;else m.set(k,{email:k,account:false,folder:true})});
-    return [...m.values()].sort((a,b)=>a.email.localeCompare(b.email));
+    return [...m.values()].sort((a,b)=>(label(a)).localeCompare(label(b)));
   };
-  const badge=r=>!r.account?'<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Folder only</span>'
-    :r.confirmed?'<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Active</span>'
-    :'<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Invite pending</span>';
-  let filter='';
-  async function home(){
-    cur=null;path=[];await load();paintHome();
-  }
+  const label=r=>((profiles[r.id]||{}).full_name||r.email);
+  const badge=r=>!r.account?pill('bg-gray-100 text-gray-600','Folder only')
+    :r.confirmed?pill('bg-emerald-50 text-emerald-700','Account active'):pill('bg-amber-100 text-amber-800','Invite pending');
+  async function home(){cur=null;path=[];await load();paintHome()}
   const paintHome=()=>tabK==='sectors'?paintSectors():paintClients();
-  const nav=()=>`<div class="flex gap-1.5">${[['clients','Clients','fa-users'],['sectors','Sectors','fa-layer-group']].map(([k,l,i])=>`<button data-k="tab" data-t="${k}" class="text-xs font-bold px-4 py-2 rounded-xl ${k===tabK?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>`
-    +(sectErr?'<div class="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl p-4"><b>Sectors are not set up yet.</b> Run the latest <code>supabase-setup.sql</code> in the Supabase SQL Editor (it is safe to run again).</div>':'');
-  const chips=r=>r.account&&sectors.length?'<div class="basis-full flex flex-wrap items-center gap-1.5 pt-2 border-t border-gray-100"><span class="text-[11px] text-gray-500 mr-1">Sectors</span>'+sectors.map(x=>{const on=subs[r.id]&&subs[r.id].has(x.id);return `<button data-k="sub" data-u="${esc(r.id)}" data-s="${esc(x.id)}" aria-pressed="${!!on}" class="text-[11px] font-bold px-2.5 py-1 rounded-full border ${on?'bg-brand-600 border-brand-600 text-white':'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}">${on?'<i class="fas fa-check"></i> ':''}${esc(x.name)}</button>`}).join('')+'</div>':'';
+  const warn=(t)=>`<div class="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl p-4">${t}</div>`;
+  const nav=()=>`<div class="flex gap-1.5">${[['clients','Users','fa-users'],['sectors','Sectors','fa-layer-group']].map(([k,l,i])=>`<button data-k="tab" data-t="${k}" class="text-xs font-bold px-4 py-2 rounded-xl ${k===tabK?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>`
+    +(sectErr?warn('<b>Sectors are not set up yet.</b> Run <code>supabase-setup.sql</code> in the Supabase SQL Editor (it is safe to run again).'):'')
+    +(!sectErr&&subErr?warn('<b>Subscriptions are not set up yet.</b> Run <code>supabase-step1-subscriptions.sql</code> in the Supabase SQL Editor (it is safe to run again), then press Refresh.'):'');
+  const btn1='text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap';
+  const STF=[['all','All users'],['active','Currently subscribed'],['soon','Subscription ends in 5 days'],['ended','Subscription ended'],['upcoming','Starts later'],['none','No subscription']];
+  const stMatch=(r,f)=>{if(f==='all')return true;if(!r.account)return f==='none';const k=ustate(r.id).k;return f==='active'?(k==='active'||k==='soon'):k===f};
+  const pills=r=>{
+    if(!r.account)return '';
+    const t=today(),ps=periods.filter(p=>p.user_id===r.id).sort((a,b)=>b.start_date.localeCompare(a.start_date));
+    if(!ps.length)return '';
+    return '<div class="basis-full flex flex-wrap items-center gap-1.5 pt-2 border-t border-gray-100">'+ps.map(p=>{const s=pstate(p,t),c={active:'bg-emerald-50 border-emerald-300 text-emerald-900',upcoming:'bg-blue-50 border-blue-300 text-blue-900',ended:'bg-gray-50 border-gray-200 text-gray-500'}[s];
+      return `<span class="text-[11px] font-bold pl-2.5 pr-1 py-1 rounded-full border ${c} inline-flex items-center gap-1.5">${esc(sname(p.sector_id))} <span class="font-normal">${fd(p.start_date)} &rarr; ${fd(p.end_date)}</span><button data-k="delper" data-id="${esc(p.id)}" class="w-5 h-5 rounded-full hover:bg-black/10" aria-label="Delete this subscription period" title="Delete this period"><i class="fas fa-xmark text-[10px]"></i></button></span>`}).join('')+'</div>';
+  };
   function paintClients(){
-    const rows=rowsFor().filter(r=>!filter||r.email.includes(filter.toLowerCase()));
-    main().innerHTML=nav()+
-    (noFn?`<div class="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl p-4"><b>Account tools are not deployed yet.</b> You can still manage files in existing folders. To invite clients from here, deploy the <code>admin-clients</code> function (see README.md, step 4).</div>`:'')
-    +`<form data-k-form="invite" class="bg-white p-4 rounded-2xl border border-gray-200 space-y-2"><label class="block text-xs font-bold">Invite a new client<span class="block font-normal text-gray-500">They receive an email to set a password. A private folder named after their email is created.</span></label>
-      <div class="flex gap-2"><input name="email" type="email" required placeholder="client@company.com" autocomplete="off" class="${inp}"><button class="flex-shrink-0 text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] disabled:opacity-60 font-bold px-4 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-paper-plane"></i> ${noFn?'Create folder':'Send invite'}</button></div></form>`
-    +`<div class="flex items-center justify-between pt-2"><h2 class="font-extrabold text-lg">Clients <span class="text-sm font-normal text-gray-500">(${rows.length})</span></h2></div>`
-    +(rowsFor().length>5?`<input id="k-filter" type="search" placeholder="Search clients" aria-label="Search clients" value="${esc(filter)}" class="${inp}">`:'')
-    +(rows.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No clients yet. Invite the first one above.</p>')
-    +rows.map(r=>`<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-      <button data-k="open" data-e="${esc(r.email)}" class="flex-1 min-w-0 text-left"><span class="block font-bold text-sm truncate">${esc(r.email)}</span><span class="flex items-center gap-2 mt-0.5">${badge(r)}<span class="text-[11px] text-gray-500">${r.last?'Last sign-in '+new Date(r.last).toLocaleDateString():''}</span></span></button>
+    const q=filter.toLowerCase(),all=rowsFor();
+    const rows=all.filter(r=>{const p=profiles[r.id]||{};return (!q||[r.email,p.full_name,p.company,p.mobile].some(v=>String(v||'').toLowerCase().includes(q)))&&stMatch(r,stFilter)});
+    main().innerHTML=nav()
+    +(noFn?warn('<b>Account tools are not deployed yet.</b> You can still manage files in existing folders. To create users from here, deploy the <code>admin-clients</code> function (README, step 4).'):'')
+    +`<div class="flex flex-wrap gap-2"><button data-k="newuser" class="${btn1}"><i class="fas fa-user-plus"></i> New user</button><button data-k="subscribe" class="${btn1}" ${sectors.length?'':'disabled'}><i class="fas fa-calendar-plus"></i> Subscribe a user</button></div>`
+    +`<div class="flex items-center justify-between pt-2"><h2 class="font-extrabold text-lg">Users <span class="text-sm font-normal text-gray-500">(${rows.length}${rows.length!==all.length?' of '+all.length:''})</span></h2></div>`
+    +`<div class="flex flex-wrap gap-2"><input id="k-filter" type="search" placeholder="Search name, email, company or mobile" aria-label="Search users" value="${esc(filter)}" class="${inp} flex-1 min-w-[12rem]"><select id="k-st" aria-label="Filter by subscription status" class="${inp} !w-auto">${STF.map(([v,l])=>`<option value="${v}" ${v===stFilter?'selected':''}>${l}</option>`).join('')}</select></div>`
+    +(rows.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No users match.</p>')
+    +rows.map(r=>{const p=profiles[r.id]||{},s=r.account&&!subErr?ustate(r.id):null;
+      return `<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+      <button data-k="open" data-e="${esc(r.email)}" class="flex-1 min-w-0 text-left"><span class="block font-bold text-sm truncate">${esc(label(r))}</span><span class="block text-[11px] text-gray-500 truncate">${p.full_name?esc(r.email):''}${p.company?(p.full_name?' &middot; ':'')+esc(p.company):''}${p.mobile?' &middot; '+esc(p.mobile):''}</span><span class="flex flex-wrap items-center gap-1.5 mt-1">${badge(r)}${s?ubadge(s):''}</span></button>
       <div class="flex items-center gap-1.5">
-        <button data-k="open" data-e="${esc(r.email)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-folder-open"></i> Files</button>
-        ${r.account?`<button data-k="resend" data-e="${esc(r.email)}" data-c="${r.confirmed?1:0}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-lg" title="${r.confirmed?'Send a password-reset email':'Send the invite again'}"><i class="fas fa-envelope"></i></button><button data-k="remove" data-e="${esc(r.email)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Remove account" title="Remove account"><i class="fas fa-user-xmark text-xs"></i></button>`
+        <button data-k="open" data-e="${esc(r.email)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg" title="Private folder"><i class="fas fa-folder-open"></i> Files</button>
+        ${r.account?`<button data-k="subscribe" data-u="${esc(r.id)}" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-3 py-2 rounded-lg" ${sectors.length&&!subErr?'':'disabled'}><i class="fas fa-calendar-plus"></i> Subscribe</button><button data-k="edituser" data-u="${esc(r.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Edit user" title="Edit details"><i class="fas fa-pen text-xs"></i></button><button data-k="resend" data-e="${esc(r.email)}" data-c="${r.confirmed?1:0}" class="w-8 h-8 rounded-lg bg-gray-100" title="${r.confirmed?'Send a password-reset email':'Send the invite again'}" aria-label="Send email"><i class="fas fa-envelope text-xs"></i></button><button data-k="remove" data-e="${esc(r.email)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete user" title="Delete user"><i class="fas fa-user-xmark text-xs"></i></button>`
         :(noFn?'':`<button data-k="invite-folder" data-e="${esc(r.email)}" class="text-xs bg-[#f3ecdc] text-[#7a6540] hover:bg-[#e9dec4] font-bold px-3 py-2 rounded-lg">Invite</button>`)}
-      </div>${chips(r)}</div>`).join('');
+      </div>${pills(r)}</div>`}).join('');
   }
   const slug=n=>String(n).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
   function paintSectors(){
-    const count=id=>Object.values(subs).filter(x=>x.has(id)).length;
+    const t=today(),count=id=>new Set(periods.filter(p=>p.sector_id===id&&pstate(p,t)==='active').map(p=>p.user_id)).size;
     main().innerHTML=nav()
-    +`<form data-k-form="sector" class="bg-white p-4 rounded-2xl border border-gray-200 space-y-2"><label class="block text-xs font-bold">Add a sector<span class="block font-normal text-gray-500">A shared library. Everything you upload to it is visible to every client subscribed to that sector. Tick sectors per client on the Clients tab.</span></label>
-      <div class="flex gap-2"><input name="name" required maxlength="40" placeholder="e.g. Construction" autocomplete="off" class="${inp}"><button class="flex-shrink-0 text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] disabled:opacity-60 font-bold px-4 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-plus"></i> Add sector</button></div></form>`
+    +`<form data-k-form="sector" class="bg-white p-4 rounded-2xl border border-gray-200 space-y-2"><label class="block text-xs font-bold">Add a sector<span class="block font-normal text-gray-500">A shared library. Everything you upload to it is visible to every user whose subscription to that sector is currently running.</span></label>
+      <div class="flex gap-2"><input name="name" required maxlength="40" placeholder="e.g. Construction" autocomplete="off" class="${inp}"><button class="flex-shrink-0 ${btn1}"><i class="fas fa-plus"></i> Add sector</button></div></form>`
     +`<h2 class="font-extrabold text-lg pt-2">Sectors <span class="text-sm font-normal text-gray-500">(${sectors.length})</span></h2>`
     +(sectors.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No sectors yet.</p>')
-    +sectors.map(x=>`<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex items-center gap-3"><i class="fas fa-layer-group text-brand-600"></i><div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${esc(x.name)}</p><p class="text-[11px] text-gray-500">${count(x.id)} subscriber${count(x.id)===1?'':'s'} &middot; folder <code>sectors/${esc(x.id)}</code></p></div><button data-k="opensector" data-s="${esc(x.id)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-folder-open"></i> Files</button><button data-k="delsector" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete sector"><i class="fas fa-trash text-xs"></i></button></div>`).join('');
+    +sectors.map(x=>`<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex items-center gap-3"><i class="fas fa-layer-group text-brand-600"></i><div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${esc(x.name)}</p><p class="text-[11px] text-gray-500">${count(x.id)} current subscriber${count(x.id)===1?'':'s'} &middot; folder <code>sectors/${esc(x.id)}</code></p></div><button data-k="opensector" data-s="${esc(x.id)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-folder-open"></i> Files</button><button data-k="rensector" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Rename sector" title="Rename"><i class="fas fa-pen text-xs"></i></button><button data-k="delsector" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete sector"><i class="fas fa-trash text-xs"></i></button></div>`).join('');
   }
   async function invite(email,btn){
     email=email.trim().toLowerCase();btn&&(btn.disabled=true);
@@ -570,6 +618,64 @@ const K=(()=>{
       if(noFn)toast('Folder created for '+email+'. Create their login in the Supabase dashboard.');
       await home();
     }catch(e){toast(e.message,false)}finally{btn&&(btn.disabled=false)}
+  }
+
+  // ---- pop-up dialogs ----
+  const modal=h=>{$('k-modal-box').innerHTML=h;$('k-modal').classList.remove('hidden');const i=$('k-modal-box').querySelector('input:not([readonly]),select');i&&i.focus()};
+  const closeM=()=>$('k-modal').classList.add('hidden');
+  const fl='block text-xs font-bold',mt=`${inp} mt-1`;
+  const userFields=(p,editing)=>`<label class="${fl}">Email<input name="email" type="email" required ${editing?'readonly':''} value="${esc(p.email||'')}" autocomplete="off" class="${mt} ${editing?'bg-gray-100':''}"></label>
+    <label class="${fl}">Name<input name="full_name" maxlength="80" value="${esc(p.full_name||'')}" class="${mt}"></label>
+    <label class="${fl}">Mobile number<input name="mobile" type="tel" maxlength="30" value="${esc(p.mobile||'')}" class="${mt}"></label>
+    <label class="${fl}">Company<input name="company" maxlength="80" value="${esc(p.company||'')}" class="${mt}"></label>`;
+  function userDialog(uid){
+    const r=uid?rowsFor().find(x=>x.id===uid):null,p=uid?{...(profiles[uid]||{}),email:r.email}:{};
+    modal(`<h2 class="font-extrabold text-lg mb-3">${uid?'Edit user':'New user'}</h2><form data-k-form="user" data-u="${esc(uid||'')}" class="space-y-3">${userFields(p,!!uid)}
+      ${uid?'':'<p class="text-[11px] text-gray-500">An email invitation is sent so the user can set a password.</p>'}
+      <div class="flex justify-end gap-2 pt-1"><button type="button" data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button class="${btn1}">${uid?'Save':'Create user'}</button></div></form>`);
+  }
+  async function saveProfile(uid,v){
+    const r=await sb.from('client_profiles').upsert({user_id:uid,email:v.email,full_name:v.full_name||null,mobile:v.mobile||null,company:v.company||null,updated_at:new Date().toISOString()});
+    if(r.error)throw r.error;
+  }
+  async function createUser(v){ // invite + private folder + details; returns the new user's id
+    if(noFn)throw new Error('Deploy the admin-clients function first (README, step 4).');
+    await fn('invite',v.email);
+    await sb.storage.from(BUCKET).upload(`${v.email}/.keep`,new Blob(['']),{upsert:true,contentType:'text/plain'});
+    const r=await fn('list');clients=r.clients||[];
+    const c=clients.find(x=>x.email===v.email);if(!c)throw new Error('The user was invited but could not be found. Press Refresh.');
+    await saveProfile(c.id,v);return c.id;
+  }
+  const formVals=f=>({email:String(f.email.value||'').trim().toLowerCase(),full_name:f.full_name.value.trim(),mobile:f.mobile.value.trim(),company:f.company.value.trim()});
+
+  function subDialog(uid){
+    const users=rowsFor().filter(r=>r.account);
+    modal(`<h2 class="font-extrabold text-lg mb-3">Subscribe a user</h2><form data-k-form="subscribe" class="space-y-3">
+      <label class="${fl}">User<select name="user" class="${mt}">${uid?'':'<option value="">Select a user...</option>'}${users.map(u=>`<option value="${esc(u.id)}" ${u.id===uid?'selected':''}>${esc(label(u))}${(profiles[u.id]||{}).full_name?' ('+esc(u.email)+')':''}</option>`).join('')}${noFn?'':'<option value="__new">+ New user...</option>'}</select></label>
+      <div id="sub-new" class="hidden space-y-3 bg-gray-50 border border-gray-200 rounded-xl p-3">${userFields({},false).replace('name="email"','name="email" data-new="1"')}</div>
+      <fieldset><legend class="text-xs font-bold mb-1">Sectors</legend><div class="space-y-1.5">${sectors.map(s=>`<label class="flex items-center gap-2 text-sm"><input type="checkbox" name="sec" value="${esc(s.id)}" class="w-4 h-4"><span>${esc(s.name)}</span><span data-cov="${esc(s.id)}" class="text-[11px] text-gray-500 ml-auto"></span></label>`).join('')}</div></fieldset>
+      <div><p class="text-xs font-bold mb-1">Duration</p><div class="flex gap-2">${DUR.map(([v,l])=>`<label class="flex-1 text-center text-xs font-bold border border-gray-300 rounded-xl py-2.5 cursor-pointer has-[:checked]:bg-gray-900 has-[:checked]:text-white has-[:checked]:border-gray-900"><input type="radio" name="dur" value="${v}" class="sr-only" ${v==='1 year'?'checked':''}>${l}</label>`).join('')}</div></div>
+      <div class="grid grid-cols-2 gap-3"><label class="${fl}">Start date<input type="date" name="start" value="${today()}" required class="${mt}"></label><label class="${fl}">End date (calculated)<input name="end" readonly class="${mt} bg-gray-100"></label></div>
+      <p id="sub-hint" class="text-[11px] text-gray-600 min-h-[1rem]"></p>
+      <div class="flex justify-end gap-2 pt-1"><button type="button" data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button class="${btn1}">Subscribe</button></div></form>`);
+    subRefresh(true);
+  }
+  // Updates the end date, the coverage notes and (until you pick a date yourself) suggests the first free start date
+  function subRefresh(first){
+    const f=document.querySelector('[data-k-form="subscribe"]');if(!f)return;
+    const uid=f.user.value,isNew=uid==='__new',t=today();
+    $('sub-new').classList.toggle('hidden',!isNew);
+    const mine=periods.filter(p=>p.user_id===uid),chosen=[...f.querySelectorAll('[name=sec]:checked')].map(x=>x.value);
+    f.querySelectorAll('[data-cov]').forEach(el=>{
+      const last=mine.filter(p=>p.sector_id===el.dataset.cov&&p.end_date>=t).map(p=>p.end_date).sort().pop();
+      el.textContent=last?'covered until '+fd(last):'';
+    });
+    let min=t;chosen.forEach(s=>{const last=mine.filter(p=>p.sector_id===s).map(p=>p.end_date).sort().pop();if(last&&addDays(last,1)>min)min=addDays(last,1)});
+    if(!f.start.dataset.touched||first)f.start.value=min;
+    const dur=f.dur.value,end=f.start.value?endOf(f.start.value,dur):'';f.end.value=end?fd(end):'';f.end.dataset.iso=end;
+    const clash=chosen.filter(s=>mine.some(p=>p.sector_id===s&&!(end<p.start_date||f.start.value>p.end_date)));
+    $('sub-hint').textContent=clash.length?`${clash.map(sname).join(', ')}: already subscribed during these dates. A renewal can start on ${fd(min)} or later.`:(chosen.length&&min>t?`Renewal: the earliest free start date for the chosen sectors is ${fd(min)}.`:'');
+    $('sub-hint').className='text-[11px] min-h-[1rem] '+(clash.length?'text-red-700 font-bold':'text-gray-600');
   }
 
   // ---- file browser ----
@@ -626,12 +732,14 @@ const K=(()=>{
       else if(k==='open'){tabK='clients';await openRoot(em,em)}
       else if(k==='tab'){tabK=t.dataset.t;paintHome()}
       else if(k==='opensector'){const x=sectors.find(v=>v.id===t.dataset.s);tabK='sectors';await openRoot('sectors/'+x.id,x.name)}
-      else if(k==='sub'){
-        const u=t.dataset.u,sid=t.dataset.s,on=subs[u]&&subs[u].has(sid);t.disabled=true;
-        const r=on?await sb.from('subscriptions').delete().eq('user_id',u).eq('sector_id',sid):await sb.from('subscriptions').insert({user_id:u,sector_id:sid});
-        if(r.error)throw r.error;
-        (subs[u]=subs[u]||new Set())[on?'delete':'add'](sid);paintHome();
-      }
+      else if(k==='newuser')userDialog('');
+      else if(k==='edituser')userDialog(t.dataset.u);
+      else if(k==='subscribe')subDialog(t.dataset.u||'');
+      else if(k==='mclose')closeM();
+      else if(k==='delper'){const p=periods.find(x=>x.id===t.dataset.id);
+        if(p&&confirm(`Delete this subscription period?\n\n${sname(p.sector_id)}: ${fd(p.start_date)} to ${fd(p.end_date)}`)){const r=await sb.from('subscription_periods').delete().eq('id',p.id);if(r.error)throw r.error;toast('Subscription period deleted');await home()}}
+      else if(k==='rensector'){const x=sectors.find(v=>v.id===t.dataset.s),nm=prompt('New name for this sector',x.name);
+        if(nm&&nm.trim()&&nm.trim()!==x.name){const r=await sb.from('sectors').update({name:nm.trim().slice(0,40)}).eq('id',x.id);if(r.error)throw r.error;toast('Sector renamed');await home()}}
       else if(k==='delsector'){const x=sectors.find(v=>v.id===t.dataset.s);
         if(confirm(`Delete the sector "${x.name}"?\n\nIts subscriptions and ALL files inside it are removed. This cannot be undone.`)){
           await removePaths(await listAll('sectors/'+x.id));
@@ -640,7 +748,7 @@ const K=(()=>{
       else if(k==='in'){path.push(n);await files()}
       else if(k==='invite-folder')await invite(em,t);
       else if(k==='resend'){t.disabled=true;const r=await fn('resend',em);toast(r.kind==='reset'?'Password-reset email sent to '+em:'New invite sent to '+em);t.disabled=false}
-      else if(k==='remove'){if(confirm(`Remove the account for ${em}?\n\nThey will no longer be able to sign in. Their files stay in the folder until you delete them.`)){await fn('remove',em);toast('Account removed');await home()}}
+      else if(k==='remove'){if(confirm(`Delete the user ${em}?\n\nTheir account, details and subscriptions are removed and they can no longer sign in. Files in their private folder stay until you delete them.`)){await fn('remove',em);toast('User deleted');await home()}}
       else if(k==='mkdir'){const raw=prompt('Folder name');if(raw){const nm=cleanFolder(raw);const {error}=await sb.storage.from(BUCKET).upload(`${prefix()}/${nm}/.keep`,new Blob(['']),{upsert:true,contentType:'text/plain'});if(error)throw error;await files()}}
       else if(k==='dl'){const {data,error}=await sb.storage.from(BUCKET).createSignedUrl(`${prefix()}/${n}`,60,{download:n});if(error)throw error;const a=document.createElement('a');a.href=data.signedUrl;a.download=n;document.body.appendChild(a);a.click();a.remove()}
       else if(k==='rm'){if(confirm(`Delete "${n}"? This cannot be undone.`)){await removePaths([`${prefix()}/${n}`]);toast('File deleted');await files()}}
@@ -650,6 +758,35 @@ const K=(()=>{
   document.addEventListener('submit',async e=>{
     const f=e.target.closest('[data-k-form]');if(!f)return;e.preventDefault();
     if(f.dataset.kForm==='invite')return invite(f.email.value,f.querySelector('button'));
+    const b0=f.querySelector('button:not([type=button])');
+    if(f.dataset.kForm==='user'){
+      const v=formVals(f),uid=f.dataset.u;b0.disabled=true;
+      try{if(uid){await saveProfile(uid,v);toast('User saved')}else{await createUser(v);toast('User created and invited')}closeM();await home()}
+      catch(x){toast(x.message==='NOFN'?'The admin-clients function is not deployed yet (README, step 4).':x.message,false)}finally{b0.disabled=false}
+      return;
+    }
+    if(f.dataset.kForm==='subscribe'){
+      b0.disabled=true;
+      try{
+        subRefresh();
+        const chosen=[...f.querySelectorAll('[name=sec]:checked')].map(x=>x.value),dur=f.dur.value,start=f.start.value,end=endOf(start,dur);
+        let uid=f.user.value;
+        if(!uid)throw new Error('Select a user.');
+        if(!chosen.length)throw new Error('Select at least one sector.');
+        const mine=periods.filter(p=>p.user_id===uid&&uid!=='__new');
+        const clash=chosen.filter(s=>mine.some(p=>p.sector_id===s&&!(end<p.start_date||start>p.end_date)));
+        if(clash.length)throw new Error(`${clash.map(sname).join(', ')}: already subscribed during these dates. Choose a later start date.`);
+        if(uid==='__new'){
+          const nf={email:f.querySelector('[data-new]')};const v={email:String(nf.email.value||'').trim().toLowerCase(),full_name:f.full_name.value.trim(),mobile:f.mobile.value.trim(),company:f.company.value.trim()};
+          if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email))throw new Error('Enter a valid email for the new user.');
+          uid=await createUser(v);
+        }
+        const r=await sb.from('subscription_periods').insert(chosen.map(s=>({user_id:uid,sector_id:s,duration:dur,start_date:start,end_date:end})));
+        if(r.error)throw new Error(r.error.code==='23P01'?'This user already has a subscription to one of these sectors during that period.':r.error.message);
+        toast(`Subscribed to ${chosen.length} sector${chosen.length===1?'':'s'}: ${fd(start)} to ${fd(end)}`);closeM();await home();
+      }catch(x){toast(x.message==='NOFN'?'The admin-clients function is not deployed yet (README, step 4).':x.message,false)}finally{b0.disabled=false}
+      return;
+    }
     const name=f.name.value.trim(),id=slug(name),btn=f.querySelector('button');
     if(!id)return toast('Use letters or numbers in the sector name.',false);
     if(sectors.some(x=>x.id===id))return toast('That sector already exists.',false);
@@ -657,6 +794,13 @@ const K=(()=>{
     try{const r=await sb.from('sectors').insert({id,name});if(r.error)throw r.error;toast('Sector added');await home()}
     catch(x){toast(x.message,false)}finally{btn.disabled=false}
   });
+  document.addEventListener('change',e=>{
+    if(e.target.id==='k-st'){stFilter=e.target.value;paintClients();return}
+    const f=e.target.closest&&e.target.closest('[data-k-form="subscribe"]');if(f){if(e.target.name==='start')e.target.dataset.touched='1';subRefresh()}
+  });
+  document.addEventListener('input',e=>{const f=e.target.closest&&e.target.closest('[data-k-form="subscribe"]');if(f&&e.target.name==='start'){e.target.dataset.touched='1';subRefresh()}});
+  $('k-modal').addEventListener('click',e=>{if(e.target.id==='k-modal')closeM()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()});
   document.addEventListener('input',e=>{if(e.target.id==='k-filter'){filter=e.target.value;const pos=e.target.selectionStart;paintHome();const el=$('k-filter');el.focus();el.setSelectionRange(pos,pos)}});
   document.addEventListener('change',e=>{if(e.target.id==='k-file'){uploadFiles(e.target.files);e.target.value=''}});
   ['dragover','dragleave','drop'].forEach(v=>document.addEventListener(v,e=>{

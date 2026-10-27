@@ -160,15 +160,6 @@
       "page": "translation.html",
       "details": "- **Written translation** of all document types, plus editing.\n- **Interpretation:** simultaneous (conferences) and consecutive (meetings, seminars).\n- **Arabization and localization** of websites, software, press releases and marketing material.\n- **Patent translation** for filing in Egypt and all Arab countries, by technical translators.\n\nEvery project passes a three-phase check: translation, revision and language review.",
       "pageContent": "KH Translation is an accredited translation service provider that provides top-quality, cost-effective, personalized and customized, fast, professional and technologically advanced translation services.\n\n## Written translation\nWritten translation of documents of all types and editing of texts as required by the client.\n\n## Simultaneous interpretation\nSimultaneous interpretation of local and international conferences in all aspects.\n\n## Consecutive interpretation\nConsecutive interpretation of meetings, seminars, symposiums and more.\n\n## Arabization\nArabization of websites, software, press releases and more.\n\n## Localization\nLocalization of all types of marketing materials such as brochures, advertisements, slogans, newsletters and more.\n\n## Patent translation\nKH Translation further offers patent translation services for patent filing in Egypt and all Arab countries. We have professional technical translators translating patent documents, with experience both in the field and in translation.\n\nIf we are going to file the patent application through KHIP, we validate the scope of protection to make sure your invention is protected as desired.\n\n## Tools and quality control\nAny translation project passes through at least a three-phase translation check. We also use advanced technology and the latest automation to streamline the process and provide proven results.\n- **1. Translation:** The document is translated by a translator with the required technical background.\n- **2. Revision:** The translated document is revised, again by a translator with the required technical background.\n- **3. Language review:** A language professional checks that the language is accurate and the sentence structure is well written."
-    },
-    {
-      "id": "4",
-      "title": "Watcher ",
-      "icon": "",
-      "description": "Watch your trademarks anywhere \n",
-      "details": "This is the new watcher service ",
-      "page": "watcher.html",
-      "pageContent": "**bold text**This is the watcher service "
     }
   ],
   "products": [],
@@ -373,13 +364,7 @@
     },
     "custom": [],
     "sectionWidth": 67,
-    "sections": {
-      "about-value": {
-        "mode": "color",
-        "color": "role:ink",
-        "tone": "light"
-      }
-    }
+    "sections": {}
   },
   "newsCategories": [
     "General",
