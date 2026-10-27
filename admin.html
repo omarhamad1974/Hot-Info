@@ -25,7 +25,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
     <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center font-black text-xs flex-shrink-0">KH</div>
     <nav class="flex gap-1 flex-1" aria-label="Admin areas">
       <button data-pane="content" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-pen-to-square"></i> Website content</button>
-      <button data-pane="clients" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-folder-open"></i> Client files</button>
+      <button data-pane="clients" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-users-gear"></i> Users &amp; sectors</button>
     </nav>
     <a href="index.html" target="_blank" rel="noopener" class="text-[11px] text-gray-300 hover:text-white whitespace-nowrap"><i class="fas fa-arrow-up-right-from-square"></i> View site</a>
   </div>
@@ -97,7 +97,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
   <section id="k-app" class="hidden">
     <header class="sticky top-12 z-30 bg-white/95 backdrop-blur border-b shadow-sm">
       <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-2">
-        <div class="min-w-0 flex-1"><h1 class="font-extrabold">Client files</h1><p id="k-who" class="text-[11px] text-gray-500 truncate"></p></div>
+        <div class="min-w-0 flex-1"><h1 class="font-extrabold">Users, sectors &amp; files</h1><p id="k-who" class="text-[11px] text-gray-500 truncate"></p></div>
         <button data-k="refresh" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl" aria-label="Refresh" title="Refresh"><i class="fas fa-rotate"></i></button>
         <button data-k="signout" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl">Sign out</button>
       </div>
@@ -136,9 +136,6 @@ const SC={
  jurisdictions:{label:'Jurisdictions',icon:'fa-globe-africa',one:'country',title:'country',req:['country'],f:[['country','Country'],['code','Country code, 2 letters (eg, ae, sa)'],['tag','Tag'],['brief','Overview (the country card shows the first 5 lines)','area'],['details','Filing details','area']]},
  news:{label:'News',icon:'fa-newspaper',one:'article',title:'title',req:['title','excerpt'],f:[['title','Title'],['date','Date','date'],['category','Category (label)','select'],['image','Image','img'],['excerpt','Short summary','area'],['text','Full article','area']]},
  services:{label:'Services',icon:'fa-balance-scale',one:'service',title:'title',req:['title','description'],f:[['title','Title'],['icon','Icon (optional, e.g. ph-lightbulb)'],['description','1. Brief (on the home page card, and the top of the pop-up)','area'],['details','2. Pop-up content (more information, shown when the card is opened)','area'],['page','Dedicated page file (e.g. patents.html). Adds the "More information" button'],['pageContent','3. Dedicated page content. Text before the first ## is the introduction; each ## Heading becomes a card on the page','area']]},
- products:{label:'Products',icon:'fa-file-contract',one:'product',title:'title',req:['title'],f:[['title','Title'],['category','Category'],['price','Price (or "Inquire")'],['image','Image','img']]},
- testimonials:{label:'Testimonials',icon:'fa-quote-left',one:'testimonial',title:'name',req:['name','text'],f:[['name','Client name'],['role','Role and company'],['text','Quote','area']]},
- employees:{label:'Team',icon:'fa-users',one:'team member',title:'name',req:['name','position'],f:[['name','Name'],['position','Position'],['image','Photo','img']]}
 };
 const GEN=[['aboutMainText','About text (home page)','area'],['about','Short tagline'],['social.linkedin','LinkedIn URL'],['social.youtube','YouTube URL'],['chatPrompts','Suggestions typed into the WhatsApp box (one per line)','lines'],['newsCategories','News categories / labels (one per line)','lines']];
 const DEFCATS=['General','KHIP News','Intellectual Property','Patents','Trademarks','Translation'];
@@ -342,7 +339,7 @@ async function shrink(file){
   }catch{return file}
 }
 // Carousel, news and team photos are resized and center-cropped to fit their frame, so they always cover it
-const FIT=[[/^carousel\./,1.875,1800],[/^news\./,2,1600],[/^employees\./,1,800]];
+const FIT=[[/^carousel\./,1.875,1800],[/^news\./,2,1600]];
 async function fit(file,ratio,W){
   if(!/^image\/(jpeg|png|webp)$/.test(file.type)||!window.createImageBitmap)return file;
   try{
