@@ -1,0 +1,392 @@
+{
+  "about": "",
+  "aboutMainText": "**KHIP** provides comprehensive intellectual property protection services tailored to a diverse client portfolio, ranging from individual entrepreneurs and independent inventors to multinational corporations. Grounded in a deep, strategic understanding of global IP frameworks, our firm acts as a trusted partner throughout the innovation lifecycle, safeguarding original concepts, nurturing early-stage discoveries, and facilitating successful market entry to secure maximum commercial value and strategic advantage.",
+  "carousel": [
+    {
+      "id": "1",
+      "title": "Using Legal Skills with Technical Knowledge",
+      "subtitle": "Discover legal and IP services.",
+      "tag": "Featured",
+      "image": "./assets/slider1.jpg"
+    },
+    {
+      "id": "2",
+      "title": "Protecting Innovation",
+      "subtitle": "Discover legal and IP services.",
+      "tag": "Featured",
+      "image": "./assets/slider2.jpg"
+    },
+    {
+      "id": "3",
+      "title": "Making a difference ",
+      "subtitle": "To people lives and people business ",
+      "tag": "",
+      "image": "mvm9bed7-65080.jpg"
+    }
+  ],
+  "jurisdictions": [
+    {
+      "id": "1",
+      "country": "Egypt",
+      "flag": "🌐",
+      "tag": "Jurisdiction",
+      "brief": "Egypt boasts a rich history of innovation, with recent efforts focused on modernizing intellectual property laws to spur economic growth and technological advancement. Positioned in the heart of the Middle East, Egypt is actively enhancing its IP framework to attract investment and become a hub for creativity and entrepreneurship, leveraging its burgeoning market and increased emphasis on IP protection.",
+      "details": "- Power of Attorney: Legalized by the Egyptian consulate, required for both National phase (PCT) and Direct filing (Paris convention). Legal time frame: 4 months.\n- Deed of Assignment: Legalized by the Egyptian consulate, required for Direct filing (Paris convention). Legal time frame: 4 months.\n- Certificate of Incorporation/Business License: Legalized by the Egyptian consulate, required for Direct filing (Paris convention). Legal time frame: 4 months.\n- Certified Priority Document: Required for Direct filing (Paris convention). Legal time frame: 3 months.\n\n## Language Requirements:\n- English Version: Title, abstract, specification, claims, and drawings must be in English and submitted at filing.\nArabic Translation: Specification, claims, and drawings should be submitted in - - Arabic at filing. If not ready, Arabic translation of title, abstract, and representative figure can be submitted at filing, with the rest within 6 months from filing.\n\n## Deadlines:\n- Request for Examination: Must be filed within 3 month from the date of notification received from the Patent Office.\n- Annuity Fees: Paid annually, calculated from international filing date for PCT applications, and from national filing date for direct filings.\n\n## Examination Process:\n- Typically involves two office actions before a decision of acceptance or rejection.\n- Amendments to the application or claims can be submitted before settling examination fees (within 6 months from filing). After settling fees, amendments are only allowed in response to the 1st examination report/office action.\n## Expedited Examination:\n- If you wish to expedite the substantive examination process, a PPH request can be submitted based on a positive recommendation from a Japanese and/or Chinese application. This can be done after the Egyptian application is formally accepted but before settling examination fees.\n\n​Navigating the patent process in Egypt involves attention to detail and adherence to timelines. We're here to guide you through every step of the way to ensure your intellectual property rights are protected effectively."
+    },
+    {
+      "id": "2",
+      "country": "UAE",
+      "flag": "🌐",
+      "tag": "Jurisdiction",
+      "brief": "KHIP delivers comprehensive IP services across the UAE through the Ministry of Economy. From registering multi-class trademarks to securing 20-year patent protection, we safeguard your brand identity and technological innovations in the region's primary business hub.",
+      "details": "- A Power of Attorney duly Notarized (90 days from filing). (to be used for all subsequent filings for the company).\n- \n- A Notarized extract from the Commercial Register or from the Memorandum of Association, if the applicant is a company (90 days from filing). (to be used for all subsequent filings for the company).\n- A Notarized deed of assignment, if the applicant is not the inventor (90 days from filing).\n- English specification and claims along with the drawings.\n- Arabic translation of the specification, claims and drawings (90 days from filing).\n- PCT international publication search and examination reports are preferably submitted with the application.\n\n**Information**\n- Priority: The time limit for the PCT national phase entry is 30 months from the earliest date of priority for national phases.\n- Examination: The Request for examination must be filed once the formal examination has finalized and the invitation for paying substantive examination is issued.\n- Annuities: Annuities fees must be paid every year calculated from the international filing date for PCT application. It is still possible to pay the annuity within 3 months after the deadline with no penalty and with penalty for late payment fee for each month thereafter."
+    },
+    {
+      "id": "3",
+      "country": "Saudi Arabia",
+      "flag": "🌐",
+      "tag": "Jurisdiction",
+      "brief": "From first-to-file trademark registration to 20-year patent protection, KHIP safeguards your commercial identity in Saudi Arabia. We deliver seamless IP prosecution and enforcement aligned with Saudi Authority for Intellectual Property (SAIP) standards.",
+      "details": "## PCT Filing Requirements\n\n- A Power of Attorney executed in the name of the applicant duly notarized and (Apostilled or legalized up to the Saudi Consulate) (to be used for all subsequent filings for the company).\n- Specification in English and Arabic.\n\n**Information**\n- Priority: The time limit for the PCT national phase entry is 30 months from the earliest date of priority for national phases.\n- Examination: The Request for examination must be filed once the formal examination has finalized and the invitation for paying substantive examination is issued.\n- Annuities: Annuities fees must be paid every year during the first 3 month of the calendar year (from January 1 to March 31) calculated from the international filing date for PCT application. It is still possible to pay the annuity within 3 months after the deadline (April 1 to June 30) with penalty for late payment fee.\n- Legalization: The Power of attorney and the supporting documents are no longer necessary to be legalized up to the Consulate of Saudi Arabia if the applicant’s country is a member of The Hague Convention. The documents only need to be Apostilled."
+    },
+    {
+      "id": "5",
+      "country": "Qatar",
+      "code": "",
+      "tag": "",
+      "brief": "KHIP helps companies secure trademarks, patents, and industrial designs in Qatar through the Intellectual Property Rights Protection Department. We provide end-to-end IP prosecution and enforcement to maintain your competitive edge in the Qatari market.",
+      "details": "- A Power of Attorney duly legalized up to the Qatari Consulate (6 month from filing). (to be used for all subsequent filings for the company).\n- English specification and claims along with the drawings.\n- Arabic translation of the specification, claims and drawings (6 month from filing).\n- PCT international publication search and examination reports are preferably submitted with the application.\n\n**Information**\n- Priority: The time limit for the PCT national phase entry is 30 months from the earliest date of priority for national phases.\n- Examination: The Request for examination must be submitted at filing.\n- Annuities: Annuities fees must be paid every year calculated from the international filing date for PCT application."
+    },
+    {
+      "id": "6",
+      "country": "Bahrian",
+      "code": "",
+      "tag": "",
+      "brief": "Safeguard your commercial identity in Bahrain with KHIP's expert legal support. We handle trademark registration, patent maintenance, and brand enforcement in compliance with the Directorate of Foreign Trade and Industrial Property.",
+      "details": "- A Power of Attorney duly legalized/apostilled up to the Bahraini Consulate (3 month from filing). (to be used for all subsequent filings for the company).\n- A duly legalize/apostilled deed of assignment signed by the inventor, if the applicant is not the inventor (3 month from filing).\n- Specifications and drawings of the invention together with the Arabic translation (Arabic translation can be filed within 3 month).\n- PCT international publication search and examination reports are preferably submitted with the application.\n- Certified Priority document along with its Arabic translation.\n**Information**\n- Priority: The time limit for the PCT national phase entry is 30 months from the earliest date of priority for national phases.\n- Examination: The Request for examination must be filed once the formal examination has finalized and the invitation for paying substantive examination is issued.\n- Annuities: Annuities fees are calculated from the international filing date for PCT application and paid at acceptance.\n- Legalization: The Power of attorney and the supporting documents are no longer necessary to be legalized up to the Consulate of Bahrain if the applicant’s country is a member of The Hague Convention. The documents only need to be Apostilled."
+    },
+    {
+      "id": "4",
+      "country": "Oman",
+      "code": "",
+      "tag": "",
+      "brief": " In Oman, KHIP navigates the Ministry of Commerce, Industry and Investment Promotion (MOCIIP) framework to protect your intellectual assets. We manage first-to-file trademark registrations and patent filings to ensure full legal exclusivity across Omani markets.",
+      "details": "- A Power of Attorney duly legalized/apostilled up to the Omani Consulate (60 days from filing). (to be used for all subsequent filings for the company).\n- A duly legalize/apostilled deed of assignment signed by the inventor, if the applicant is not the inventor (3 month from filing).\n- Specifications and drawings of the invention together with the Arabic translation (Arabic translation can be filed within 3 month).\n- PCT international publication search and examination reports are preferably submitted with the application.\n- Copy of Certified Priority document.\n\n**Information**\n- Priority: The time limit for the PCT national phase entry is 30 months from the earliest date of priority for national phases.\n- Examination: The Request for examination must be filed once the formal examination has finalized and the invitation for paying substantive examination is issued or within 36 month from the International filing date (whichever comes first).\n- Annuities: Annuities fees must be paid every year calculated from the international filing date for PCT application.\n- Legalization: The Power of attorney and the supporting documents are no longer necessary to be legalized up to the Consulate of Oman if the applicant’s country is a member of The Hague Convention. The documents only need to be Apostilled."
+    },
+    {
+      "id": "7",
+      "country": "Algeria",
+      "code": "",
+      "tag": "",
+      "brief": "KHIP guides businesses through Algeria’s dual IP regulatory system, securing trademark protection via INAPI and managing patent portfolios to shield your commercial assets and innovations across North Africa.",
+      "details": "- A simply signed Power of Attorney. (must be filed 2 months from filing).\n- Specification, claims and drawings in French or Arabic.\n- A copy of the international search report.\n- A copy of the international preliminary examination report, if any.\n\n**Information**\n- Priority: The time limit for the PCT national phase entry is 31 months from the earliest date of priority for national phases.\n- Examination: The Request for examination is included in the filing.\n- Annuities: Annuities fees must be paid every year calculated from the international filing date for PCT application. Penalty for late payment up to 2 month.\n- Missing documents can be filed later with an additional penalty per month up to 2 additional month."
+    },
+    {
+      "id": "8",
+      "country": "Morocco",
+      "code": "",
+      "tag": "",
+      "brief": "Protect your brand identity and technical innovations in Morocco with KHIP’s comprehensive IP services. We handle trademark prosecutions and patent filings through the Moroccan Office of Industrial and Commercial Property (OMPIC) to secure long-term exclusivity in the region.   ",
+      "details": "- A simply signed Power of Attorney. (must be filed 2 months from filing).\n- Specification and claims in French or Arabic.\n- Formal drawings.\n\n**Information**\n- Priority: The time limit for the PCT national phase entry is 31 months from the earliest date of priority for national phases.\n- Examination: The Request for examination must be submitted at filing.\n- Annuities: Annuities fees are calculated from the international filing date for PCT application and paid at acceptance.\n- As of March 1, 2015, it is possible to protect inventions in Morocco via entering the European regional stage and requesting validation in Morocco."
+    },
+    {
+      "id": "9",
+      "country": "Tunisia",
+      "code": "",
+      "tag": "",
+      "brief": "KHIP manages your intellectual property portfolio in Tunisia through the National Institute for Standardization and Industrial Property (INNORPI). We deliver end-to-end trademark filings, patent registrations, and enforcement strategies to protect your commercial assets across North Africa.",
+      "details": "- A simply signed Power of Attorney.\n- Specification in English, French or Arabic.\n- Formal drawings.\n\n**Information**\n- Priority: The time limit for the PCT national phase entry is 30 months from the earliest date of priority for national phases.\n- Examination: The Request for examination is including in the filing request.\n- Annuities: Annuities fees must be paid every year calculated from the international filing date for PCT application.\n- It is possible to protect inventions in Tunisia via entering the European regional stage and requesting validation in Tunisia."
+    },
+    {
+      "id": "10",
+      "country": "Jordan",
+      "code": "",
+      "tag": "",
+      "brief": "Safeguard your innovations and brand presence in Jordan with KHIP’s local IP expertise. We handle trademark registrations and 20-year patent filings through the Directorate of Industrial Property Protection, ensuring robust legal coverage under Jordanian law.",
+      "details": "- A Power of Attorney executed in the name of the applicant duly notarized and legalized up to the Jordanian Consulate (within 60 days) (to be used for all subsequent filings for the company).\n- Patent Form 4 (Assignment document) signed by both inventors & applicant and duly notarized and legalized up to the Jordanian Consulate (within 60 days).\n- Certificate of incorporation or extract from the commercial register legalized up to the Jordanian Consulate.\n- Specifications and drawings of the invention together with the Arabic translation (Arabic translation can be filed within 60 days)\n- Certified copy of the priority documents with Arabic translation thereof.\n\n**Information**\n- Priority: The time limit for the PCT national phase entry is 30 months from the earliest date of priority for national phases.\n- Examination: The Request for examination must be submitted at filing.\n- Annuities: Annuities fees must be paid every year calculated from the international filing date for PCT application"
+    },
+    {
+      "id": "11",
+      "country": "Kuwait",
+      "code": "",
+      "tag": "",
+      "brief": "KHIP provides strategic IP management in Kuwait via the Trademarks and Patents Department under the Ministry of Commerce and Industry. We guide businesses through first-to-file trademark protection, patent prosecution, and local enforcement to shield your competitive edge.",
+      "details": "- A Power of Attorney executed in the name of the applicant duly notarized and legalized up to the Kuwaiti Consulate (to be used for all subsequent filings for the company).\n- Specifications and drawings of the invention together with the Arabic translation (Arabic translation can be filed within 90 days).\n\n**Information**\n- Priority: The time limit for the PCT national phase entry is 30 months from the earliest date of priority for national phases.\n- Examination: The Request for examination must be filed once the formal examination has finalized and the invitation for paying substantive examination is issued.\n- Annuities: Annuities fees must be paid every year during the first 3 month of the calendar year (from January 1 to March 31) calculated from the international filing date for PCT application."
+    }
+  ],
+  "news": [
+    {
+      "id": "1",
+      "title": "KHIP attends the event bla bla bla",
+      "image": "./assets/slider1.jpg",
+      "excerpt": "KHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt",
+      "text": "KHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt\n\nKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt\n\nKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt\n\nKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt",
+      "category": "General"
+    },
+    {
+      "id": "2",
+      "title": "IP future in the middle east ",
+      "date": "2026-10-24",
+      "image": "slider1.jpg",
+      "excerpt": "What will be the future of IP in the region and middle east ",
+      "text": "What will be the future of IP in the region and middle east What will be the future of IP in the region and middle east What will be the future of IP in the region and middle east ",
+      "category": "General"
+    }
+  ],
+  "services": [
+    {
+      "id": "1",
+      "title": "Patents",
+      "description": "A patent is an exclusive right granted for an invention, which is a product or a process that has new features. A patent for an invention is the grant of a property right to the inventor, issued by the Patent Office.",
+      "icon": "fas fa-star",
+      "page": "patents.html",
+      "details": "- **Term:** 20 years from the filing date.\n- **Territorial rights:** a patent is effective only in the countries where it was filed.\n- **Requirements:** the invention must be new and not obvious to a person of ordinary skill in the field.\n\nOur attorneys all hold scientific or technical degrees and draft and prosecute with future litigation, licensing and due diligence in mind. We handle everything from a single cornerstone patent to a full portfolio, including annual maintenance.",
+      "pageContent": "A patent is an exclusive right granted for an invention, which is a product or a process that has new features. A patent for an invention is the grant of a property right to the inventor, issued by the Patent Office. The term of a patent is 20 years from the date on which the application for the patent was filed.\n\nFor entrepreneurs and industry pioneers, a patent provides one of the most definitive ways to protect a company's intellectual property (safeguard innovation) and to boost company valuation.\n\nThe Patent Office grants utility patents, which are available for inventions that provide any new or useful process, machine, article or composition of matter. In appropriate circumstances, utility patents may also be used to protect computer software and business methods. Each invention must meet the legal requirement of not being obvious to a person of ordinary skill in the field of the invention, in addition to being new or novel.\n\n## What kind of protection does a patent offer?\nThe right conferred by the patent grant is the right to exclude others from making, using, offering for sale, selling or importing the invention. What is granted is not the right to make, use, offer for sale, sell or import, but the right to exclude others from doing so. A patent grants certain exclusive proprietary rights in an invention. In general, patentable inventions fall into a range spanning the extremes of those that are pioneering in nature (for example the light bulb, the transistor or the vascular stent) and those adding incremental improvement and value. Patent grants are effective only within the countries where a patent was filed (territorial rights).\n\n## Rely on an experienced team\nA key differentiator for KHIP is that the team of attorneys and staff who secure patents are legally oriented, technically capable attorneys, with the vision of subsequent patent litigation. This enhances the services delivered by providing a proactive approach that anticipates and navigates potential litigation and licensing pitfalls. This combination of skills and expertise lends an important long-term perspective to the effort of securing the broadest, strongest and most valuable patent protection, designed to withstand the scrutiny of litigation, licensing and due diligence reviews.\n\n## Strengthen the application and invention\nKHIP offers its clients a unique and innovative patent application and invention fortification service that is particularly suited for cornerstone, pioneering or other highly valued innovations. Our detail-oriented staff enrich patent preparation and prosecution by anticipating litigation, license negotiations and efforts to avoid infringement. Patent applications crafted with our strategies are generally more valuable, difficult to elude and robust in content, so they can stand up to the scrutiny that competitors and potential licensees may apply.\n\n## Approaching patents\nKHIP approaches the patent process with a thorough technical understanding and a coordinated approach focusing on both current and long-term opportunities, and provides annual maintenance, as required, to protect our clients' rights. Our staff is well versed in securing and protecting patents for a broad range of inventions, from high technology and complex engineered inventions to the elegantly simple. The firm seeks to secure broad, valid protection, from a single cornerstone patent serving as the foundation of an emerging company to a portfolio of dozens of patents representing interrelated aspects of a highly complex, multifaceted invention. KHIP counsels clients about achieving suitable protection for their inventions, including assessing whether a valuable invention should be protected as a trade secret rather than by a patent. It is important to remember that the information contained in the patent application will ultimately become publicly available if a patent is issued, and possibly earlier if the application is published.\n\n## Ensure proper protection\nSecuring proper patent protection early and on time is critical to growth of market share. KHIP helps clients define the scope of protection to include those features necessary for the invention to work and to bring the greatest market value. At a minimum, the objective is to obtain at least one independent claim covering the most general concept of the invention, designed to protect ownership rights under careful scrutiny in future transactions such as high-stakes litigation, licensing negotiations, mergers and acquisitions. In many cases, our attorneys help clients secure greater protection and more flexibility by procuring multiple patents for related subject matter. More than one patent claim may be presented, provided the claims differ from each other. In each case, the main or independent initial claim is the foundation for subsequent dependent claims. This approach helps our clients protect the less marketable or innovative features as well as the more fundamental aspects of the invention.\n\n## Identify what to patent\nKHIP works with clients to understand the market demand for, and the unique qualities of, the various features of an invention. Ideally, we secure patent protection for those features that will provide profits from a high level of market demand and are likely to be patentable. The effect of a patent grant is to confer on the owner the right to exclude others from making, using, selling, importing or offering to sell the protected invention. Each attorney with KHIP possesses a scientific or technical degree, which allows us to understand and secure protection for complex inventions and technologies. This depth of technical understanding greatly facilitates protection of the fundamental concepts of an invention necessary to its use and value. Conversely, the understanding our lawyers bring to technology is also critical to successfully designing around the patents of others, if necessary or desirable."
+    },
+    {
+      "id": "2",
+      "title": "Trademarks",
+      "description": "A trademark is a word, name, symbol or device which is used in trade with goods to indicate the source of the goods and to distinguish them from the goods of others.",
+      "icon": "fas fa-star",
+      "page": "trademarks.html",
+      "details": "- **Protection:** indefinite, renewed every 10 years.\n- **Registration:** marks should be registered with the Trademark Office to be protected.\n- **Goods and services:** trademarks identify products, service marks identify services.\n\nWe help you select and secure marks for your key products and services, enforce them against counterfeiters and look-alike signs, and put measures in place that reduce the risk of dilution of your brand.",
+      "pageContent": "A trademark is a word, name, symbol or device which is used in trade with goods to indicate the source of the goods and to distinguish them from the goods of others. A service mark is the same as a trademark except that it identifies and distinguishes the source of a service rather than a product.\n\nTrademarks, service marks and trade names create a brand in the marketplace. They are among the most valuable and most relied-upon assets of both growth-oriented and established businesses. Businesses with distinctive brands accomplish sales objectives in less time and with less cost than others. Exclusive, consistent use is essential to obtaining recognition in the marketplace.\n\n## What does a trademark do?\nSecure exclusive use to build a brand. Trademark rights may be used to prevent others from using a confusingly similar mark, but not to prevent others from making the same goods or from selling the same goods or services under a clearly different mark. Trademark protection hinders the efforts of unfair competitors, such as counterfeiters, to use similar distinctive signs to market inferior or different products or services. It seeks to establish exclusive use in the marketplace of words, phrases, symbols, slogans, devices and, with a few exceptions, other forms of conveying information that identify and distinguish goods or services offered, sponsored or approved by the trademark owner. Marks identifying and distinguishing services are typically referred to as service marks. Trademarks should be registered with the Trademark Office to be protected. Trademark protection is for an indefinite period of time and should be renewed every 10 years.\n\n## What we offer\nKHIP counsels and assists clients in selecting and securing trademarks for key product and service offerings, efficiently protecting their brands. KHIP protects and enforces trademarks to hinder the efforts of unfair competitors, such as counterfeiters, to use similar distinctive signs to market inferior or different products or services.\n\nWe assist clients to build their brands and reduce the risk of dilution of their brands through appropriate measures to control the use of such brands."
+    },
+    {
+      "id": "3",
+      "title": "Translation",
+      "description": "KH Translation is an accredited translation service provider that provides top-quality cost-effective, personalized / customized, fast, professional and technologically advanced translation services.",
+      "icon": "fas fa-star",
+      "page": "translation.html",
+      "details": "- **Written translation** of all document types, plus editing.\n- **Interpretation:** simultaneous (conferences) and consecutive (meetings, seminars).\n- **Arabization and localization** of websites, software, press releases and marketing material.\n- **Patent translation** for filing in Egypt and all Arab countries, by technical translators.\n\nEvery project passes a three-phase check: translation, revision and language review.",
+      "pageContent": "KH Translation is an accredited translation service provider that provides top-quality, cost-effective, personalized and customized, fast, professional and technologically advanced translation services.\n\n## Written translation\nWritten translation of documents of all types and editing of texts as required by the client.\n\n## Simultaneous interpretation\nSimultaneous interpretation of local and international conferences in all aspects.\n\n## Consecutive interpretation\nConsecutive interpretation of meetings, seminars, symposiums and more.\n\n## Arabization\nArabization of websites, software, press releases and more.\n\n## Localization\nLocalization of all types of marketing materials such as brochures, advertisements, slogans, newsletters and more.\n\n## Patent translation\nKH Translation further offers patent translation services for patent filing in Egypt and all Arab countries. We have professional technical translators translating patent documents, with experience both in the field and in translation.\n\nIf we are going to file the patent application through KHIP, we validate the scope of protection to make sure your invention is protected as desired.\n\n## Tools and quality control\nAny translation project passes through at least a three-phase translation check. We also use advanced technology and the latest automation to streamline the process and provide proven results.\n- **1. Translation:** The document is translated by a translator with the required technical background.\n- **2. Revision:** The translated document is revised, again by a translator with the required technical background.\n- **3. Language review:** A language professional checks that the language is accurate and the sentence structure is well written."
+    },
+    {
+      "id": "4",
+      "title": "Watcher ",
+      "icon": "",
+      "description": "Watch your trademarks anywhere \n",
+      "details": "This is the new watcher service ",
+      "page": "watcher.html",
+      "pageContent": "**bold text**This is the watcher service "
+    }
+  ],
+  "products": [],
+  "testimonials": [
+    {
+      "id": "1",
+      "name": "Omar Hamad",
+      "role": "CEO, Plannplay",
+      "text": "Very good company, they did everything good and protected my company from a lot of things that could happen to her"
+    },
+    {
+      "id": "2",
+      "name": "Mohammad Youssef",
+      "role": "Eclipse",
+      "text": "Very good company, they did everything good and protected my company from a lot of things that could happen to her"
+    },
+    {
+      "id": "3",
+      "name": "Mohammad Lotfy",
+      "role": "El motahedda",
+      "text": "Very good company, they did everything good and protected my company from a lot of things that could happen to her"
+    }
+  ],
+  "employees": [
+    {
+      "id": "1",
+      "name": "Khaled Hamada",
+      "position": "CEO",
+      "image": "./assets/Khaled-Hamada.jpg"
+    },
+    {
+      "id": "2",
+      "name": "Sherif Youssef",
+      "position": "Translation Department Head",
+      "image": "./assets/Sherif-Youssef.jpg"
+    },
+    {
+      "id": "3",
+      "name": "Mirna Al Kayyali",
+      "position": "IP Department Head",
+      "image": "./assets/Mirna-AlKayyali.jpg"
+    },
+    {
+      "id": "4",
+      "name": "Magdy Gamal",
+      "position": "Senior Project Manager",
+      "image": "./assets/Magdy-Gamal.jpg"
+    },
+    {
+      "id": "5",
+      "name": "Rania Gamal",
+      "position": "Translation Department Technical Head",
+      "image": "Rania-Gamal.jpg"
+    },
+    {
+      "id": "6",
+      "name": "Tarek Shaaban",
+      "position": "Senior Reviwer",
+      "image": ""
+    },
+    {
+      "id": "7",
+      "name": "Mohammad Ghanem",
+      "position": "Senior Trademark Attorney ",
+      "image": "Mohamed-Ghanem.jpg"
+    },
+    {
+      "id": "8",
+      "name": "Ahd Youssef",
+      "position": "IP Attorney ",
+      "image": "Ahd-Youssef.jpg"
+    },
+    {
+      "id": "9",
+      "name": "Hanna",
+      "position": "Patent Agent (Biotechnology)",
+      "image": "Hanna.jpg"
+    },
+    {
+      "id": "10",
+      "name": "Dina Hussein",
+      "position": "Translator",
+      "image": ""
+    },
+    {
+      "id": "11",
+      "name": "Yasmine Saeed",
+      "position": " Project Manager & Sr. Reviewer",
+      "image": ""
+    },
+    {
+      "id": "12",
+      "name": "Sarah Abbas",
+      "position": "Translator ",
+      "image": "Sara-Abbas.jpg"
+    },
+    {
+      "id": "13",
+      "name": "Mona Abdelbary",
+      "position": "Translator",
+      "image": "Mona-Abdelbary.jpg"
+    },
+    {
+      "id": "14",
+      "name": "Haneen Ahmed",
+      "position": "Translator",
+      "image": "Haneed-Ahmed.jpg"
+    },
+    {
+      "id": "15",
+      "name": "Sarah Alaa",
+      "position": "DTP Offiver",
+      "image": "Sara-Alaa.jpg"
+    },
+    {
+      "id": "16",
+      "name": "Salma Mamdouh",
+      "position": "Translator",
+      "image": "Salma-Mamdouh.jpg"
+    },
+    {
+      "id": "17",
+      "name": "Alaa Adam",
+      "position": "DTP Offiver",
+      "image": "Alaa-Adam.jpg"
+    },
+    {
+      "id": "18",
+      "name": "Hedia Tawfik",
+      "position": "Translator",
+      "image": "Hedia-Tawfik.jpg"
+    },
+    {
+      "id": "19",
+      "name": "Moataz Haggag",
+      "position": " Senior Biotechnology Reviewer",
+      "image": "Moataz-Haggag.jpg"
+    },
+    {
+      "id": "20",
+      "name": "Elham Samy",
+      "position": "Senior Translator",
+      "image": ""
+    },
+    {
+      "id": "21",
+      "name": "Mohammad Haitham",
+      "position": "Accoubtant",
+      "image": "Mohamed-Haitham.jpg"
+    },
+    {
+      "id": "22",
+      "name": "Sayyed Boghdady",
+      "position": "Senior Trademark Attorney ",
+      "image": "Sayed-Baghdady.jpg"
+    },
+    {
+      "id": "23",
+      "name": "Nagwa Ibrahim",
+      "position": "Senior Translator",
+      "image": ""
+    },
+    {
+      "id": "24",
+      "name": "Heba Abdalla",
+      "position": "Senior Translator ",
+      "image": ""
+    },
+    {
+      "id": "25",
+      "name": "Khaled Saber",
+      "position": "Information Texhnology",
+      "image": ""
+    },
+    {
+      "id": "26",
+      "name": "Yonan",
+      "position": "Office clerk",
+      "image": ""
+    }
+  ],
+  "social": {
+    "linkedin": "https://www.linkedin.com/company/khip/"
+  },
+  "chatPrompts": [
+    "How can KHIP help you?",
+    "Drop us a message about your inquiry",
+    "kHIP is pleased to answer your questions"
+  ],
+  "theme": {
+    "colors": {
+      "title": "#173a7a",
+      "ink": "#1b2433",
+      "gold": "#a8844f",
+      "accent": "#1d4ed8",
+      "accentDark": "#1e40af",
+      "accentSoft": "#eff6ff",
+      "sand": "#d9c8a4",
+      "page": "#f7f6f3",
+      "surface": "#ffffff",
+      "text": "#3a4051"
+    },
+    "custom": [],
+    "sectionWidth": 67,
+    "sections": {
+      "about-value": {
+        "mode": "color",
+        "color": "role:ink",
+        "tone": "light"
+      }
+    }
+  },
+  "newsCategories": [
+    "General",
+    "KHIP News",
+    "Intellectual Property",
+    "Patents",
+    "Trademarks",
+    "Translation"
+  ]
+}

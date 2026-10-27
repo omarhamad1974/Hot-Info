@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KHIP - Intellectual Property & Legal Solutions</title>
+<meta name="description" content="KHIP (Khaled Hamada Intellectual Property): patents, trademarks and translation across the Middle East.">
+<meta name="theme-color" content="#1d4ed8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/7.2.3/css/flag-icons.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="tailwind-config.js"></script>
+<script src="theme.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="font-sans font-light antialiased">
+<div id="app-top"></div>
+<header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
+  <div class="wrap py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3"><span class="font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><span class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span class="font-medium brand-ink">Intellectual Properties</span></span></div>
+    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
+      <a href="#about" class="hover:text-brand-600 transition">About</a><a href="#jurisdictions" class="hover:text-brand-600 transition">Jurisdictions</a><a href="#services" class="hover:text-brand-600 transition">IP Services</a><a href="#news" class="hover:text-brand-600 transition">News</a>
+    </nav>
+    <div class="flex gap-2" id="socials"></div>
+  </div>
+</header>
+
+<main>
+  <div id="error" class="hidden wrap pt-4"><div class="p-4 rounded-2xl bg-red-50 border border-red-200 text-sm text-red-800" role="alert">We couldn't load the latest content. <button data-act="retry" class="ml-2 font-medium underline">Try again</button></div></div>
+
+  <section class="wrap pt-5 md:pt-8"><div id="carousel" class="relative h-60 sm:h-80 lg:h-[27rem] rounded-3xl overflow-hidden shadow-xl bg-ink" aria-roledescription="carousel"></div></section>
+
+  <section id="about" data-sec="home-about" class="band"><div class="wrap grid md:grid-cols-[minmax(0,9.5rem)_1fr] lg:grid-cols-[minmax(0,11rem)_1fr] gap-8 md:gap-10 lg:gap-14 items-center">
+    <div class="fu flex justify-center"><img src="assets/khip-logo.jpg" width="800" height="822" alt="Khaled Hamada Intellectual Property" class="about-logo w-56 sm:w-64 md:w-full max-w-[22rem] md:max-w-[9.5rem] lg:max-w-[11rem] h-auto" decoding="async"></div>
+    <div class="fu text-center md:text-left" style="--d:.15s"><span class="rule mx-auto md:mx-0 !mt-0"></span><p id="about-text" class="text-base md:text-lg leading-relaxed"></p>
+      <a href="about.html" class="mt-8 inline-flex items-center gap-2 text-sm border border-ink/30 hover:bg-ink hover:text-white px-9 py-2.5 rounded-full transition">More <i class="ph-light ph-arrow-right"></i></a></div>
+  </div></section>
+
+  <section id="jurisdictions" data-sec="home-jurisdictions" class="band bg-surface hidden"><div class="wrap">
+    <div><h2 class="h2">Jurisdictions</h2><span class="rule"></span></div>
+    <div id="jur-chips" class="relative flex gap-2.5 overflow-x-auto no-scrollbar pb-3"></div>
+    <div id="jur-card" class="mt-2 rounded-3xl bg-stone-50 border border-stone-200 p-6 md:p-9"></div>
+  </div></section>
+
+  <section id="services" data-sec="home-services" class="band hidden"><div class="wrap">
+    <div class="fu"><h2 class="h2">IP Services</h2><span class="rule"></span></div>
+    <div id="services-list" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"></div>
+  </div></section>
+
+  <!-- Products / search reports: hidden for now. Set SHOW_PRODUCTS=true in the script and add the section back to enable. -->
+
+  <section id="news" data-sec="home-news" class="band bg-surface hidden"><div class="wrap">
+    <div><h2 class="h2">Latest news</h2><span class="rule"></span></div>
+    <div id="news-list" class="slider"></div>
+    <div id="news-dots" class="md:hidden flex justify-center gap-2 mt-5"></div>
+  </div></section>
+
+  <section id="testimonials" data-sec="home-testimonials" class="band bg-surface hidden"><div class="wrap">
+    <h2 class="h2 text-center">Client endorsements</h2><span class="rule mx-auto"></span>
+    <div class="tframe"><i class="ph-light ph-quotes text-4xl text-gold block text-center"></i><div id="testimonials-list" class="grid"></div></div>
+    <div id="t-dots" class="flex justify-center gap-2 mt-8"></div>
+  </div></section>
+
+</main>
+
+<div id="modal" class="fixed inset-0 bg-ink/70 backdrop-blur-sm z-50 flex items-end md:items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500" style="padding-bottom:var(--khip-h,0px)" data-act="close" role="dialog" aria-modal="true" aria-labelledby="m-title">
+  <div id="sheet" class="sheet closed relative bg-white w-full max-w-md md:max-w-2xl rounded-t-3xl md:rounded-3xl overflow-hidden">
+    <button data-act="close" aria-label="Close" class="absolute top-3 right-3 z-10 w-11 h-11 rounded-full bg-stone-100 hover:bg-stone-200 active:scale-95 flex items-center justify-center transition touch-manipulation"><i class="ph-light ph-x text-xl"></i></button>
+    <div id="m-scroll" class="max-h-[calc(100dvh_-_var(--khip-h,0px)_-_1.5rem)] overflow-y-auto overscroll-contain p-6 md:p-9 pb-10"><div id="m-body" class="space-y-4"></div></div>
+  </div>
+</div>
+
+<script src="rich.js"></script>
+<script src="footer.js"></script>
+<script src="auth.js"></script>
+<script>
+const SHOW_PRODUCTS=false; // products / search reports hidden for now
+const DATA_URL="./app-data.json", CACHE="khip-data-v3";
+const CODES={egypt:'eg',uae:'ae','united arab emirates':'ae','saudi arabia':'sa',jordan:'jo',kuwait:'kw',qatar:'qa',bahrain:'bh',oman:'om',morocco:'ma',tunisia:'tn',algeria:'dz',libya:'ly',lebanon:'lb',iraq:'iq',syria:'sy',yemen:'ye',sudan:'sd',palestine:'ps',turkey:'tr'};
+const FALLBACK_IMG="https://placehold.co/600x400/e7e5e4/78716c?text=KHIP";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Images: a bare file name such as "logo.jpg" is looked up in ./assets/
+const img=u=>!u?FALLBACK_IMG:esc(/^(https?:\/\/|\.\/|\/|data:image)/.test(u)?u:'./assets/'+u);
+const flag=j=>{const c=String(j.code||CODES[(j.country||'').toLowerCase()]||'').toLowerCase();return /^[a-z]{2}$/.test(c)?`<span class="fi fi-${c} rounded-sm shadow-sm" role="img" aria-label="${esc(j.country)} flag"></span>`:'<i class="ph-light ph-globe-hemisphere-west text-brand-600"></i>'};
+const ICONS=[[/patent/i,'ph-lightbulb'],[/trade\s?mark/i,'ph-seal-check'],[/transl/i,'ph-translate'],[/design/i,'ph-pencil-ruler'],[/copyright/i,'ph-copyright'],[/search/i,'ph-magnifying-glass']];
+const icon=x=>/^ph-/.test(x.icon||'')?esc(x.icon.replace(/^ph-light\s*/,'')):(ICONS.find(([r])=>r.test(x.title||''))||[0,'ph-seal-check'])[1];
+const show=(id,on)=>$(id).classList.toggle('hidden',!on);
+const imgErr='onerror="this.onerror=null;this.src=FALLBACK_IMG"';
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let D={},jur=[],slide=0,timer=null,lastFocus=null;
+
+async function load(){
+  let cached=null;try{cached=JSON.parse(localStorage.getItem(CACHE))}catch{}
+  if(cached){D=cached;render()}
+  try{
+    const r=await fetch(DATA_URL,{cache:'no-cache'});if(!r.ok)throw new Error(r.status);
+    const fresh=await r.json();
+    if(JSON.stringify(fresh)!==JSON.stringify(cached)){D=fresh;try{localStorage.setItem(CACHE,JSON.stringify(fresh))}catch{}render()}
+    show('error',false);
+  }catch(e){console.warn('Data load failed',e);if(!cached)show('error',true)}
+}
+
+function render(){
+  $('about-text').innerHTML=KRich.card(D.aboutMainText||D.about||'');
+  KHIP.setPrompts(D.chatPrompts);
+  const s=D.social||{};
+  $('socials').innerHTML=[['linkedin','ph-linkedin-logo'],['youtube','ph-youtube-logo']].filter(([k])=>s[k]).map(([k,i])=>`<a href="${esc(s[k])}" target="_blank" rel="noopener noreferrer" aria-label="${k}" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ${i} text-xl"></i></a>`).join('');
+  carousel(D.carousel||[]);
+  jur=D.jurisdictions||[];show('jurisdictions',jur.length);chips();pick(0);
+  list('services',D.services,(x,i)=>`<div class="fu" style="--d:${(i%3)*.12}s"><div class="card h-full p-5 md:p-7 flex md:flex-col gap-4 md:gap-5 items-start"><div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ${icon(x)} text-2xl md:text-3xl"></i></div><div class="flex flex-col flex-1"><h3 class="font-display text-2xl font-semibold text-title">${esc(x.title)}</h3><p class="text-sm leading-relaxed mt-1.5 line-clamp-5 md:line-clamp-3">${KRich.plain(x.description)}</p><button data-act="service" data-i="${i}" class="mt-4 self-start text-sm border border-ink/30 hover:bg-ink hover:text-white px-6 py-1.5 rounded-full transition">More</button></div></div></div>`);
+  list('news',D.news,x=>`<button data-act="news" data-id="${esc(x.id)}" class="ncard card w-[17rem] sm:w-80 text-left overflow-hidden"><img loading="lazy" src="${img(x.image)}" ${imgErr} alt="" class="w-full h-40 object-cover"><div class="p-5"><span class="cat-tag">${esc(cat(x))}</span>${x.date?`<span class="text-xs text-stone-500 ml-2">${esc(x.date)}</span>`:''}<h3 class="font-display text-xl font-semibold text-title leading-snug line-clamp-2 mt-1.5">${esc(x.title)}</h3><p class="text-sm mt-2 line-clamp-3">${KRich.plain(x.excerpt)}</p></div></button>`);
+  news();
+  list('testimonials',D.testimonials,(x,i)=>`<div class="tcard${i?'':' on'} text-center flex flex-col items-center justify-center"><p class="font-display text-lg md:text-xl lg:text-2xl leading-snug text-ink">${esc(x.text)}</p><h4 class="mt-5 font-medium text-title">${esc(x.name)}</h4><span class="text-sm text-stone-500">${esc(x.role)}</span></div>`);
+  auto($('news-list'));
+  testi();observeFu();
+  const h=location.hash.slice(1);
+  if(h.startsWith('news-'))openNews(h.slice(5));
+  else if(h&&!render.done&&$(h))setTimeout(()=>$(h).scrollIntoView(),80);
+  render.done=1;
+}
+function list(id,items,fn){items=items||[];show(id,items.length);$(id+'-list').innerHTML=items.map(fn).join('')}
+
+// Auto-moving parts stop while hovered, touched or focused, and resume 2.5s after
+function watch(el){
+  if(el._w)return;el._w=1;
+  const hold=()=>{el._hold=true},free=()=>{el._wait=Date.now()+2500;el._hold=false};
+  ['mouseenter','focusin','touchstart','pointerdown'].forEach(v=>el.addEventListener(v,hold,{passive:true}));
+  ['mouseleave','focusout','touchend','pointerup'].forEach(v=>el.addEventListener(v,e=>{if(e.type==='pointerup'&&e.pointerType==='mouse')return;free()},{passive:true}));
+}
+const paused=el=>el._hold||Date.now()<(el._wait||0);
+function auto(el,ms=3500){
+  if(el._a)return;el._a=1;watch(el);
+  setInterval(()=>{
+    if(REDUCED||paused(el)||!el.firstElementChild)return;
+    const step=el.firstElementChild.offsetWidth+16;
+    if(el.scrollLeft+el.clientWidth>=el.scrollWidth-6)el.scrollTo({left:0,behavior:'smooth'});else el.scrollBy({left:step,behavior:'smooth'});
+  },ms);
+}
+// Testimonials: one at a time in a frame; every 10 seconds the quote fades out, then the next fades in
+let ti=0;
+function testi(){
+  const n=(D.testimonials||[]).length;ti=0;
+  $('t-dots').innerHTML=n>1?Array.from({length:n},(_,i)=>`<button data-act="tslide" data-i="${i}" aria-label="Testimonial ${i+1}" class="td h-1.5 rounded-full transition-all duration-500 ${i?'w-2 bg-stone-300':'w-7 bg-ink'}"></button>`).join(''):'';
+  watch($('testimonials'));
+  if(!testi.t)testi.t=setInterval(()=>{const m=(D.testimonials||[]).length;if(!REDUCED&&m>1&&!paused($('testimonials')))setT((ti+1)%m)},10000);
+}
+function setT(i){
+  const cards=[...document.querySelectorAll('.tcard')];if(!cards[i])return;
+  clearTimeout(setT.w);cards.forEach(c=>c.classList.remove('on'));            // fade out
+  document.querySelectorAll('.td').forEach((d,k)=>{d.classList.toggle('w-7',k===i);d.classList.toggle('bg-ink',k===i);d.classList.toggle('w-2',k!==i);d.classList.toggle('bg-stone-300',k!==i)});
+  ti=i;
+  setT.w=setTimeout(()=>cards[i].classList.add('on'),REDUCED?0:750);               // then fade in
+}
+
+// News on mobile: one wide, centred card at a time, fading in and out (desktop keeps the scrolling row; see styles.css)
+let ni=0;
+function news(){
+  const n=(D.news||[]).length,L=$('news-list');ni=0;
+  L.querySelectorAll('.ncard').forEach((c,k)=>c.classList.toggle('on',k===0));
+  $('news-dots').innerHTML=n>1?Array.from({length:n},(_,i)=>`<button data-act="nslide" data-i="${i}" aria-label="News ${i+1}" class="nd h-1.5 rounded-full transition-all duration-500 ${i?'w-2 bg-stone-300':'w-7 bg-ink'}"></button>`).join(''):'';
+  watch($('news'));
+  if(!news.t){
+    news.t=setInterval(()=>{const m=(D.news||[]).length;if(!REDUCED&&m>1&&matchMedia('(max-width:767px)').matches&&!paused($('news')))setN((ni+1)%m)},6000);
+    let x0=null;
+    L.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});
+    L.addEventListener('touchend',e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0,m=(D.news||[]).length;x0=null;
+      if(m>1&&matchMedia('(max-width:767px)').matches&&Math.abs(dx)>40)setN((ni+(dx<0?1:-1)+m)%m)},{passive:true});
+  }
+}
+function setN(i){
+  document.querySelectorAll('#news-list>.ncard').forEach((c,k)=>c.classList.toggle('on',k===i));
+  document.querySelectorAll('.nd').forEach((d,k)=>{d.classList.toggle('w-7',k===i);d.classList.toggle('bg-ink',k===i);d.classList.toggle('w-2',k!==i);d.classList.toggle('bg-stone-300',k!==i)});
+  ni=i;
+}
+
+function carousel(slides){
+  clearInterval(timer);slide=0;const c=$('carousel');
+  c.parentElement.classList.toggle('hidden',!slides.length);
+  c.innerHTML=slides.map((s,i)=>`<div class="slide absolute inset-0 ${i?'':'on'}"><img src="${img(s.image)}" ${imgErr} alt="" class="w-full h-full object-cover opacity-80"><div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent p-6 md:p-12 flex flex-col justify-end text-white"><h2 class="font-display text-3xl md:text-5xl font-medium leading-tight max-w-2xl">${esc(s.title)}</h2><p class="text-sm md:text-base text-stone-200 mt-2 max-w-xl">${esc(s.subtitle)}</p></div></div>`).join('');
+  if(slides.length>1){
+    const go=()=>{clearInterval(timer);if(!REDUCED)timer=setInterval(()=>setSlide((slide+1)%slides.length),10000)};go();
+    c.onmouseenter=()=>clearInterval(timer);c.onmouseleave=go;
+    let x0=null;c.ontouchstart=e=>{x0=e.touches[0].clientX;clearInterval(timer)};
+    c.ontouchend=e=>{if(x0!==null){const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>40)setSlide((slide+(dx<0?1:-1)+slides.length)%slides.length);x0=null}go()};
+  }
+}
+function setSlide(i){
+  const s=document.querySelectorAll('.slide');if(!s[i])return;
+  s[slide].classList.remove('on');slide=i;s[i].classList.add('on');
+}
+
+function chips(){
+  const m=jur.map((j,i)=>[j,i]);
+  window.jm=m.map(x=>x[1]);
+  $('jur-chips').innerHTML=m.map(([j,i])=>`<button data-act="jur" data-i="${i}" id="chip-${i}" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm flex-shrink-0 bg-white border border-stone-300 transition"><span class="text-base">${flag(j)}</span>${esc(j.country)}</button>`).join('')||'<p class="text-sm py-2">No matching country. Message us and we will check for you.</p>';
+}
+let jc=0;
+function pick(i){
+  const j=jur[i];if(!j){$('jur-card').innerHTML='';return}
+  jc=i;
+  document.querySelectorAll('[id^=chip-]').forEach(b=>{const on=b.id==='chip-'+i;b.classList.toggle('bg-ink',on);b.classList.toggle('text-white',on);b.classList.toggle('border-ink',on);b.classList.toggle('bg-white',!on)});
+  const ch=$('chip-'+i),box=$('jur-chips');
+  if(ch)box.scrollTo({left:ch.offsetLeft-(box.clientWidth-ch.offsetWidth)/2,behavior:'smooth'});
+  const c=$('jur-card');c.style.transition='opacity .3s ease,transform .3s ease';c.style.opacity=0;c.style.transform='translateX(-24px)';
+  setTimeout(()=>{
+    c.innerHTML=`<div class="flex items-center gap-3"><span class="text-[1.6875rem] leading-none">${flag(j)}</span><h3 class="font-display text-[1.4rem] leading-tight font-semibold text-title">${esc(j.country)}</h3></div><p class="mt-4 text-sm md:text-base leading-relaxed line-clamp-5 md:line-clamp-4 max-w-3xl">${KRich.card(j.brief||'IP guidelines available upon inquiry.')}</p><div class="mt-6 text-center"><button data-act="jurmodal" data-i="${i}" class="text-sm bg-ink hover:bg-stone-800 text-white px-10 py-2.5 rounded-full transition">View Filing Requirements</button></div>`;
+    c.style.transition='none';c.style.transform='translateX(24px)';void c.offsetWidth;
+    c.style.minHeight=Math.max(parseFloat(c.style.minHeight)||0,c.scrollHeight)+'px';c.style.transition='opacity .6s ease,transform .7s cubic-bezier(.16,1,.3,1)';c.style.opacity=1;c.style.transform='none';
+  },300);
+}
+// Countries advance by themselves every 15 seconds
+setInterval(()=>{
+  const sec=$('jurisdictions'),m=window.jm||[];
+  if(REDUCED||paused(sec)||m.length<2||!$('modal').classList.contains('pointer-events-none'))return;
+  pick(m[(m.indexOf(jc)+1)%m.length]);
+},15000);
+
+function openModal(html){
+  lastFocus=document.activeElement;$('m-body').innerHTML=html;
+  $('modal').classList.remove('opacity-0','pointer-events-none');$('sheet').classList.remove('closed');$('m-scroll').scrollTop=0;
+  document.body.classList.add('lock');$('sheet').querySelector('button').focus({preventScroll:true});
+}
+function closeModal(){
+  clearInterval(relT);
+  $('modal').classList.add('opacity-0','pointer-events-none');$('sheet').classList.add('closed');
+  document.body.classList.remove('lock');if(location.hash.startsWith('#news-'))history.replaceState(null,'',location.pathname);
+  lastFocus&&lastFocus.focus();
+}
+function openNews(id){
+  const a=(D.news||[]).find(n=>String(n.id)===String(id));if(!a)return;
+  history.replaceState(null,'','#news-'+a.id);
+  openModal(`<h3 id="m-title" class="font-display text-3xl font-semibold text-title pr-10 leading-tight">${esc(a.title)}</h3><div><span class="cat-tag">${esc(cat(a))}</span>${a.date?`<span class="text-xs text-stone-500 ml-2">${esc(a.date)}</span>`:''}</div><img src="${img(a.image)}" ${imgErr} alt="" class="w-full h-52 md:h-72 rounded-2xl object-cover"><div class="leading-relaxed">${KRich.rich(a.text||a.excerpt)}</div><button data-act="share" data-id="${esc(a.id)}" class="text-sm bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-full transition"><i class="ph-light ph-link"></i> Copy link</button>${related(a)}`);
+  relStart();
+}
+// Related news: same category, shown under the article, slides by itself every 5 seconds
+const cat=x=>String(x.category||'').trim()||'General';
+function related(a){
+  const r=(D.news||[]).filter(n=>String(n.id)!==String(a.id)&&cat(n)===cat(a));
+  if(!r.length)return '';
+  return `<div id="rel" class="border-t border-stone-200 pt-5"><h4 class="font-display text-2xl font-semibold text-title mb-3">Related news</h4><div id="rel-track" class="rel-track">${r.map(n=>`<button data-act="news" data-id="${esc(n.id)}" class="rel-card card text-left overflow-hidden"><img loading="lazy" src="${img(n.image)}" ${imgErr} alt="" class="w-full h-28 object-cover"><div class="p-3"><h5 class="font-display text-lg font-semibold text-title leading-snug line-clamp-2">${esc(n.title)}</h5>${n.date?`<span class="text-xs text-stone-500">${esc(n.date)}</span>`:''}</div></button>`).join('')}</div></div>`;
+}
+let relT=0,relHold=false;
+function relStart(){
+  clearInterval(relT);const tr=$('rel-track');if(!tr)return;
+  tr.addEventListener('mouseenter',()=>relHold=true);tr.addEventListener('mouseleave',()=>relHold=false);
+  tr.addEventListener('touchstart',()=>relHold=true,{passive:true});tr.addEventListener('touchend',()=>setTimeout(()=>relHold=false,3000),{passive:true});
+  relT=setInterval(()=>{
+    const t=$('rel-track');if(!t){clearInterval(relT);return}
+    if(REDUCED||relHold||t.scrollWidth<=t.clientWidth+4)return;
+    const c=t.firstElementChild,step=c.offsetWidth+12;
+    if(t.scrollLeft+t.clientWidth>=t.scrollWidth-4)t.scrollTo({left:0,behavior:'smooth'});else t.scrollBy({left:step,behavior:'smooth'});
+  },5000);
+}
+function openService(i){
+  const x=(D.services||[])[i];if(!x)return;
+  const more=/^[\w\-]+\.html$/.test(x.page||'');
+  openModal(`<div class="flex items-center gap-4 pr-10"><div class="w-14 h-14 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ${icon(x)} text-3xl"></i></div><h3 id="m-title" class="font-display text-3xl font-semibold text-title leading-tight">${esc(x.title)}</h3></div><div class="leading-relaxed">${KRich.rich(x.description)}</div>${x.details&&x.details.trim()?`<div class="bg-stone-50 p-5 rounded-2xl border border-stone-200 text-sm leading-relaxed">${KRich.rich(x.details)}</div>`:''}${more?`<a href="${esc(x.page)}" class="block text-center w-full bg-ink hover:bg-stone-800 text-white py-3 rounded-full text-sm transition">More information</a>`:''}<button data-act="inquire" data-q="${esc(x.title)}" class="w-full bg-sand hover:brightness-95 text-ink py-3 rounded-full text-sm transition"><i class="ph-light ph-whatsapp-logo"></i> Inquire about ${esc(x.title)}</button>`);
+}
+function openJur(i){
+  const j=jur[i];if(!j)return;
+  openModal(`<div class="flex items-center gap-4 pr-10"><span class="text-4xl">${flag(j)}</span><h3 id="m-title" class="font-display text-3xl font-semibold text-title">${esc(j.country)}</h3></div><div><h3 class="font-display text-lg font-semibold text-title mb-1">PCT Filing Guidelines</h3><div class="text-sm leading-relaxed">${KRich.rich(j.details||j.brief)}</div></div><button data-act="inquire" data-q="IP filings and legal procedures in ${esc(j.country)}" class="w-full bg-sand hover:brightness-95 text-ink py-3 rounded-full text-sm transition"><i class="ph-light ph-whatsapp-logo"></i> Inquire about ${esc(j.country)}</button>`);
+}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');if(!t)return;
+  const {act,i,id,q}=t.dataset;
+  if(act==='close'){if(e.target===t||t.tagName==='BUTTON')closeModal()}
+  else if(act==='jur')pick(+i);else if(act==='jurmodal')openJur(+i);else if(act==='news')openNews(id);
+  else if(act==='service')openService(+i);else if(act==='tslide')setT(+i);else if(act==='nslide')setN(+i);else if(act==='inquire')KHIP.wa(`Hello KHIP! I would like to inquire about ${q}.`);
+  else if(act==='retry')load();
+  else if(act==='share'){const u=location.origin+location.pathname+'#news-'+id;(navigator.share?navigator.share({url:u}):navigator.clipboard.writeText(u)).then(()=>t.textContent='Link copied').catch(()=>{})}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if(e.key==='Tab'&&!$('modal').classList.contains('pointer-events-none')){
+    const f=[...$('sheet').querySelectorAll('button,a[href]')],a=document.activeElement;
+    if(e.shiftKey&&a===f[0]){e.preventDefault();f.at(-1).focus()}else if(!e.shiftKey&&a===f.at(-1)){e.preventDefault();f[0].focus()}
+  }
+});
+// Fade-up on scroll: sections, and individual .fu items
+const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.08});
+const observeFu=()=>document.querySelectorAll('.fu:not(.in)').forEach(e=>io.observe(e));
+document.querySelectorAll('main section:not(#about):not(#services)').forEach(x=>{x.classList.add('rv');io.observe(x)});
+observeFu();
+load();
+</script>
+</body>
+</html>

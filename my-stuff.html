@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My files | KHIP Intellectual Properties</title>
+<meta name="robots" content="noindex"><meta name="description" content="Your private files from KHIP.">
+<meta name="theme-color" content="#1d4ed8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="tailwind-config.js"></script>
+<script src="theme.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="font-sans font-light antialiased">
+<header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
+  <div class="wrap py-3 flex items-center justify-between">
+    <a href="index.html" class="font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><span class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span class="font-medium brand-ink">Intellectual Properties</span></a>
+    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
+      <a href="index.html" class="hover:text-brand-600 transition">Home</a><a href="patents.html" class="text-brand-700 font-normal transition">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition">Translation</a><a href="about.html" class="hover:text-brand-600 transition">About</a>
+    </nav>
+    <a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a>
+  </div>
+</header>
+<main>
+<section class="band"><div class="wrap">
+  <div class="fu"><h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-medium text-title leading-[1.05]">My files</h1><span class="rule mt-5"></span>
+  <p id="who" class="text-base md:text-lg max-w-xl">Your private files from KHIP, ready to download.</p></div>
+  <div id="crumb" class="mt-8 flex flex-wrap items-center gap-2 text-sm"></div>
+  <div id="tools" class="mt-4 hidden flex-wrap items-center gap-3"><input id="q" type="search" placeholder="Search files" aria-label="Search files" class="auth-in !mb-0 !w-full sm:!w-72"><label class="text-sm text-stone-500 flex items-center gap-2">Sort<select id="sort" class="rounded-full border border-stone-300 bg-white px-3 py-2 text-sm"><option value="name">Name</option><option value="new">Newest first</option></select></label></div>
+  <div id="files" class="mt-4 grid gap-3" aria-live="polite"></div>
+</div></section>
+</main>
+<script src="footer.js"></script>
+<script src="auth.js"></script>
+<script>
+const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.08});
+document.querySelectorAll('.fu').forEach(e=>io.observe(e));
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const X={pdf:['ph-file-pdf','text-red-700'],doc:['ph-file-doc','text-blue-700'],docx:['ph-file-doc','text-blue-700'],xls:['ph-file-xls','text-emerald-700'],xlsx:['ph-file-xls','text-emerald-700'],csv:['ph-file-csv','text-emerald-700'],ppt:['ph-file-ppt','text-orange-700'],pptx:['ph-file-ppt','text-orange-700'],zip:['ph-file-zip','text-stone-600'],png:['ph-file-image','text-stone-600'],jpg:['ph-file-image','text-stone-600'],jpeg:['ph-file-image','text-stone-600']};
+const size=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
+let path=[],root='',bucket='client-files',all=[],sec=null;
+const pre=()=>sec?['sectors',sec.id,...path]:[root,...path];
+const note=(t,btn)=>{if(!all.length)$('tools').classList.add('hidden');$('files').innerHTML=`<div class="card p-8 text-center"><p>${t}</p>${btn?'<button id="go-login" class="auth-btn mt-4" style="margin:1rem auto 0"><i class="ph-light ph-user"></i><span style="display:inline">Login</span></button>':''}</div>`;if(btn)$('go-login').onclick=()=>KHIPAuth.open()};
+async function show(){
+  const A=KHIPAuth,sb=A.client(),u=A.user();$('crumb').innerHTML='';all=[];
+  if(!sb)return note('Sign-in is not set up yet. Please try again later.');
+  if(!u)return note('Please sign in to see your files.',true);
+  root=u.email.toLowerCase();bucket=(A.config()||{}).bucket||'client-files';
+  $('files').innerHTML='<div class="card p-8 text-center text-stone-500">Loading your files...</div>';
+  const {data,error}=await sb.storage.from(bucket).list(pre().join('/'),{limit:500,sortBy:{column:'name',order:'asc'}});
+  if(error)return note('We could not load your files. Please refresh and try again.');
+  // Home level: add a card for every sector this client subscribes to (RLS returns only theirs)
+  let cards=[];
+  if(!sec&&!path.length){const r=await sb.from('sectors').select('id,name').order('name');if(!r.error)cards=(r.data||[]).map(x=>({name:x.name,sector:x.id,id:null}))}
+  $('crumb').innerHTML=`<button data-home class="underline underline-offset-4">My files</button>`+(sec?`<span>/</span><button data-up="-1" class="underline underline-offset-4">${esc(sec.name)}</button>`:'')+path.map((p,i)=>`<span>/</span><button data-up="${i}" class="underline underline-offset-4">${esc(p)}</button>`).join('');
+  all=cards.concat((data||[]).filter(f=>!f.name.startsWith('.')));
+  $('q').value='';paint();
+}
+function paint(){
+  const t=$('q').value.trim().toLowerCase(),by=$('sort').value,when=f=>Date.parse(f.updated_at||f.created_at||0)||0;
+  $('tools').classList.toggle('hidden',all.length<6);$('tools').classList.toggle('flex',all.length>=6);
+  const items=all.filter(f=>!t||f.name.toLowerCase().includes(t)).sort((a,b)=>(a.sector?0:a.id===null?1:2)-(b.sector?0:b.id===null?1:2)||(by==='new'&&a.id!==null&&b.id!==null?when(b)-when(a):a.name.localeCompare(b.name,undefined,{numeric:true})));
+  if(!all.length)return note(sec?'No documents in this sector yet. New material appears here as soon as it is published.':'No files here yet. We will add your documents as soon as they are ready.');
+  if(!items.length)return note('No file matches your search.');
+  $('files').innerHTML=items.map((f,i)=>{
+    if(f.sector)return `<button data-sec="${esc(f.sector)}" data-name="${esc(f.name)}" class="card p-4 flex items-center gap-4 text-left border-brand-600/30"><i class="ph-light ph-stack text-3xl text-brand-600"></i><span class="flex-1"><span class="block font-display text-xl font-semibold text-title">${esc(f.name)}</span><span class="block text-xs text-stone-500">Sector library</span></span><i class="ph-light ph-caret-right text-stone-400"></i></button>`;
+    if(f.id===null)return `<button data-open="${esc(f.name)}" class="card p-4 flex items-center gap-4 text-left"><i class="ph-light ph-folder text-3xl text-gold"></i><span class="flex-1 font-display text-xl font-semibold text-title">${esc(f.name)}</span><i class="ph-light ph-caret-right text-stone-400"></i></button>`;
+    const ext=f.name.split('.').pop().toLowerCase(),[ic,co]=X[ext]||['ph-file','text-stone-600'],m=f.metadata||{},d=f.updated_at||f.created_at;
+    return `<div class="card p-4 flex items-center gap-4"><i class="ph-light ${ic} text-4xl ${co}"></i><div class="flex-1 min-w-0"><p class="font-medium text-ink truncate">${esc(f.name)}</p><p class="text-xs text-stone-500">${m.size?size(m.size)+' &middot; ':''}${d?new Date(d).toLocaleDateString():''}</p></div><button data-dl="${esc(f.name)}" class="text-sm bg-ink hover:bg-stone-800 text-white px-5 py-2 rounded-full transition whitespace-nowrap"><i class="ph-light ph-download-simple"></i> Download</button></div>`}).join('');
+}
+async function download(name,btn){
+  btn.disabled=true;const t=btn.innerHTML;btn.textContent='Preparing...';
+  const {data,error}=await KHIPAuth.client().storage.from(bucket).createSignedUrl([...pre(),name].join('/'),60,{download:name});
+  btn.disabled=false;btn.innerHTML=t;
+  if(error)return alert('Sorry, this file could not be downloaded.');
+  const a=document.createElement('a');a.href=data.signedUrl;a.download=name;document.body.appendChild(a);a.click();a.remove();
+}
+$('q').addEventListener('input',paint);$('sort').addEventListener('change',paint);
+document.addEventListener('click',e=>{
+  const o=e.target.closest('[data-open]'),u=e.target.closest('[data-up]'),d=e.target.closest('[data-dl]'),h=e.target.closest('[data-home]'),c=e.target.closest('[data-sec]');
+  if(c){sec={id:c.dataset.sec,name:c.dataset.name};path=[];show()}else if(h){sec=null;path=[];show()}else if(o){path.push(o.dataset.open);show()}else if(u){path=path.slice(0,+u.dataset.up+1);show()}else if(d)download(d.dataset.dl,d);
+});
+KHIPAuth.onChange(()=>{sec=null;path=[];show()});
+KHIPAuth.ready.then(show);
+</script>
+</body>
+</html>

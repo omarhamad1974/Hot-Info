@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>KHIP Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>tailwind.config={theme:{extend:{colors:{brand:{50:'#eff6ff',100:'#dbeafe',600:'#1d4ed8',700:'#1e40af'}}}}}</script>
+<style>
+:focus-visible{outline:2px solid #1d4ed8;outline-offset:2px}
+summary{list-style:none}summary::-webkit-details-marker{display:none}
+details[open]>summary .chev{transform:rotate(90deg)}
+.chev{transition:transform .2s}
+.bad{border-color:#dc2626!important;box-shadow:0 0 0 3px rgba(220,38,38,.15)}
+.drop{outline:2px dashed #1d4ed8;outline-offset:-6px;background:#eff6ff}
+</style>
+</head>
+<body class="bg-gray-100 text-gray-900 antialiased font-sans">
+
+<!-- Top bar: switch between the two admin areas -->
+<div class="sticky top-0 z-40 bg-gray-900 text-white">
+  <div class="max-w-3xl mx-auto px-4 h-12 flex items-center gap-3">
+    <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center font-black text-xs flex-shrink-0">KH</div>
+    <nav class="flex gap-1 flex-1" aria-label="Admin areas">
+      <button data-pane="content" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-pen-to-square"></i> Website content</button>
+      <button data-pane="clients" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-folder-open"></i> Client files</button>
+    </nav>
+    <a href="index.html" target="_blank" rel="noopener" class="text-[11px] text-gray-300 hover:text-white whitespace-nowrap"><i class="fas fa-arrow-up-right-from-square"></i> View site</a>
+  </div>
+</div>
+
+<!-- ============ WEBSITE CONTENT (GitHub) ============ -->
+<div id="pane-content" class="hidden">
+<section id="login" class="max-w-md mx-auto p-5 pt-10">
+  <div class="mb-6"><h1 class="text-xl font-extrabold">Website content</h1><p class="text-xs text-gray-600">Edit the website text, photos, news and team without touching JSON.</p></div>
+  <form id="login-form" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+    <label class="block text-xs font-bold">GitHub username or organization<input id="f-o" required autocomplete="off" class="mt-1 w-full px-3 py-2 text-sm rounded-lg border border-gray-300 font-normal"></label>
+    <label class="block text-xs font-bold">Repository name<input id="f-r" required autocomplete="off" class="mt-1 w-full px-3 py-2 text-sm rounded-lg border border-gray-300 font-normal"></label>
+    <div class="grid grid-cols-2 gap-3">
+      <label class="block text-xs font-bold">Branch<input id="f-b" value="main" class="mt-1 w-full px-3 py-2 text-sm rounded-lg border border-gray-300 font-normal"></label>
+      <label class="block text-xs font-bold">Data file<input id="f-p" value="app-data.json" class="mt-1 w-full px-3 py-2 text-sm rounded-lg border border-gray-300 font-normal"></label>
+    </div>
+    <label class="block text-xs font-bold">Access token<input id="f-t" type="password" required autocomplete="off" class="mt-1 w-full px-3 py-2 text-sm rounded-lg border border-gray-300 font-normal"></label>
+    <label class="flex items-center gap-2 text-xs"><input id="f-s" type="checkbox"> Keep me signed in for this browser tab</label>
+    <p id="login-err" class="hidden text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg p-2" role="alert"></p>
+    <button class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl text-sm">Connect</button>
+  </form>
+  <details class="mt-4 text-xs text-gray-700 bg-white rounded-2xl border border-gray-200 p-4">
+    <summary class="font-bold cursor-pointer">How do I get a token?</summary>
+    <ol class="list-decimal ml-4 mt-2 space-y-1">
+      <li>On GitHub open Settings, Developer settings, Personal access tokens, Fine-grained tokens.</li>
+      <li>Choose "Only select repositories" and pick the website repository.</li>
+      <li>Under Repository permissions set <b>Contents</b> to Read and write.</li>
+      <li>Generate the token and paste it above. Treat it like a password.</li>
+    </ol>
+    <p class="mt-2">The token stays in this browser and is only sent to api.github.com.</p>
+  </details>
+</section>
+
+<section id="app" class="hidden">
+  <header class="sticky top-12 z-30 bg-white/95 backdrop-blur border-b shadow-sm">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-2">
+      <div class="min-w-0 flex-1"><h1 class="font-extrabold truncate" id="repo-name"></h1><p id="state" class="text-[11px] text-gray-500">Loaded</p></div>
+      <button data-act="discard" id="discard" disabled class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-40 font-bold px-3 py-2 rounded-xl" title="Discard unsaved changes" aria-label="Discard unsaved changes"><i class="fas fa-rotate-left"></i></button>
+      <button data-act="backup" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl" title="Download a copy" aria-label="Download a copy"><i class="fas fa-download"></i></button>
+      <button data-act="out" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl">Sign out</button>
+      <button id="save" data-act="save" disabled class="text-xs bg-brand-600 hover:bg-brand-700 disabled:bg-gray-300 text-white font-bold px-4 py-2 rounded-xl" title="Ctrl+S">Save to GitHub</button>
+    </div>
+    <nav id="tabs" class="max-w-3xl mx-auto flex gap-1.5 overflow-x-auto px-4 pb-2" aria-label="Sections"></nav>
+  </header>
+  <datalist id="assets"></datalist>
+  <main id="view" class="max-w-3xl mx-auto p-4 space-y-3"></main>
+</section>
+</div>
+
+<!-- ============ CLIENT FILES (Supabase) ============ -->
+<div id="pane-clients" class="hidden">
+  <section id="k-login" class="max-w-md mx-auto p-5 pt-10">
+    <div class="mb-6"><h1 class="text-xl font-extrabold">Client files</h1><p class="text-xs text-gray-600">Invite clients and share documents in their private folders.</p></div>
+    <div id="k-setup" class="hidden mb-4 text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1">
+      <p class="font-bold">Supabase is not connected yet.</p>
+      <p>Open <code>supabase-config.js</code>, paste your project URL and anon key (Supabase: Project Settings, API), then reload this page. The full checklist is in README.md.</p>
+    </div>
+    <form id="k-form" class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+      <div id="k-sign-fields" class="space-y-3">
+        <label class="block text-xs font-bold">Admin email<input name="email" type="email" required autocomplete="username" class="mt-1 w-full px-3 py-2 text-sm rounded-lg border border-gray-300 font-normal"></label>
+        <label class="block text-xs font-bold">Password<input name="password" type="password" required autocomplete="current-password" class="mt-1 w-full px-3 py-2 text-sm rounded-lg border border-gray-300 font-normal"></label>
+      </div>
+      <p id="k-err" class="hidden text-xs rounded-lg p-2" role="alert"></p>
+      <button id="k-go" class="w-full bg-brand-600 hover:bg-brand-700 disabled:opacity-60 text-white font-bold py-2.5 rounded-xl text-sm">Sign in</button>
+      <p class="text-center text-xs"><a href="#" id="k-forgot" class="text-brand-700 underline">Forgot password?</a></p>
+    </form>
+  </section>
+
+  <section id="k-app" class="hidden">
+    <header class="sticky top-12 z-30 bg-white/95 backdrop-blur border-b shadow-sm">
+      <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-2">
+        <div class="min-w-0 flex-1"><h1 class="font-extrabold">Client files</h1><p id="k-who" class="text-[11px] text-gray-500 truncate"></p></div>
+        <button data-k="refresh" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl" aria-label="Refresh" title="Refresh"><i class="fas fa-rotate"></i></button>
+        <button data-k="signout" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl">Sign out</button>
+      </div>
+    </header>
+    <main id="k-main" class="max-w-3xl mx-auto p-4 space-y-3"></main>
+  </section>
+</div>
+
+<div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 hidden max-w-sm px-4 py-2.5 rounded-xl text-sm font-bold shadow-xl text-white" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="theme.js"></script>
+<script>
+/* ============================ shared ============================ */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m,ok=true){const t=$('toast');t.textContent=m;t.className=`fixed bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-sm px-4 py-2.5 rounded-xl text-sm font-bold shadow-xl text-white ${ok?'bg-emerald-600':'bg-red-600'}`;clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hidden'),ok?4000:7000)}
+const inp='w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white font-normal';
+const sizeOf=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
+
+let pane='content';
+function showPane(p){
+  pane=p;history.replaceState(null,'','#'+(p==='clients'?'clients':'content'));
+  $('pane-content').classList.toggle('hidden',p!=='content');$('pane-clients').classList.toggle('hidden',p!=='clients');
+  document.querySelectorAll('.pane-btn').forEach(b=>{const on=b.dataset.pane===p;b.className='pane-btn text-xs font-bold px-3 py-1.5 rounded-lg '+(on?'bg-white text-gray-900':'text-gray-300 hover:bg-white/10')});
+  if(p==='clients')K.start();
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pane]');if(b)showPane(b.dataset.pane)});
+
+/* ============================ WEBSITE CONTENT ============================ */
+const SC={
+ carousel:{label:'Carousel',icon:'fa-images',one:'slide',title:'title',req:['title'],f:[['title','Title'],['subtitle','Subtitle'],['tag','Tag'],['image','Image','img']]},
+ jurisdictions:{label:'Jurisdictions',icon:'fa-globe-africa',one:'country',title:'country',req:['country'],f:[['country','Country'],['code','Country code, 2 letters (eg, ae, sa)'],['tag','Tag'],['brief','Overview (the country card shows the first 5 lines)','area'],['details','Filing details','area']]},
+ news:{label:'News',icon:'fa-newspaper',one:'article',title:'title',req:['title','excerpt'],f:[['title','Title'],['date','Date','date'],['category','Category (label)','select'],['image','Image','img'],['excerpt','Short summary','area'],['text','Full article','area']]},
+ services:{label:'Services',icon:'fa-balance-scale',one:'service',title:'title',req:['title','description'],f:[['title','Title'],['icon','Icon (optional, e.g. ph-lightbulb)'],['description','1. Brief (on the home page card, and the top of the pop-up)','area'],['details','2. Pop-up content (more information, shown when the card is opened)','area'],['page','Dedicated page file (e.g. patents.html). Adds the "More information" button'],['pageContent','3. Dedicated page content. Text before the first ## is the introduction; each ## Heading becomes a card on the page','area']]},
+ products:{label:'Products',icon:'fa-file-contract',one:'product',title:'title',req:['title'],f:[['title','Title'],['category','Category'],['price','Price (or "Inquire")'],['image','Image','img']]},
+ testimonials:{label:'Testimonials',icon:'fa-quote-left',one:'testimonial',title:'name',req:['name','text'],f:[['name','Client name'],['role','Role and company'],['text','Quote','area']]},
+ employees:{label:'Team',icon:'fa-users',one:'team member',title:'name',req:['name','position'],f:[['name','Name'],['position','Position'],['image','Photo','img']]}
+};
+const GEN=[['aboutMainText','About text (home page)','area'],['about','Short tagline'],['social.linkedin','LinkedIn URL'],['social.youtube','YouTube URL'],['chatPrompts','Suggestions typed into the WhatsApp box (one per line)','lines'],['newsCategories','News categories / labels (one per line)','lines']];
+const DEFCATS=['General','KHIP News','Intellectual Property','Patents','Trademarks','Translation'];
+let S={},D=null,sha='',tab='general',dirty=false,openItem=null,q='',ASSETS=[];
+
+const get=(o,p)=>p.split('.').reduce((a,k)=>a?.[k],o)??'';
+const set=(o,p,v)=>{const k=p.split('.'),l=k.pop();k.forEach(x=>o=o[x]??={});o[l]=v};
+const full=v=>!v?'':/^(https?:|\.\/|\/)/.test(v)?v:'./assets/'+v;
+const imgSrc=v=>!v?'':/^https?:/.test(v)?v:`https://raw.githubusercontent.com/${S.o}/${S.r}/${S.b}/${full(v).replace(/^\.?\//,'')}`;
+const b64=u8=>{let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s)};
+const unb64=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g,'')),c=>c.charCodeAt(0)));
+function mark(on=true){dirty=on;$('save').disabled=!on;$('discard').disabled=!on;$('state').textContent=on?'Unsaved changes':'All changes saved'}
+
+async function api(path,{method='GET',query='',body}={}){
+  const r=await fetch(`https://api.github.com/repos/${S.o}/${S.r}/contents/${path}${query}`,{method,headers:{Authorization:'Bearer '+S.t,Accept:'application/vnd.github+json'},body:body&&JSON.stringify(body)});
+  if(!r.ok){
+    const m={401:'The token was rejected. Check it and its expiry date.',403:'The token cannot write to this repository. Set Contents to Read and write.',404:'Repository, branch or file not found, or the token has no access to it.',409:'The file changed on GitHub. Press the undo arrow to reload it, then apply your edits again.',422:'GitHub rejected the change. Reload and try again.'}[r.status]||`GitHub error ${r.status}`;
+    throw Object.assign(new Error(m),{status:r.status});
+  }
+  return r.json();
+}
+
+async function connect(creds){
+  S=creds;
+  try{
+    const j=await api(S.p,{query:'?ref='+encodeURIComponent(S.b)});
+    D=JSON.parse(unb64(j.content));sha=j.sha;
+    try{ASSETS=(await api('assets',{query:'?ref='+encodeURIComponent(S.b)})).map(f=>f.name)}catch{}
+  }catch(e){$('login-err').textContent=e instanceof SyntaxError?'The data file is not valid JSON.':e.message;$('login-err').classList.remove('hidden');return}
+  localStorage.setItem('khip-admin',JSON.stringify({o:S.o,r:S.r,b:S.b,p:S.p}));
+  if($('f-s').checked)sessionStorage.setItem('khip-admin-t',S.t);
+  $('login').classList.add('hidden');$('app').classList.remove('hidden');
+  $('repo-name').textContent=`${S.o}/${S.r}`;q='';openItem=null;mark(false);tabs();view();
+  $('assets').innerHTML=ASSETS.map(n=>`<option value="${esc(n)}">`).join('');
+}
+
+function tabs(){
+  const all=[['general','General','fa-house'],['colors','Colors','fa-palette'],['backgrounds','Backgrounds','fa-fill-drip'],...Object.entries(SC).map(([k,v])=>[k,v.label,v.icon])];
+  $('tabs').innerHTML=all.map(([k,l,i])=>`<button data-act="tab" data-k="${k}" class="flex-shrink-0 text-xs font-bold px-3 py-2 rounded-xl ${k===tab?'bg-brand-600 text-white':'bg-gray-100 hover:bg-gray-200'}"><i class="fas ${i}"></i> ${l}${SC[k]?` (${(D[k]||[]).length})`:''}</button>`).join('');
+}
+const tb=(k,p,title,inner,cls='')=>`<button type="button" onmousedown="event.preventDefault()" data-act="fmt" data-k="${k}" data-t="${p}" title="${title}" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 ${cls}">${inner}</button>`;
+function fld(base,[k,l,t],req=[]){
+  const p=base+k,v=get(D,p),star=req.includes(k)?'<span class="text-red-600" title="Required"> *</span>':'';let h;
+  if(t==='area')h=`<div class="flex items-center gap-1 mb-1">${tb('b',p,'Bold','B','text-sm font-bold')}${tb('h',p,'Subtitle','H','text-xs font-bold')}${tb('l',p,'Bullet list','<i class="fas fa-list-ul text-xs"></i>')}<span class="text-[11px] text-gray-500 ml-2">**bold** &nbsp; ## subtitle &nbsp; - bullet</span></div><textarea data-p="${p}" aria-label="${esc(l)}" rows="5" class="${inp}">${esc(v)}</textarea>`;
+  else if(t==='lines')h=`<textarea data-p="${p}" data-lines="1" aria-label="${esc(l)}" rows="4" class="${inp}">${esc(Array.isArray(v)?v.join('\n'):v)}</textarea>`;
+  else if(t==='select'){const o=((D.newsCategories||[]).filter(Boolean).length?D.newsCategories.filter(Boolean):DEFCATS).slice(),cur=v||o[0];if(cur&&!o.includes(cur))o.push(cur);h=`<select data-p="${p}" aria-label="${esc(l)}" class="${inp}">${o.map(x=>`<option ${x===cur?'selected':''}>${esc(x)}</option>`).join('')}</select>`}
+  else if(t==='img')h=`<div class="flex items-center gap-2"><img data-prev="${p}" src="${esc(imgSrc(v))}" alt="" onerror="this.style.visibility='hidden'" class="w-12 h-12 rounded-lg object-cover bg-gray-200 flex-shrink-0"><input data-p="${p}" aria-label="${esc(l)}" value="${esc(v)}" list="assets" placeholder="File name in assets, or upload" class="${inp}"><label class="flex-shrink-0 text-xs bg-brand-50 text-brand-700 font-bold px-3 py-2.5 rounded-lg cursor-pointer hover:bg-brand-100" title="Upload an image"><i class="fas fa-upload"></i><input type="file" accept="image/*" data-up="${p}" class="hidden"></label></div>`;
+  else h=`<input data-p="${p}" aria-label="${esc(l)}" type="${t==='date'?'date':'text'}" value="${esc(v)}" class="${inp}">`;
+  return `<div><span class="text-xs font-bold text-gray-700">${esc(l)}${star}</span>${h}</div>`;
+}
+function view(){
+  const m=$('view');
+  if(tab==='general'){m.innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">${GEN.map(f=>fld('',f)).join('')}</div>`;return}
+  if(tab==='colors')return viewColors();
+  if(tab==='backgrounds')return viewBg();
+  const s=SC[tab],arr=D[tab]=D[tab]||[];
+  m.innerHTML=`<div class="flex items-center justify-between"><h2 class="font-extrabold text-lg">${s.label}</h2><button data-act="add" class="text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] font-bold px-3.5 py-2 rounded-xl"><i class="fas fa-plus"></i> Add ${s.one}</button></div>`
+  +(arr.length>5?`<input id="filter" type="search" placeholder="Search ${s.label.toLowerCase()}" aria-label="Search ${s.label.toLowerCase()}" value="${esc(q)}" class="${inp}">`:'')
+  +'<div id="items" class="space-y-3"></div>';
+  items();
+}
+function items(){
+  const s=SC[tab],arr=D[tab],imgF=s.f.find(f=>f[2]==='img'),ql=q.trim().toLowerCase();
+  const rows=arr.map((x,i)=>[x,i]).filter(([x])=>!ql||s.f.some(([k])=>String(x[k]??'').toLowerCase().includes(ql)));
+  $('items').innerHTML=(arr.length?'':`<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">Nothing here yet. Add the first ${s.one}.</p>`)
+  +(arr.length&&!rows.length?'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No match.</p>':'')
+  +rows.map(([x,i])=>`<details ${openItem===`${tab}.${i}`?'open':''} class="bg-white rounded-2xl border border-gray-200 shadow-sm"><summary class="flex items-center gap-2 p-3 cursor-pointer"><i class="fas fa-chevron-right chev text-[10px] text-gray-400"></i>${imgF&&x[imgF[0]]?`<img src="${esc(imgSrc(x[imgF[0]]))}" alt="" onerror="this.style.display='none'" class="w-8 h-8 rounded-md object-cover bg-gray-200 flex-shrink-0">`:''}<span class="flex-1 min-w-0 font-bold text-sm truncate">${esc(x[s.title]||'Untitled '+s.one)}</span>
+    <button data-act="up" data-i="${i}" ${i&&!ql?'':'disabled'} aria-label="Move up" class="w-8 h-8 rounded-lg bg-gray-100 disabled:opacity-30"><i class="fas fa-arrow-up text-xs"></i></button>
+    <button data-act="down" data-i="${i}" ${i<arr.length-1&&!ql?'':'disabled'} aria-label="Move down" class="w-8 h-8 rounded-lg bg-gray-100 disabled:opacity-30"><i class="fas fa-arrow-down text-xs"></i></button>
+    <button data-act="dup" data-i="${i}" aria-label="Duplicate" title="Duplicate" class="w-8 h-8 rounded-lg bg-gray-100"><i class="fas fa-clone text-xs"></i></button>
+    <button data-act="del" data-i="${i}" aria-label="Delete" class="w-8 h-8 rounded-lg bg-red-50 text-red-600"><i class="fas fa-trash text-xs"></i></button></summary>
+    <div class="p-4 pt-1 space-y-3 border-t">${s.f.map(f=>fld(`${tab}.${i}.`,f,s.req)).join('')}</div></details>`).join('');
+}
+
+/* ---------- Colors and Backgrounds (saved as "theme" in app-data.json; applied by theme.js) ---------- */
+const TH=window.KTHEME;
+const PRESETS=[
+ ['classic','Classic (current)',TH.DEFAULTS],
+ ['ocean','Ocean',{title:'#0f3a5f',ink:'#10263b',gold:'#b08d57',accent:'#0e7490',accentDark:'#155e75',accentSoft:'#ecfeff',sand:'#e3d5b8',page:'#f5f7f8',surface:'#ffffff',text:'#35424d'}],
+ ['graphite','Graphite',{title:'#1c2f5e',ink:'#1f2328',gold:'#b88a44',accent:'#3b5bdb',accentDark:'#2f49b0',accentSoft:'#eef2ff',sand:'#d6c7a1',page:'#f4f4f2',surface:'#ffffff',text:'#3b3f46'}]
+];
+const hexc='w-24 px-2 py-2 text-xs rounded-lg border border-gray-300 bg-white font-mono';
+const bgOpen=new Set();
+function theme(){
+  const t=D.theme=D.theme||{};t.colors=t.colors||{};t.custom=t.custom||[];t.sections=t.sections||{};
+  if(t.sectionWidth==null||t.sectionWidth==='')t.sectionWidth=67;
+  for(const k in TH.DEFAULTS)if(!TH.HEX.test(t.colors[k]||''))t.colors[k]=TH.DEFAULTS[k];
+  return t;
+}
+function cleanTheme(){ // before saving: drop backgrounds that are set back to "Default"
+  if(!D.theme||!D.theme.sections)return;
+  for(const k of Object.keys(D.theme.sections)){const m=(D.theme.sections[k]||{}).mode;if(m!=='color'&&m!=='image')delete D.theme.sections[k]}
+}
+const normHex=v=>{v=String(v||'').trim();if(/^#?[0-9a-f]{3}$/i.test(v)){v=v.replace('#','');v='#'+v.split('').map(c=>c+c).join('')}else if(/^#?[0-9a-f]{6}$/i.test(v))v='#'+v.replace('#','');else return '';return v.toLowerCase()};
+function viewColors(){
+  const t=theme(),sw=c=>`<span class="inline-block w-4 h-4 rounded-sm border border-black/10" style="background:${c}"></span>`;
+  const row=([k,name,use])=>{const v=t.colors[k],d=TH.DEFAULTS[k];
+    return `<div class="flex items-center gap-3 py-2.5 border-b border-gray-100 last:border-0"><input type="color" data-p="theme.colors.${k}" value="${v}" aria-label="${esc(name)} color" class="w-11 h-11 p-0 border border-gray-300 rounded-lg bg-white cursor-pointer flex-shrink-0"><div class="min-w-0 flex-1"><p class="text-sm font-bold">${esc(name)}</p><p class="text-[11px] text-gray-500">${esc(use)}</p></div><input data-hex="theme.colors.${k}" value="${v}" maxlength="7" aria-label="${esc(name)} hex code" class="${hexc}"><button data-act="col-reset" data-k="${k}" ${v.toLowerCase()===d?'disabled':''} title="Back to the default ${d}" aria-label="Reset ${esc(name)} to the default" class="w-9 h-9 rounded-lg bg-gray-100 disabled:opacity-30 flex-shrink-0"><i class="fas fa-rotate-left text-xs"></i></button></div>`};
+  const cust=(c,i)=>`<div class="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0"><input type="color" data-p="theme.custom.${i}.hex" value="${esc(c.hex)}" aria-label="Color ${i+1}" class="w-11 h-11 p-0 border border-gray-300 rounded-lg bg-white cursor-pointer flex-shrink-0"><input data-p="theme.custom.${i}.name" value="${esc(c.name)}" placeholder="Name, e.g. Winter blue" aria-label="Name of color ${i+1}" class="${inp} flex-1 min-w-0"><input data-hex="theme.custom.${i}.hex" value="${esc(c.hex)}" maxlength="7" aria-label="Hex code of color ${i+1}" class="${hexc}"><button data-act="cc-del" data-i="${i}" aria-label="Delete this color" class="w-9 h-9 rounded-lg bg-red-50 text-red-600 flex-shrink-0"><i class="fas fa-trash text-xs"></i></button></div>`;
+  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200">
+    <h2 class="font-extrabold text-lg">Color palette</h2>
+    <p class="text-xs text-gray-600 mt-1">These colors are used everywhere on the website. The starting values are the colors the site has always used; change any of them, then press Save to GitHub.</p>
+    <p class="text-xs font-bold mt-3 mb-1.5">Ready-made palettes</p>
+    <div class="flex flex-wrap gap-2">${PRESETS.map(([k,n,c])=>`<button data-act="preset" data-k="${k}" class="flex items-center gap-2 text-xs font-bold bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-xl">${['title','ink','gold','accent','sand'].map(r=>sw(c[r])).join('')}<span>${esc(n)}</span></button>`).join('')}</div>
+  </div>
+  <div class="bg-white px-4 py-2 rounded-2xl border border-gray-200">${TH.ROLES.map(row).join('')}
+    <div class="py-3"><button data-act="col-reset-all" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-rotate-left"></i> Reset all colors to the defaults</button></div></div>
+  <div class="bg-white p-4 rounded-2xl border border-gray-200">
+    <div class="flex items-center justify-between gap-2"><div><h2 class="font-extrabold text-lg">Your own colors</h2><p class="text-xs text-gray-600">Add colors to the palette. You can pick them as a section background (Backgrounds tab).</p></div><button data-act="cc-add" class="text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] font-bold px-3.5 py-2 rounded-xl flex-shrink-0"><i class="fas fa-plus"></i> Add color</button></div>
+    <div class="mt-2">${t.custom.length?t.custom.map(cust).join(''):'<p class="text-xs text-gray-500 py-3">No extra colors yet.</p>'}</div>
+  </div>
+  <div class="bg-white p-4 rounded-2xl border border-gray-200">
+    <h2 class="font-extrabold text-lg">Section width</h2>
+    <p class="text-xs text-gray-600">How wide the page sections are on tablet and desktop, as a share of the screen (67% is about two thirds). Phones always use the full width.</p>
+    <div class="flex items-center gap-3 mt-3"><input type="range" min="50" max="100" step="1" data-p="theme.sectionWidth" data-out="sw-out" value="${esc(t.sectionWidth)}" aria-label="Section width" class="flex-1"><span id="sw-out" class="text-sm font-bold w-12 text-right">${esc(t.sectionWidth)}%</span></div>
+  </div>`;
+}
+const BGMODES=[['default','Default (no change)'],['color','Color'],['image','Photo (covers the section)']];
+const TONES=[['auto','Automatic'],['dark','Dark text'],['light','Light text']];
+function palOptions(t,sel){
+  const roles=TH.ROLES.map(([k,n])=>`<option value="role:${k}" ${sel==='role:'+k?'selected':''}>${esc(n)} (${t.colors[k]})</option>`).join('');
+  const cust=t.custom.map(c=>`<option value="custom:${esc(c.id)}" ${sel==='custom:'+c.id?'selected':''}>${esc(c.name||'Color')} (${esc(c.hex)})</option>`).join('');
+  return `<optgroup label="Site colors">${roles}</optgroup>${cust?`<optgroup label="Your colors">${cust}</optgroup>`:''}<option value="__custom" ${TH.HEX.test(sel)?'selected':''}>Other color...</option>`;
+}
+function bgStyle(t,s){
+  if(s.mode==='color'){const c=TH.resolve(s.color,t);return c?`background:${c}`:''}
+  if(s.mode==='image'&&s.image){const ov=Math.min(85,Math.max(0,parseFloat(s.overlay)||0))/100,i=imgSrc(s.image);return `background:${ov?`linear-gradient(rgba(27,36,51,${ov}),rgba(27,36,51,${ov})),`:''}url('${i}') center/cover no-repeat`}
+  return '';
+}
+function viewBg(){
+  const t=theme();
+  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200"><h2 class="font-extrabold text-lg">Section backgrounds</h2><p class="text-xs text-gray-600 mt-1">Give any section a background color from your palette, or a photo that covers the whole section. Leave it on Default to keep the normal look. On dark colors and darkened photos the text turns light by itself.</p></div>`
+  +TH.SECTIONS.map(([key,label])=>{
+    const s=t.sections[key]||{},mode=s.mode==='color'||s.mode==='image'?s.mode:'default',pre=bgStyle(t,s);
+    const base=`theme.sections.${key}.`;
+    let body=`<label class="block text-xs font-bold">Background<select data-p="${base}mode" data-rr="1" data-sec="${key}" class="${inp} mt-1">${BGMODES.map(([v,n])=>`<option value="${v}" ${v===mode?'selected':''}>${n}</option>`).join('')}</select></label>`;
+    if(mode==='color'){
+      const sel=s.color||'role:accentSoft';
+      body+=`<div class="flex items-end gap-2"><label class="block text-xs font-bold flex-1">Color<select data-bgsel="${key}" class="${inp} mt-1">${palOptions(t,sel)}</select></label>${TH.HEX.test(sel)?`<input type="color" data-p="${base}color" value="${esc(sel)}" aria-label="Custom color" class="w-11 h-11 p-0 border border-gray-300 rounded-lg bg-white cursor-pointer flex-shrink-0">`:''}</div>`;
+    }
+    if(mode==='image'){
+      body+=fld(base,['image','Photo (file name in assets, or upload)','img'])
+        +`<label class="block text-xs font-bold">Darken the photo: <span id="ov-${key}">${esc(s.overlay||0)}</span>%<input type="range" min="0" max="85" step="5" data-p="${base}overlay" data-out="ov-${key}" data-pct="1" value="${esc(s.overlay||0)}" class="mt-1 w-full"></label>`;
+    }
+    if(mode!=='default')body+=`<label class="block text-xs font-bold">Text color on this section<select data-p="${base}tone" class="${inp} mt-1">${TONES.map(([v,n])=>`<option value="${v}" ${(s.tone||'auto')===v?'selected':''}>${n}</option>`).join('')}</select></label>`
+      +`<div class="h-12 rounded-xl border border-gray-200" style="${pre}" role="img" aria-label="Preview of the background"></div>`;
+    const badge=mode==='default'?'Default':mode==='color'?'Color':'Photo';
+    return `<details data-bg="${key}" ${bgOpen.has(key)?'open':''} class="bg-white rounded-2xl border border-gray-200 shadow-sm"><summary class="flex items-center gap-2 p-3 cursor-pointer"><i class="fas fa-chevron-right chev text-[10px] text-gray-400"></i><span class="flex-1 min-w-0 font-bold text-sm truncate">${esc(label)}</span><span class="text-[11px] font-bold px-2 py-1 rounded-lg ${mode==='default'?'bg-gray-100 text-gray-500':'bg-brand-50 text-brand-700'}">${badge}</span></summary><div class="p-4 pt-2 space-y-3 border-t">${body}</div></details>`;
+  }).join('');
+}
+document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.bg){d.open?bgOpen.add(d.dataset.bg):bgOpen.delete(d.dataset.bg)}},true);
+
+function fmt(k,p){
+  const ta=document.querySelector(`textarea[data-p="${p}"]`);if(!ta)return;
+  const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;
+  if(k==='b'){const sel=v.slice(s,e)||'bold text';ta.value=v.slice(0,s)+'**'+sel+'**'+v.slice(e);ta.setSelectionRange(s+2,s+2+sel.length)}
+  else{
+    const ls=v.lastIndexOf('\n',s-1)+1;let le=v.indexOf('\n',e);if(le<0)le=v.length;
+    const B=/^\s*[-*•]\s+/,H=/^\s*##\s+/;
+    const block=v.slice(ls,le).split('\n').map(l=>k==='h'?(H.test(l)?l.replace(H,''):'## '+l.replace(B,'')):(B.test(l)?l.replace(B,''):'- '+l.replace(H,''))).join('\n');
+    ta.value=v.slice(0,ls)+block+v.slice(le);ta.setSelectionRange(ls,ls+block.length);
+  }
+  ta.focus();ta.dispatchEvent(new Event('input',{bubbles:true}));
+}
+function validate(){
+  for(const [k,s] of Object.entries(SC)){
+    const ids=new Set();
+    for(const [i,x] of (D[k]||[]).entries()){
+      for(const f of s.req)if(!String(x[f]??'').trim())return bad(k,i,f,`${s.label}, item ${i+1}: "${f}" is required.`);
+      if(ids.has(x.id))x.id=String(Math.max(0,...D[k].map(y=>+y.id||0))+1);ids.add(x.id);
+    }
+  }
+  return '';
+}
+function bad(k,i,f,msg){
+  tab=k;q='';openItem=`${k}.${i}`;tabs();view();
+  const el=document.querySelector(`[data-p="${k}.${i}.${f}"]`);if(el){el.classList.add('bad');el.focus();el.scrollIntoView({block:'center'})}
+  return msg;
+}
+async function save(){
+  const err=validate();if(err)return toast(err,false);
+  cleanTheme();
+  $('save').disabled=true;$('state').textContent='Saving...';
+  try{
+    const j=await api(S.p,{method:'PUT',body:{message:'Update content via admin page',content:b64(new TextEncoder().encode(JSON.stringify(D,null,2)+'\n')),sha,branch:S.b}});
+    sha=j.content.sha;mark(false);tabs();toast('Saved. The site updates in a minute or two.');
+  }catch(e){mark(true);toast(e.message,false)}
+}
+// Large photos are scaled down in the browser so uploads stay fast and the site stays light
+async function shrink(file){
+  if(!/^image\/(jpeg|png|webp)$/.test(file.type)||!window.createImageBitmap)return file;
+  try{
+    const bmp=await createImageBitmap(file),max=1800,sc=Math.min(1,max/Math.max(bmp.width,bmp.height));
+    if(sc===1&&file.size<9e5)return file;
+    const c=document.createElement('canvas');c.width=Math.round(bmp.width*sc);c.height=Math.round(bmp.height*sc);
+    const x=c.getContext('2d'),png=file.type==='image/png';
+    if(!png){x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height)}
+    x.drawImage(bmp,0,0,c.width,c.height);
+    const blob=await new Promise(r=>c.toBlob(r,png?'image/png':'image/jpeg',.86));
+    return blob&&blob.size<file.size?new File([blob],file.name.replace(/\.\w+$/,png?'.png':'.jpg'),{type:blob.type}):file;
+  }catch{return file}
+}
+// Carousel, news and team photos are resized and center-cropped to fit their frame, so they always cover it
+const FIT=[[/^carousel\./,1.875,1800],[/^news\./,2,1600],[/^employees\./,1,800]];
+async function fit(file,ratio,W){
+  if(!/^image\/(jpeg|png|webp)$/.test(file.type)||!window.createImageBitmap)return file;
+  try{
+    const b=await createImageBitmap(file);let sw=b.width,sh=b.height;
+    if(sw/sh>ratio)sw=Math.round(sh*ratio);else sh=Math.round(sw/ratio);       // largest centered area with the frame's shape
+    const sx=Math.round((b.width-sw)/2),sy=Math.round((b.height-sh)/2),ow=Math.min(W,sw),oh=Math.round(ow/ratio);
+    const c=document.createElement('canvas');c.width=ow;c.height=oh;const x=c.getContext('2d');
+    x.fillStyle='#fff';x.fillRect(0,0,ow,oh);x.drawImage(b,sx,sy,sw,sh,0,0,ow,oh);
+    const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.86));
+    return blob?new File([blob],file.name.replace(/\.\w+$/,'')+'.jpg',{type:'image/jpeg'}):file;
+  }catch{return file}
+}
+async function upload(file,p){
+  toast('Preparing image...');
+  const ft=FIT.find(f=>f[0].test(p));
+  file=ft?await fit(file,ft[1],ft[2]):await shrink(file);
+  if(file.size>3e6)return toast('Image is still over 3 MB. Please compress it first.',false);
+  const path='assets/'+Date.now().toString(36)+'-'+file.name.replace(/[^\w.\-]/g,'-');
+  try{
+    await api(path,{method:'PUT',body:{message:'Upload image via admin page',content:b64(new Uint8Array(await file.arrayBuffer())),branch:S.b}});
+    ASSETS.push(path.slice(7));$('assets').innerHTML+=`<option value="${esc(path.slice(7))}">`;set(D,p,path.slice(7));mark();view();toast('Image uploaded.');
+  }catch(e){toast(e.message,false)}
+}
+
+document.addEventListener('input',e=>{
+  if(e.target.id==='filter'){q=e.target.value;items();return}
+  const hp=e.target.dataset.hex;
+  if(hp&&D){ // typed hex code: update the color box next to it once it is valid
+    const v=normHex(e.target.value);e.target.classList.toggle('bad',!v&&e.target.value.length>=4);
+    if(v){set(D,hp,v);const c=document.querySelector(`input[type=color][data-p="${hp}"]`);if(c)c.value=v;mark();const rb=document.querySelector(`[data-act="col-reset"][data-k="${hp.split('.').pop()}"]`);if(rb)rb.disabled=hp.startsWith('theme.colors.')&&v===TH.DEFAULTS[hp.split('.').pop()]}
+    return;
+  }
+  if(e.target.dataset.out){const o=$(e.target.dataset.out);if(o)o.textContent=e.target.value+(e.target.dataset.pct?'':'%')}
+  if(e.target.type==='color'&&e.target.dataset.p){const h=document.querySelector(`[data-hex="${e.target.dataset.p}"]`);if(h)h.value=e.target.value;if(e.target.dataset.p.startsWith('theme.colors.')){const k=e.target.dataset.p.split('.').pop(),rb=document.querySelector(`[data-act="col-reset"][data-k="${k}"]`);if(rb)rb.disabled=e.target.value.toLowerCase()===TH.DEFAULTS[k]}}
+  const p=e.target.dataset.p;if(!p||!D)return;
+  e.target.classList.remove('bad');
+  set(D,p,e.target.dataset.lines?e.target.value.split('\n').map(x=>x.trim()).filter(Boolean):e.target.value);mark();
+  if(p.endsWith('image')){const im=document.querySelector(`[data-prev="${p}"]`);if(im){im.style.visibility='';im.src=imgSrc(e.target.value)}}
+  if(/\.(title|country|name)$/.test(p)){const sm=e.target.closest('details')?.querySelector('summary span');if(sm)sm.textContent=e.target.value||'Untitled'}
+});
+document.addEventListener('change',e=>{
+  const bs=e.target.dataset.bgsel;
+  if(bs&&D){const s=theme().sections[bs]=theme().sections[bs]||{};
+    if(e.target.value==='__custom'){s.color=TH.resolve(s.color,D.theme)||'#cccccc'}else s.color=e.target.value;
+    mark();view();return}
+  if(e.target.dataset.rr&&D){const k=e.target.dataset.sec,s=theme().sections[k]=theme().sections[k]||{};
+    if(e.target.value==='color'&&!s.color)s.color='role:accentSoft';
+    if(e.target.value==='image'&&s.overlay==null)s.overlay=0;
+    mark();view();return}
+  const p=e.target.dataset.p;if(p&&p.endsWith('image')&&e.target.value){const v=e.target.value.trim().replace(/^\.\/assets\//,'');e.target.value=v;set(D,p,v)}const f=e.target.files?.[0];if(f&&e.target.dataset.up){upload(f,e.target.dataset.up);e.target.value=''}});
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');if(!t)return;
+  const a=t.dataset.act,i=+t.dataset.i,arr=D&&D[tab];
+  if(t.closest('summary'))e.preventDefault();
+  if(a==='tab'){tab=t.dataset.k;openItem=null;q='';tabs();view()}
+  else if(a==='add'){const s=SC[tab];const o={id:String(Math.max(0,...arr.map(x=>+x.id||0))+1)};s.f.forEach(([k])=>o[k]='');if(tab==='news')o.category=(D.newsCategories||[]).filter(Boolean)[0]||'General';arr.push(o);openItem=`${tab}.${arr.length-1}`;q='';mark();tabs();view();document.querySelector('details[open] input')?.focus()}
+  else if(a==='dup'){const c=JSON.parse(JSON.stringify(arr[i]));c.id=String(Math.max(0,...arr.map(x=>+x.id||0))+1);const k=SC[tab].title;c[k]=(c[k]||'')+' (copy)';arr.splice(i+1,0,c);openItem=`${tab}.${i+1}`;mark();tabs();view()}
+  else if(a==='del'){if(confirm(`Delete "${arr[i][SC[tab].title]||'this item'}"?`)){arr.splice(i,1);openItem=null;mark();tabs();view()}}
+  else if(a==='up'||a==='down'){const j=a==='up'?i-1:i+1;[arr[i],arr[j]]=[arr[j],arr[i]];openItem=`${tab}.${j}`;mark();view()}
+  else if(a==='col-reset'){theme().colors[t.dataset.k]=TH.DEFAULTS[t.dataset.k];mark();view()}
+  else if(a==='col-reset-all'){if(confirm('Set every site color back to its default?')){Object.assign(theme().colors,TH.DEFAULTS);mark();view()}}
+  else if(a==='preset'){const pr=PRESETS.find(x=>x[0]===t.dataset.k);if(pr&&confirm(`Use the "${pr[1]}" palette? It replaces the site colors above (your own colors are kept).`)){Object.assign(theme().colors,pr[2]);mark();view()}}
+  else if(a==='cc-add'){theme().custom.push({id:'c'+Date.now().toString(36),name:'',hex:'#8aa6d6'});mark();view()}
+  else if(a==='cc-del'){const c=theme().custom[i];if(c&&confirm(`Delete "${c.name||c.hex}"? Sections that use it go back to their normal background.`)){theme().custom.splice(i,1);mark();view()}}
+  else if(a==='fmt')fmt(t.dataset.k,t.dataset.t);
+  else if(a==='save')save();
+  else if(a==='discard'){if(confirm('Discard all unsaved changes and reload from GitHub?')){dirty=false;connect(S)}}
+  else if(a==='backup'){const l=document.createElement('a');l.href=URL.createObjectURL(new Blob([JSON.stringify(D,null,2)],{type:'application/json'}));l.download='app-data-backup.json';l.click()}
+  else if(a==='out'){if(!dirty||confirm('You have unsaved changes. Sign out anyway?')){sessionStorage.removeItem('khip-admin-t');dirty=false;location.reload()}}
+});
+$('login-form').addEventListener('submit',e=>{
+  e.preventDefault();$('login-err').classList.add('hidden');
+  connect({o:$('f-o').value.trim(),r:$('f-r').value.trim(),b:$('f-b').value.trim()||'main',p:$('f-p').value.trim()||'app-data.json',t:$('f-t').value.trim()});
+});
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'&&pane==='content'&&D){e.preventDefault();if(dirty)save()}});
+addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
+try{const s=JSON.parse(localStorage.getItem('khip-admin'));if(s){$('f-o').value=s.o;$('f-r').value=s.r;$('f-b').value=s.b;$('f-p').value=s.p}}catch{}
+const tk=sessionStorage.getItem('khip-admin-t');
+if(tk&&$('f-o').value){$('f-t').value=tk;$('f-s').checked=true;connect({o:$('f-o').value,r:$('f-r').value,b:$('f-b').value,p:$('f-p').value,t:tk})}
+
+/* ============================ CLIENT FILES (Supabase) ============================ */
+const K=(()=>{
+  const C=window.KHIP_SUPABASE||{},BUCKET=C.bucket||'client-files';
+  const configured=!!(C.url&&C.anonKey&&!/YOUR-/.test(C.url)&&window.supabase);
+  let sb=null,me=null,clients=[],folders=[],noFn=false,cur=null,curLabel='',path=[],started=false,sectors=[],subs={},sectErr=false,tabK='clients',recovery=/type=recovery/.test(location.hash);
+  const redirect=location.origin+location.pathname.replace(/[^/]*$/,'')+'my-stuff.html';
+  const adminUrl=location.origin+location.pathname+'#clients';
+  const main=()=>$('k-main');
+  const err=(t,ok)=>{const m=$('k-err');m.textContent=t||'';m.className=t?`text-xs rounded-lg p-2 border ${ok?'text-emerald-800 bg-emerald-50 border-emerald-200':'text-red-700 bg-red-50 border-red-200'}`:'hidden'};
+
+  // Names that Supabase Storage accepts: latin letters, digits . _ - ( ). Anything else is replaced.
+  function clean(name){
+    const dot=name.lastIndexOf('.'),ext=dot>0?name.slice(dot+1).replace(/[^\w]/g,'').slice(0,8):'',base=(dot>0?name.slice(0,dot):name);
+    let b=base.normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/[^\w.() -]/g,'').trim().replace(/\s+/g,'-').replace(/^[.-]+/,'').slice(0,100);
+    if(!b)b='file-'+Date.now().toString(36);
+    return ext?`${b}.${ext.toLowerCase()}`:b;
+  }
+  const cleanFolder=n=>clean(n).replace(/\./g,'-');
+
+  async function fn(action,email){
+    const {data,error}=await sb.functions.invoke('admin-clients',{body:{action,email,redirectTo:redirect}});
+    if(error){
+      let m=error.message,st=error.context&&error.context.status;
+      try{const j=await error.context.json();m=j.error||j.message||m}catch{}
+      if(error.name==='FunctionsFetchError'||st===404)throw new Error('NOFN');
+      throw new Error(m);
+    }
+    if(data&&data.error)throw new Error(data.error);
+    return data;
+  }
+
+  async function start(){
+    if(started&&sb)return;started=true;
+    if(!configured){$('k-setup').classList.remove('hidden');$('k-form').classList.add('hidden');return}
+    sb=window.supabase.createClient(C.url,C.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'khip-auth'}});
+    sb.auth.onAuthStateChange((ev,s)=>{
+      if(ev==='PASSWORD_RECOVERY'){recovery=true;newPassword()}
+      else if(ev==='SIGNED_OUT'){me=null;$('k-app').classList.add('hidden');$('k-login').classList.remove('hidden')}
+    });
+    const {data}=await sb.auth.getSession();
+    if(recovery&&data.session)newPassword();
+    else if(data.session)await enter(data.session.user);
+  }
+
+  async function enter(user){
+    const {data,error}=await sb.rpc('is_admin');
+    if(error||data!==true){
+      err(error?'Could not check admin rights. Did you run supabase-setup.sql?':`${user.email} is not an admin. Sign in with your admin account.`);
+      await sb.auth.signOut();return;
+    }
+    me=user;err('');
+    $('k-login').classList.add('hidden');$('k-app').classList.remove('hidden');$('k-who').textContent='Signed in as '+user.email;
+    cur=null;path=[];home();
+  }
+
+  // ---- sign in / reset ----
+  let mode='login';
+  function newPassword(){
+    mode='newpw';$('k-login').classList.remove('hidden');$('k-app').classList.add('hidden');
+    $('k-sign-fields').innerHTML='<label class="block text-xs font-bold">New password (8+ characters)<input name="password" type="password" minlength="8" required autocomplete="new-password" class="mt-1 w-full px-3 py-2 text-sm rounded-lg border border-gray-300 font-normal"></label>';
+    $('k-go').textContent='Save password';$('k-forgot').parentElement.classList.add('hidden');err('');
+  }
+  $('k-forgot').onclick=async e=>{
+    e.preventDefault();if(!sb)return;
+    const em=$('k-form').email.value.trim().toLowerCase();if(!em)return err('Type your admin email first, then press Forgot password.');
+    const {error}=await sb.auth.resetPasswordForEmail(em,{redirectTo:adminUrl});
+    err(error?error.message:'If this email is registered, a reset link is on its way.',!error);
+  };
+  $('k-form').onsubmit=async e=>{
+    e.preventDefault();if(!sb)return;const f=e.target,btn=$('k-go');btn.disabled=true;err('');
+    try{
+      if(mode==='newpw'){
+        const {error}=await sb.auth.updateUser({password:f.password.value});if(error)throw error;
+        history.replaceState(null,'','#clients');location.reload();return;
+      }
+      const {data,error}=await sb.auth.signInWithPassword({email:f.email.value.trim(),password:f.password.value});
+      if(error)throw new Error('Incorrect email or password.');
+      f.password.value='';await enter(data.user);
+    }catch(x){err(x.message)}finally{btn.disabled=false}
+  };
+
+  // ---- client list ----
+  async function load(){
+    main().innerHTML='<p class="text-sm text-gray-500 p-4">Loading clients...</p>';
+    noFn=false;clients=[];folders=[];
+    const [fr,sr,br]=await Promise.all([
+      sb.storage.from(BUCKET).list('',{limit:1000,sortBy:{column:'name',order:'asc'}}),
+      sb.from('sectors').select('id,name').order('name'),
+      sb.from('subscriptions').select('user_id,sector_id'),
+      fn('list').then(r=>{clients=r.clients||[]}).catch(e=>{if(e.message==='NOFN')noFn=true;else toast(e.message,false)})
+    ]);
+    folders=(fr.data||[]).filter(f=>f.id===null&&f.name!=='sectors').map(f=>f.name);
+    sectErr=!!(sr.error||br.error);sectors=sectErr?[]:(sr.data||[]);subs={};
+    (br.data||[]).forEach(r=>(subs[r.user_id]=subs[r.user_id]||new Set()).add(r.sector_id));
+    if(fr.error)toast('Could not read the bucket: '+fr.error.message,false);
+  }
+  const rowsFor=()=>{
+    const m=new Map();
+    clients.forEach(c=>m.set(c.email,{id:c.id,email:c.email,account:true,confirmed:c.confirmed,last:c.last_sign_in_at,folder:false}));
+    folders.forEach(n=>{const k=n.toLowerCase(),r=m.get(k);if(r)r.folder=true;else m.set(k,{email:k,account:false,folder:true})});
+    return [...m.values()].sort((a,b)=>a.email.localeCompare(b.email));
+  };
+  const badge=r=>!r.account?'<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Folder only</span>'
+    :r.confirmed?'<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Active</span>'
+    :'<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Invite pending</span>';
+  let filter='';
+  async function home(){
+    cur=null;path=[];await load();paintHome();
+  }
+  const paintHome=()=>tabK==='sectors'?paintSectors():paintClients();
+  const nav=()=>`<div class="flex gap-1.5">${[['clients','Clients','fa-users'],['sectors','Sectors','fa-layer-group']].map(([k,l,i])=>`<button data-k="tab" data-t="${k}" class="text-xs font-bold px-4 py-2 rounded-xl ${k===tabK?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>`
+    +(sectErr?'<div class="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl p-4"><b>Sectors are not set up yet.</b> Run the latest <code>supabase-setup.sql</code> in the Supabase SQL Editor (it is safe to run again).</div>':'');
+  const chips=r=>r.account&&sectors.length?'<div class="basis-full flex flex-wrap items-center gap-1.5 pt-2 border-t border-gray-100"><span class="text-[11px] text-gray-500 mr-1">Sectors</span>'+sectors.map(x=>{const on=subs[r.id]&&subs[r.id].has(x.id);return `<button data-k="sub" data-u="${esc(r.id)}" data-s="${esc(x.id)}" aria-pressed="${!!on}" class="text-[11px] font-bold px-2.5 py-1 rounded-full border ${on?'bg-brand-600 border-brand-600 text-white':'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}">${on?'<i class="fas fa-check"></i> ':''}${esc(x.name)}</button>`}).join('')+'</div>':'';
+  function paintClients(){
+    const rows=rowsFor().filter(r=>!filter||r.email.includes(filter.toLowerCase()));
+    main().innerHTML=nav()+
+    (noFn?`<div class="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl p-4"><b>Account tools are not deployed yet.</b> You can still manage files in existing folders. To invite clients from here, deploy the <code>admin-clients</code> function (see README.md, step 4).</div>`:'')
+    +`<form data-k-form="invite" class="bg-white p-4 rounded-2xl border border-gray-200 space-y-2"><label class="block text-xs font-bold">Invite a new client<span class="block font-normal text-gray-500">They receive an email to set a password. A private folder named after their email is created.</span></label>
+      <div class="flex gap-2"><input name="email" type="email" required placeholder="client@company.com" autocomplete="off" class="${inp}"><button class="flex-shrink-0 text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] disabled:opacity-60 font-bold px-4 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-paper-plane"></i> ${noFn?'Create folder':'Send invite'}</button></div></form>`
+    +`<div class="flex items-center justify-between pt-2"><h2 class="font-extrabold text-lg">Clients <span class="text-sm font-normal text-gray-500">(${rows.length})</span></h2></div>`
+    +(rowsFor().length>5?`<input id="k-filter" type="search" placeholder="Search clients" aria-label="Search clients" value="${esc(filter)}" class="${inp}">`:'')
+    +(rows.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No clients yet. Invite the first one above.</p>')
+    +rows.map(r=>`<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+      <button data-k="open" data-e="${esc(r.email)}" class="flex-1 min-w-0 text-left"><span class="block font-bold text-sm truncate">${esc(r.email)}</span><span class="flex items-center gap-2 mt-0.5">${badge(r)}<span class="text-[11px] text-gray-500">${r.last?'Last sign-in '+new Date(r.last).toLocaleDateString():''}</span></span></button>
+      <div class="flex items-center gap-1.5">
+        <button data-k="open" data-e="${esc(r.email)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-folder-open"></i> Files</button>
+        ${r.account?`<button data-k="resend" data-e="${esc(r.email)}" data-c="${r.confirmed?1:0}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-lg" title="${r.confirmed?'Send a password-reset email':'Send the invite again'}"><i class="fas fa-envelope"></i></button><button data-k="remove" data-e="${esc(r.email)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Remove account" title="Remove account"><i class="fas fa-user-xmark text-xs"></i></button>`
+        :(noFn?'':`<button data-k="invite-folder" data-e="${esc(r.email)}" class="text-xs bg-[#f3ecdc] text-[#7a6540] hover:bg-[#e9dec4] font-bold px-3 py-2 rounded-lg">Invite</button>`)}
+      </div>${chips(r)}</div>`).join('');
+  }
+  const slug=n=>String(n).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  function paintSectors(){
+    const count=id=>Object.values(subs).filter(x=>x.has(id)).length;
+    main().innerHTML=nav()
+    +`<form data-k-form="sector" class="bg-white p-4 rounded-2xl border border-gray-200 space-y-2"><label class="block text-xs font-bold">Add a sector<span class="block font-normal text-gray-500">A shared library. Everything you upload to it is visible to every client subscribed to that sector. Tick sectors per client on the Clients tab.</span></label>
+      <div class="flex gap-2"><input name="name" required maxlength="40" placeholder="e.g. Construction" autocomplete="off" class="${inp}"><button class="flex-shrink-0 text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] disabled:opacity-60 font-bold px-4 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-plus"></i> Add sector</button></div></form>`
+    +`<h2 class="font-extrabold text-lg pt-2">Sectors <span class="text-sm font-normal text-gray-500">(${sectors.length})</span></h2>`
+    +(sectors.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No sectors yet.</p>')
+    +sectors.map(x=>`<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex items-center gap-3"><i class="fas fa-layer-group text-brand-600"></i><div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${esc(x.name)}</p><p class="text-[11px] text-gray-500">${count(x.id)} subscriber${count(x.id)===1?'':'s'} &middot; folder <code>sectors/${esc(x.id)}</code></p></div><button data-k="opensector" data-s="${esc(x.id)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-folder-open"></i> Files</button><button data-k="delsector" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete sector"><i class="fas fa-trash text-xs"></i></button></div>`).join('');
+  }
+  async function invite(email,btn){
+    email=email.trim().toLowerCase();btn&&(btn.disabled=true);
+    try{
+      if(!noFn){await fn('invite',email);toast('Invite sent to '+email)}
+      const {error}=await sb.storage.from(BUCKET).upload(`${email}/.keep`,new Blob(['']),{upsert:true,contentType:'text/plain'});
+      if(error)throw error;
+      if(noFn)toast('Folder created for '+email+'. Create their login in the Supabase dashboard.');
+      await home();
+    }catch(e){toast(e.message,false)}finally{btn&&(btn.disabled=false)}
+  }
+
+  // ---- file browser ----
+  const prefix=()=>[cur,...path].join('/');
+  async function openRoot(root,label){cur=root;curLabel=label;path=[];await files()}
+  async function files(){
+    main().innerHTML='<p class="text-sm text-gray-500 p-4">Loading...</p>';
+    const {data,error}=await sb.storage.from(BUCKET).list(prefix(),{limit:1000,sortBy:{column:'name',order:'asc'}});
+    if(error){toast(error.message,false);return paintHome()}
+    const list=(data||[]).filter(f=>!f.name.startsWith('.')).sort((a,b)=>(a.id===null?0:1)-(b.id===null?0:1));
+    const crumbs=`<button data-k="home" class="underline underline-offset-4">${tabK==='sectors'?'Sectors':'Clients'}</button><span>/</span><button data-k="up" data-i="-1" class="underline underline-offset-4">${esc(curLabel||cur)}</button>`+path.map((p,i)=>`<span>/</span><button data-k="up" data-i="${i}" class="underline underline-offset-4">${esc(p)}</button>`).join('');
+    main().innerHTML=`<div class="flex flex-wrap items-center gap-2 text-sm font-bold">${crumbs}</div>
+    <div id="drop" class="bg-white rounded-2xl border border-gray-200 p-4 flex flex-wrap items-center gap-2">
+      <label class="text-xs bg-brand-600 hover:bg-brand-700 text-white font-bold px-4 py-2.5 rounded-xl cursor-pointer"><i class="fas fa-upload"></i> Upload files<input id="k-file" type="file" multiple class="hidden"></label>
+      <button data-k="mkdir" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl"><i class="fas fa-folder-plus"></i> New folder</button>
+      <span id="k-up" class="text-xs text-gray-500 flex-1 min-w-[10rem]">Drop files anywhere here. Up to 50 MB each.</span></div>`
+    +(list.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">This folder is empty.</p>')
+    +list.map(f=>f.id===null
+      ?`<div class="bg-white rounded-2xl border border-gray-200 p-3 flex items-center gap-3"><button data-k="in" data-n="${esc(f.name)}" class="flex-1 min-w-0 flex items-center gap-3 text-left"><i class="fas fa-folder text-amber-500 text-xl"></i><span class="font-bold text-sm truncate">${esc(f.name)}</span></button><button data-k="rmdir" data-n="${esc(f.name)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete folder"><i class="fas fa-trash text-xs"></i></button></div>`
+      :`<div class="bg-white rounded-2xl border border-gray-200 p-3 flex items-center gap-3"><i class="fas fa-file text-gray-400 text-xl w-5 text-center"></i><div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${esc(f.name)}</p><p class="text-[11px] text-gray-500">${(f.metadata&&f.metadata.size)?sizeOf(f.metadata.size)+' · ':''}${f.updated_at||f.created_at?new Date(f.updated_at||f.created_at).toLocaleDateString():''}</p></div><button data-k="dl" data-n="${esc(f.name)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Download"><i class="fas fa-download text-xs"></i></button><button data-k="rm" data-n="${esc(f.name)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete"><i class="fas fa-trash text-xs"></i></button></div>`).join('');
+  }
+  async function uploadFiles(fl){
+    fl=[...fl];if(!fl.length)return;const st=$('k-up');let ok=0,renamed=0,fail=[];
+    for(const [n,f] of fl.entries()){
+      st.textContent=`Uploading ${n+1} of ${fl.length}: ${f.name}`;
+      if(f.size>52428800){fail.push(f.name+' (over 50 MB)');continue}
+      let name=clean(f.name);if(name!==f.name)renamed++;
+      for(let t=0;t<20;t++){
+        const dot=name.lastIndexOf('.'),nm=t?(dot>0?`${name.slice(0,dot)}-${t+1}${name.slice(dot)}`:`${name}-${t+1}`):name;
+        const {error}=await sb.storage.from(BUCKET).upload(`${prefix()}/${nm}`,f,{upsert:false,contentType:f.type||undefined});
+        if(!error){ok++;break}
+        if(/already exists|Duplicate/i.test(error.message||'')&&t<19)continue;
+        fail.push(`${f.name} (${error.message})`);break;
+      }
+    }
+    toast(`${ok} file${ok===1?'':'s'} uploaded${renamed?` (${renamed} renamed to safe names)`:''}${fail.length?'. Failed: '+fail.join(', '):''}`,!fail.length);
+    files();
+  }
+  async function listAll(dir){ // every file under dir, including dot-files and nested folders
+    const out=[];
+    const {data}=await sb.storage.from(BUCKET).list(dir,{limit:1000});
+    for(const f of data||[]){if(f.id===null)out.push(...await listAll(`${dir}/${f.name}`));else out.push(`${dir}/${f.name}`)}
+    return out;
+  }
+  async function removePaths(paths){for(let i=0;i<paths.length;i+=100){const {error}=await sb.storage.from(BUCKET).remove(paths.slice(i,i+100));if(error)throw error}}
+
+  // ---- events ----
+  document.addEventListener('click',async e=>{
+    const t=e.target.closest('[data-k]');if(!t||!sb)return;const k=t.dataset.k,n=t.dataset.n,em=t.dataset.e;
+    try{
+      if(k==='signout'){await sb.auth.signOut()}
+      else if(k==='refresh'){cur?await files():await home()}
+      else if(k==='home')await home();
+      else if(k==='open'){tabK='clients';await openRoot(em,em)}
+      else if(k==='tab'){tabK=t.dataset.t;paintHome()}
+      else if(k==='opensector'){const x=sectors.find(v=>v.id===t.dataset.s);tabK='sectors';await openRoot('sectors/'+x.id,x.name)}
+      else if(k==='sub'){
+        const u=t.dataset.u,sid=t.dataset.s,on=subs[u]&&subs[u].has(sid);t.disabled=true;
+        const r=on?await sb.from('subscriptions').delete().eq('user_id',u).eq('sector_id',sid):await sb.from('subscriptions').insert({user_id:u,sector_id:sid});
+        if(r.error)throw r.error;
+        (subs[u]=subs[u]||new Set())[on?'delete':'add'](sid);paintHome();
+      }
+      else if(k==='delsector'){const x=sectors.find(v=>v.id===t.dataset.s);
+        if(confirm(`Delete the sector "${x.name}"?\n\nIts subscriptions and ALL files inside it are removed. This cannot be undone.`)){
+          await removePaths(await listAll('sectors/'+x.id));
+          const r=await sb.from('sectors').delete().eq('id',x.id);if(r.error)throw r.error;toast('Sector deleted');await home()}}
+      else if(k==='up'){path=path.slice(0,+t.dataset.i+1);await files()}
+      else if(k==='in'){path.push(n);await files()}
+      else if(k==='invite-folder')await invite(em,t);
+      else if(k==='resend'){t.disabled=true;const r=await fn('resend',em);toast(r.kind==='reset'?'Password-reset email sent to '+em:'New invite sent to '+em);t.disabled=false}
+      else if(k==='remove'){if(confirm(`Remove the account for ${em}?\n\nThey will no longer be able to sign in. Their files stay in the folder until you delete them.`)){await fn('remove',em);toast('Account removed');await home()}}
+      else if(k==='mkdir'){const raw=prompt('Folder name');if(raw){const nm=cleanFolder(raw);const {error}=await sb.storage.from(BUCKET).upload(`${prefix()}/${nm}/.keep`,new Blob(['']),{upsert:true,contentType:'text/plain'});if(error)throw error;await files()}}
+      else if(k==='dl'){const {data,error}=await sb.storage.from(BUCKET).createSignedUrl(`${prefix()}/${n}`,60,{download:n});if(error)throw error;const a=document.createElement('a');a.href=data.signedUrl;a.download=n;document.body.appendChild(a);a.click();a.remove()}
+      else if(k==='rm'){if(confirm(`Delete "${n}"? This cannot be undone.`)){await removePaths([`${prefix()}/${n}`]);toast('File deleted');await files()}}
+      else if(k==='rmdir'){if(confirm(`Delete the folder "${n}" and everything inside it? This cannot be undone.`)){await removePaths(await listAll(`${prefix()}/${n}`));toast('Folder deleted');await files()}}
+    }catch(x){toast(x.message==='NOFN'?'The admin-clients function is not deployed yet (README, step 4).':x.message,false);t.disabled=false}
+  });
+  document.addEventListener('submit',async e=>{
+    const f=e.target.closest('[data-k-form]');if(!f)return;e.preventDefault();
+    if(f.dataset.kForm==='invite')return invite(f.email.value,f.querySelector('button'));
+    const name=f.name.value.trim(),id=slug(name),btn=f.querySelector('button');
+    if(!id)return toast('Use letters or numbers in the sector name.',false);
+    if(sectors.some(x=>x.id===id))return toast('That sector already exists.',false);
+    btn.disabled=true;
+    try{const r=await sb.from('sectors').insert({id,name});if(r.error)throw r.error;toast('Sector added');await home()}
+    catch(x){toast(x.message,false)}finally{btn.disabled=false}
+  });
+  document.addEventListener('input',e=>{if(e.target.id==='k-filter'){filter=e.target.value;const pos=e.target.selectionStart;paintHome();const el=$('k-filter');el.focus();el.setSelectionRange(pos,pos)}});
+  document.addEventListener('change',e=>{if(e.target.id==='k-file'){uploadFiles(e.target.files);e.target.value=''}});
+  ['dragover','dragleave','drop'].forEach(v=>document.addEventListener(v,e=>{
+    const d=e.target.closest&&e.target.closest('#k-main');if(!d||!cur)return;e.preventDefault();
+    const box=$('drop');if(!box)return;
+    if(v==='dragover')box.classList.add('drop');else box.classList.remove('drop');
+    if(v==='drop')uploadFiles(e.dataTransfer.files);
+  }));
+  return {start};
+})();
+
+showPane(location.hash==='#clients'||/type=recovery/.test(location.hash)?'clients':'content');
+</script>
+</body>
+</html>
