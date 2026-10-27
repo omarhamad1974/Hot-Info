@@ -76,7 +76,20 @@ function paint(){
     if(f.sector)return `<button data-sec="${esc(f.sector)}" data-name="${esc(f.name)}" class="card p-4 flex items-center gap-4 text-left border-brand-600/30"><i class="ph-light ph-stack text-3xl text-brand-600"></i><span class="flex-1"><span class="block font-display text-xl font-semibold text-title">${esc(f.name)}</span><span class="block text-xs text-stone-500">Sector library${f.until?` &middot; available until ${new Date(f.until+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})}`:''}</span></span><i class="ph-light ph-caret-right text-stone-400"></i></button>`;
     if(f.id===null)return `<button data-open="${esc(f.name)}" class="card p-4 flex items-center gap-4 text-left"><i class="ph-light ph-folder text-3xl text-gold"></i><span class="flex-1 font-display text-xl font-semibold text-title">${esc(f.name)}</span><i class="ph-light ph-caret-right text-stone-400"></i></button>`;
     const ext=f.name.split('.').pop().toLowerCase(),[ic,co]=X[ext]||['ph-file','text-stone-600'],m=f.metadata||{},d=f.updated_at||f.created_at;
-    return `<div class="card p-4 flex items-center gap-4"><i class="ph-light ${ic} text-4xl ${co}"></i><div class="flex-1 min-w-0"><p class="font-medium text-ink truncate">${esc(f.name)}</p><p class="text-xs text-stone-500">${m.size?size(m.size)+' &middot; ':''}${d?new Date(d).toLocaleDateString():''}</p></div><button data-dl="${esc(f.name)}" class="text-sm bg-ink hover:bg-stone-800 text-white px-5 py-2 rounded-full transition whitespace-nowrap"><i class="ph-light ph-download-simple"></i> Download</button></div>`}).join('');
+    return `<div class="card p-4 flex items-center gap-4"><i class="ph-light ${ic} text-4xl ${co}"></i><div class="flex-1 min-w-0"><p class="font-medium text-ink truncate">${esc(f.name)}</p><p class="text-xs text-stone-500">${m.size?size(m.size)+' &middot; ':''}${d?new Date(d).toLocaleDateString():''}</p></div>${VIEW.has(ext)?`<button data-view="${esc(f.name)}" class="text-sm border border-stone-300 hover:border-stone-500 text-ink px-4 py-2 rounded-full transition whitespace-nowrap" aria-label="Open ${esc(f.name)}"><i class="ph-light ph-eye"></i> Open</button>`:''}<button data-dl="${esc(f.name)}" class="text-sm bg-ink hover:bg-stone-800 text-white px-5 py-2 rounded-full transition whitespace-nowrap"><i class="ph-light ph-download-simple"></i> Download</button></div>`}).join('');
+}
+const NATIVE=['pdf','png','jpg','jpeg','gif','webp','txt'],OFFICE=['doc','docx','xls','xlsx','ppt','pptx'],VIEW=new Set([...NATIVE,...OFFICE]);
+// Opens in a new tab: PDFs/images/text natively; Word/Excel/PowerPoint through Microsoft's online viewer (link valid 10 minutes).
+async function view(name,btn){
+  const ext=name.split('.').pop().toLowerCase(),office=OFFICE.includes(ext);
+  const w=window.open('','_blank');  // opened first, inside the click, so pop-up blockers allow it
+  if(!w)return alert('Please allow pop-ups for this site to open files, or use Download.');
+  w.document.write('<p style="font-family:sans-serif;padding:2rem">Opening your file...</p>');
+  btn.disabled=true;
+  const {data,error}=await KHIPAuth.client().storage.from(bucket).createSignedUrl([...pre(),name].join('/'),office?600:300);
+  btn.disabled=false;
+  if(error){w.close();return alert('Sorry, this file could not be opened.')}
+  w.location.href=office?'https://view.officeapps.live.com/op/view.aspx?src='+encodeURIComponent(data.signedUrl):data.signedUrl;
 }
 async function download(name,btn){
   btn.disabled=true;const t=btn.innerHTML;btn.textContent='Preparing...';
@@ -87,8 +100,8 @@ async function download(name,btn){
 }
 $('q').addEventListener('input',paint);$('sort').addEventListener('change',paint);
 document.addEventListener('click',e=>{
-  const o=e.target.closest('[data-open]'),u=e.target.closest('[data-up]'),d=e.target.closest('[data-dl]'),h=e.target.closest('[data-home]'),c=e.target.closest('[data-sec]');
-  if(c){sec={id:c.dataset.sec,name:c.dataset.name};path=[];show()}else if(h){sec=null;path=[];show()}else if(o){path.push(o.dataset.open);show()}else if(u){path=path.slice(0,+u.dataset.up+1);show()}else if(d)download(d.dataset.dl,d);
+  const o=e.target.closest('[data-open]'),u=e.target.closest('[data-up]'),d=e.target.closest('[data-dl]'),vw=e.target.closest('[data-view]'),h=e.target.closest('[data-home]'),c=e.target.closest('[data-sec]');
+  if(c){sec={id:c.dataset.sec,name:c.dataset.name};path=[];show()}else if(h){sec=null;path=[];show()}else if(o){path.push(o.dataset.open);show()}else if(u){path=path.slice(0,+u.dataset.up+1);show()}else if(vw)view(vw.dataset.view,vw);else if(d)download(d.dataset.dl,d);
 });
 KHIPAuth.onChange(()=>{sec=null;path=[];show()});
 KHIPAuth.ready.then(show);
