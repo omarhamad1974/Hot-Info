@@ -90,8 +90,9 @@ header .wrap{width:100%;max-width:76rem}
 #khip-bar .ks i{position:static;transform:none;color:inherit;font-size:18px;pointer-events:none}
 #khip-bar .ks:hover{filter:brightness(1.07)}
 #khip-bar .ks:active{transform:translateY(-50%) scale(.94)}
-#khip-bar nav{display:grid;grid-template-columns:repeat(5,1fr);text-align:center;padding-bottom:8px}
+#khip-bar nav{display:grid;grid-template-columns:repeat(6,1fr);text-align:center;padding-bottom:8px}
 #khip-bar nav button{background:none;border:0;padding:6px 0;font:inherit;font-size:11px;color:#fff;cursor:pointer;opacity:.9;transition:opacity .2s,color .2s}
+@media(max-width:420px){#khip-bar nav button{font-size:10px}}
 #khip-bar nav button:hover,#khip-bar nav button:focus-visible{opacity:1;color:rgb(var(--c-sand-rgb))}
 #khip-bar nav i{display:block;font-size:22px;line-height:1.3;color:inherit}
 #khip-bar :focus-visible{outline:2px solid #fff;outline-offset:2px}

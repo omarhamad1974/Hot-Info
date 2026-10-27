@@ -7,7 +7,7 @@
   window.KHIP={wa,setPrompts:a=>{if(a&&a.length)prompts=a}};
   if(!document.querySelector('link[href*="phosphor"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css';document.head.appendChild(l)}
   if(!document.querySelector('link[href*="styles.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='styles.css';document.head.appendChild(l)}
-  const nav=[['top','ph-house','Home'],['services','ph-seal-check','IP Services'],['news','ph-newspaper','News'],['jurisdictions','ph-globe-hemisphere-west','Jurisdiction'],['about','ph-info','About']];
+  const nav=[['top','ph-house','Home'],['services','ph-seal-check','IP Services'],['news','ph-newspaper','News'],['jurisdictions','ph-globe-hemisphere-west','Jurisdiction'],['about','ph-info','About'],['my-files','ph-folder-user','My files']];
   const bar=document.createElement('div');bar.id='khip-bar';
   bar.innerHTML=`<div class="kin"><form><div class="kf"><i class="ph-light ph-whatsapp-logo"></i><input aria-label="Message KHIP on WhatsApp" autocomplete="off"><button type="submit" class="ks" aria-label="Send message" title="Send"><i class="ph-light ph-paper-plane-right"></i></button></div></form><nav>${nav.map(([k,i,l])=>`<button type="button" data-go="${k}"><i class="ph-light ${i}"></i>${l}</button>`).join('')}</nav></div>`;
   // App-shell layout: the page scrolls inside #khip-page and the bar sits below it as a normal
@@ -24,6 +24,7 @@
   bar.querySelector('form').addEventListener('submit',e=>{e.preventDefault();const v=inp.value.trim();if(v){wa(v);inp.value=''}});
   bar.addEventListener('click',e=>{
     const b=e.target.closest('[data-go]');if(!b)return;const k=b.dataset.go,el=document.getElementById(k);
+    if(k==='my-files'){location.href='my-stuff.html';return}
     if(k==='about'){/about\.html/.test(location.pathname)?page.scrollTo({top:0,behavior:'smooth'}):location.href='about.html';return}
     if(k==='top')document.getElementById('app-top')?page.scrollTo({top:0,behavior:'smooth'}):location.href='index.html';
     else el&&el.offsetParent!==null?el.scrollIntoView({behavior:'smooth'}):location.href='index.html#'+k;

@@ -9,7 +9,7 @@ Static site (HTML + Tailwind CDN). Content lives in `app-data.json`; client docu
 Open `https://YOUR-SITE/admin.html`. It has two areas, switched from the dark bar at the top.
 
 **Website content** (saves to `app-data.json` on GitHub)
-- Sign in with a GitHub fine-grained token (Contents: read and write, for this repository only).
+- Sign in with a GitHub fine-grained token (Contents: read and write, for this repository only). The repository name field starts as `Hot-Info`; enter your GitHub username or organization once and the browser remembers it.
 - Tabs: General, **Colors**, **Backgrounds**, Carousel, Jurisdictions, News, Services, Products, Testimonials, Team.
 - **Colors**: the site palette. Ten colors (titles, dark, gold, accent blue, sand, page and section backgrounds, body text) start at the colors the site always used; change any of them, pick a ready-made palette, or add your own named colors. Also sets the **section width** on tablet and desktop (67% is about two thirds).
 - **Backgrounds**: give any section (home, About, Patents, Trademarks, Translation) a background color from the palette, or a photo that covers the section (with an optional darkening slider). Text turns light on dark backgrounds by itself; the "Text color" option overrides that.
