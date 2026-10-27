@@ -24,6 +24,13 @@ Open `https://YOUR-SITE/admin.html`. It has two areas, switched from the dark ba
 - Arabic or other non-Latin file names are replaced with a safe name (Supabase storage rejects them); the original extension is kept.
 - Re-send an invite, or send a password reset, with the envelope button. Remove an account with the person icon (their files stay until you delete them).
 
+## Leads, HOT Info Issues, sector-only access (step 2)
+Run `supabase-step2-leads-and-issues.sql` once in the Supabase SQL Editor (safe to run again), then reload `admin.html`. The top bar now has **Website content | Leads | Users & sectors | HOT Info Issues**.
+- **Leads**: start of the funnel. Add a lead (Name and Mobile Number are required; Email and Company optional) or **Import from Excel** (.xlsx, .xls or .csv with the headers Name, Email, Mobile Number, Company; the **Template** button downloads an example). Imported leads get status *Lead*; rows without a name or mobile, and mobiles already in Leads, are skipped and reported before you confirm. Change a lead to *Potential* with the status drop-down and write its situation in the description box (both save automatically). **Subscribe** creates the user (email required), subscribes the sectors you pick and marks the lead *Converted*; from then on it is a normal user.
+- **HOT Info Issues**: a spreadsheet-style table of tenders (Sector, Source, Tender brief, Tender source, TB price, Tender date, Publishing date, Insurance value, Image). Cells save when you leave them; Enter moves down one row. Search and filter by text, sector, source, tender date and publishing date; click a header to sort. **Docs** opens the issue's document folder, which lives inside its sector library (`sectors/<sector>/issues/issue-00012`), so users subscribed to that sector see the documents in My files. Changing an issue's sector moves its documents too.
+- **Users now get files only through sector subscriptions.** The private per-user folders are retired: no folder is created for new users, the Files button is gone, and My files shows only the sector cards. Files already stored in `<email>/` folders are not deleted; they are no longer shown to users (remove them in Supabase, Storage).
+- **My files** was redesigned: greeting, one card per active sector with its end date, folders and documents with file type, size, "Added 3 days ago", a New badge and Open / Download.
+
 ## Services: three editable parts
 In admin, Services tab, each service has three text parts (Patents, Trademarks and Translation are filled in already):
 1. **Brief**: the short text on the home page card (also the top of the pop-up).
@@ -55,8 +62,7 @@ Client sign-in is no longer in the bar: clients open `my-stuff.html` directly, w
 6. Keep `allowSignUp:false` in `supabase-config.js`.
 
 ### How access works
-- Files sit in the private `client-files` bucket under `client-email@example.com/...` (lowercase email).
-- A client can read only inside the folder named after their own email.
+- Files sit in the private `client-files` bucket. Users have no private folders any more; they read only the sector libraries they are subscribed to.
 - Shared **sectors** (starter: Construction, Engineering) live in `sectors/<id>/...`. A client reads a sector only while subscribed; any number of subscriptions per client. Manage them in admin: **Client files, Sectors** tab (libraries) and the sector buttons under each client (subscriptions).
 - Only accounts listed in `public.admins` can upload, replace or delete. To add another admin, create the user in the dashboard and run `insert into public.admins (user_id,email) select id,email from auth.users where email='them@khip.com';`
 

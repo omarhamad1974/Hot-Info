@@ -23,11 +23,13 @@ details[open]>summary .chev{transform:rotate(90deg)}
 <div class="sticky top-0 z-40 bg-gray-900 text-white">
   <div class="max-w-3xl mx-auto px-4 h-12 flex items-center gap-3">
     <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center font-black text-xs flex-shrink-0">KH</div>
-    <nav class="flex gap-1 flex-1" aria-label="Admin areas">
-      <button data-pane="content" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-pen-to-square"></i> Website content</button>
-      <button data-pane="clients" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-users-gear"></i> Users &amp; sectors</button>
+    <nav class="flex gap-1 flex-1 overflow-x-auto" aria-label="Admin areas">
+      <button data-pane="content" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-pen-to-square"></i> Website content</button>
+      <button data-pane="leads" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-filter"></i> Leads</button>
+      <button data-pane="clients" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-users-gear"></i> Users &amp; sectors</button>
+      <button data-pane="issues" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-table"></i> HOT Info Issues</button>
     </nav>
-    <a href="index.html" target="_blank" rel="noopener" class="text-[11px] text-gray-300 hover:text-white whitespace-nowrap"><i class="fas fa-arrow-up-right-from-square"></i> View site</a>
+    <a href="index.html" target="_blank" rel="noopener" class="hidden sm:block text-[11px] text-gray-300 hover:text-white whitespace-nowrap"><i class="fas fa-arrow-up-right-from-square"></i> View site</a>
   </div>
 </div>
 
@@ -78,7 +80,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
 <!-- ============ CLIENT FILES (Supabase) ============ -->
 <div id="pane-clients" class="hidden">
   <section id="k-login" class="max-w-md mx-auto p-5 pt-10">
-    <div class="mb-6"><h1 class="text-xl font-extrabold">Client files</h1><p class="text-xs text-gray-600">Invite clients and share documents in their private folders.</p></div>
+    <div class="mb-6"><h1 class="text-xl font-extrabold">Admin sign-in</h1><p class="text-xs text-gray-600">Sign in to manage leads, users, sectors and HOT Info Issues.</p></div>
     <div id="k-setup" class="hidden mb-4 text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1">
       <p class="font-bold">Supabase is not connected yet.</p>
       <p>Open <code>supabase-config.js</code>, paste your project URL and anon key (Supabase: Project Settings, API), then reload this page. The full checklist is in README.md.</p>
@@ -97,7 +99,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
   <section id="k-app" class="hidden">
     <header class="sticky top-12 z-30 bg-white/95 backdrop-blur border-b shadow-sm">
       <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-2">
-        <div class="min-w-0 flex-1"><h1 class="font-extrabold">Users, sectors &amp; files</h1><p id="k-who" class="text-[11px] text-gray-500 truncate"></p></div>
+        <div class="min-w-0 flex-1"><h1 id="k-title" class="font-extrabold">Users &amp; sectors</h1><p id="k-who" class="text-[11px] text-gray-500 truncate"></p></div>
         <button data-k="refresh" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl" aria-label="Refresh" title="Refresh"><i class="fas fa-rotate"></i></button>
         <button data-k="signout" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl">Sign out</button>
       </div>
@@ -123,10 +125,10 @@ const sizeOf=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toF
 
 let pane='content';
 function showPane(p){
-  pane=p;history.replaceState(null,'','#'+(p==='clients'?'clients':'content'));
-  $('pane-content').classList.toggle('hidden',p!=='content');$('pane-clients').classList.toggle('hidden',p!=='clients');
+  pane=p;history.replaceState(null,'','#'+p);
+  $('pane-content').classList.toggle('hidden',p!=='content');$('pane-clients').classList.toggle('hidden',p==='content');
   document.querySelectorAll('.pane-btn').forEach(b=>{const on=b.dataset.pane===p;b.className='pane-btn text-xs font-bold px-3 py-1.5 rounded-lg '+(on?'bg-white text-gray-900':'text-gray-300 hover:bg-white/10')});
-  if(p==='clients')K.start();
+  if(p!=='content')K.go(p);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pane]');if(b)showPane(b.dataset.pane)});
 
@@ -471,7 +473,7 @@ const K=(()=>{
       await sb.auth.signOut();return;
     }
     me=user;err('');
-    $('k-login').classList.add('hidden');$('k-app').classList.remove('hidden');$('k-who').textContent='Signed in as '+user.email;
+    $('k-login').classList.add('hidden');$('k-app').classList.remove('hidden');$('k-who').textContent='Signed in as '+user.email+' \u00b7 page version 27-Oct-c';
     cur=null;path=[];home();
   }
 
@@ -537,34 +539,36 @@ const K=(()=>{
     soon:pill('bg-amber-100 text-amber-800',s.days<=0?'Ends today':`Ends in ${s.days} day${s.days===1?'':'s'}`),
     upcoming:pill('bg-blue-100 text-blue-800','Starts later'),ended:pill('bg-red-100 text-red-700','Ended')}[s.k]);
 
-  async function load(){
-    main().innerHTML='<p class="text-sm text-gray-500 p-4">Loading...</p>';
-    noFn=false;clients=[];folders=[];
-    const [fr,sr,br,pr]=await Promise.all([
-      sb.storage.from(BUCKET).list('',{limit:1000,sortBy:{column:'name',order:'asc'}}),
+  const LOADING='<p class="text-sm text-gray-500 p-4">Loading...</p>';
+  async function loadUsers(){
+    noFn=false;clients=[];
+    const [sr,br,pr]=await Promise.all([
       sb.from('sectors').select('id,name').order('name'),
       sb.from('subscription_periods').select('id,user_id,sector_id,duration,start_date,end_date,reminder_sent_at'),
       sb.from('client_profiles').select('user_id,email,full_name,mobile,company'),
       fn('list').then(r=>{clients=r.clients||[]}).catch(e=>{if(e.message==='NOFN')noFn=true;else toast(e.message,false)})
     ]);
-    folders=(fr.data||[]).filter(f=>f.id===null&&f.name!=='sectors').map(f=>f.name);
     sectErr=!!sr.error;sectors=sectErr?[]:(sr.data||[]);
     subErr=!!(br.error||pr.error);periods=subErr?[]:(br.data||[]);
     profiles={};(pr.data||[]).forEach(x=>profiles[x.user_id]=x);
-    if(fr.error)toast('Could not read the bucket: '+fr.error.message,false);
   }
-  const rowsFor=()=>{
-    const m=new Map();
-    clients.forEach(c=>m.set(c.email,{id:c.id,email:c.email,account:true,confirmed:c.confirmed,last:c.last_sign_in_at,folder:false}));
-    folders.forEach(n=>{const k=n.toLowerCase(),r=m.get(k);if(r)r.folder=true;else m.set(k,{email:k,account:false,folder:true})});
-    return [...m.values()].sort((a,b)=>(label(a)).localeCompare(label(b)));
-  };
+  const rowsFor=()=>clients.map(c=>({id:c.id,email:c.email,account:true,confirmed:c.confirmed,last:c.last_sign_in_at})).sort((a,b)=>label(a).localeCompare(label(b)));
   const sectorsEmpty=()=>!sectors.length;
   const label=r=>((profiles[r.id]||{}).full_name||r.email);
   const badge=r=>!r.account?pill('bg-gray-100 text-gray-600','Folder only')
     :r.confirmed?pill('bg-emerald-50 text-emerald-700','Account active'):pill('bg-amber-100 text-amber-800','Invite pending');
-  async function home(){cur=null;path=[];await load();paintHome()}
-  const paintHome=()=>tabK==='sectors'?paintSectors():paintClients();
+  const TITLES={leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues'};
+  const setW=w=>{main().className=w==='wide'?'p-3 space-y-3':w==='mid'?'max-w-6xl mx-auto p-4 space-y-3':'max-w-3xl mx-auto p-4 space-y-3'};
+  async function home(){
+    cur=null;path=[];$('k-title').textContent=TITLES[tabK]||'Admin';main().innerHTML=LOADING;
+    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else await loadUsers();
+    paintHome();
+  }
+  const paintHome=()=>{setW(tabK==='issues'?'wide':tabK==='leads'?'mid':'narrow');tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():paintClients()};
+  function go(p){ // called by the top bar: leads | clients | issues
+    tabK=p==='clients'?(tabK==='sectors'?'sectors':'clients'):p;
+    if(!started||!sb)start();else if(me)home();
+  }
   const warn=(t)=>`<div class="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl p-4">${t}</div>`;
   const nav=()=>`<div class="flex gap-1.5">${[['clients','Users','fa-users'],['sectors','Sectors','fa-layer-group']].map(([k,l,i])=>`<button data-k="tab" data-t="${k}" class="text-xs font-bold px-4 py-2 rounded-xl ${k===tabK?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>`
     +(sectErr?warn('<b>Sectors are not set up yet.</b> Run <code>supabase-setup.sql</code> in the Supabase SQL Editor (it is safe to run again).'):'')
@@ -583,18 +587,17 @@ const K=(()=>{
     const q=filter.toLowerCase(),all=rowsFor();
     const rows=all.filter(r=>{const p=profiles[r.id]||{};return (!q||[r.email,p.full_name,p.company,p.mobile].some(v=>String(v||'').toLowerCase().includes(q)))&&stMatch(r,stFilter)});
     main().innerHTML=nav()
-    +(noFn?warn('<b>Account tools are not deployed yet.</b> You can still manage files in existing folders. To create users from here, deploy the <code>admin-clients</code> function (README, step 4).'):'')
+    +(noFn?warn('<b>Account tools are not deployed yet.</b> To create users from here, deploy the <code>admin-clients</code> function (README, step 4).'):'')
     +`<div class="flex flex-wrap gap-2"><button data-k="newuser" class="${btn1}"><i class="fas fa-user-plus"></i> New user</button><button data-k="subscribe" class="${btn1}"><i class="fas fa-calendar-plus"></i> Subscribe a user</button></div>`
     +`<div class="flex items-center justify-between pt-2"><h2 class="font-extrabold text-lg">Users <span class="text-sm font-normal text-gray-500">(${rows.length}${rows.length!==all.length?' of '+all.length:''})</span></h2></div>`
     +`<div class="flex flex-wrap gap-2"><input id="k-filter" type="search" placeholder="Search name, email, company or mobile" aria-label="Search users" value="${esc(filter)}" class="${inp} flex-1 min-w-[12rem]"><select id="k-st" aria-label="Filter by subscription status" class="${inp} !w-auto">${STF.map(([v,l])=>`<option value="${v}" ${v===stFilter?'selected':''}>${l}</option>`).join('')}</select></div>`
     +(rows.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No users match.</p>')
     +rows.map(r=>{const p=profiles[r.id]||{},s=r.account&&!subErr?ustate(r.id):null;
       return `<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-      <button data-k="open" data-e="${esc(r.email)}" class="flex-1 min-w-0 text-left"><span class="block font-bold text-sm truncate">${esc(label(r))}</span><span class="block text-[11px] text-gray-500 truncate">${p.full_name?esc(r.email):''}${p.company?(p.full_name?' &middot; ':'')+esc(p.company):''}${p.mobile?' &middot; '+esc(p.mobile):''}</span><span class="flex flex-wrap items-center gap-1.5 mt-1">${badge(r)}${s?ubadge(s):''}</span></button>
+      <button data-k="edituser" data-u="${esc(r.id)}" class="flex-1 min-w-0 text-left"><span class="block font-bold text-sm truncate">${esc(label(r))}</span><span class="block text-[11px] text-gray-500 truncate">${p.full_name?esc(r.email):''}${p.company?(p.full_name?' &middot; ':'')+esc(p.company):''}${p.mobile?' &middot; '+esc(p.mobile):''}</span><span class="flex flex-wrap items-center gap-1.5 mt-1">${badge(r)}${s?ubadge(s):''}</span></button>
       <div class="flex items-center gap-1.5">
-        <button data-k="open" data-e="${esc(r.email)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg" title="Private folder"><i class="fas fa-folder-open"></i> Files</button>
         ${r.account?`<button data-k="subscribe" data-u="${esc(r.id)}" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-calendar-plus"></i> Subscribe</button><button data-k="edituser" data-u="${esc(r.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Edit user" title="Edit details"><i class="fas fa-pen text-xs"></i></button><button data-k="resend" data-e="${esc(r.email)}" data-c="${r.confirmed?1:0}" class="w-8 h-8 rounded-lg bg-gray-100" title="${r.confirmed?'Send a password-reset email':'Send the invite again'}" aria-label="Send email"><i class="fas fa-envelope text-xs"></i></button><button data-k="remove" data-e="${esc(r.email)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete user" title="Delete user"><i class="fas fa-user-xmark text-xs"></i></button>`
-        :(noFn?'':`<button data-k="invite-folder" data-e="${esc(r.email)}" class="text-xs bg-[#f3ecdc] text-[#7a6540] hover:bg-[#e9dec4] font-bold px-3 py-2 rounded-lg">Invite</button>`)}
+        :''}
       </div>${pills(r)}</div>`}).join('');
   }
   const slug=n=>String(n).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
@@ -607,17 +610,6 @@ const K=(()=>{
     +(sectors.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No sectors yet.</p>')
     +sectors.map(x=>`<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex items-center gap-3"><i class="fas fa-layer-group text-brand-600"></i><div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${esc(x.name)}</p><p class="text-[11px] text-gray-500">${count(x.id)} current subscriber${count(x.id)===1?'':'s'} &middot; folder <code>sectors/${esc(x.id)}</code></p></div><button data-k="opensector" data-s="${esc(x.id)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-folder-open"></i> Files</button><button data-k="rensector" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Rename sector" title="Rename"><i class="fas fa-pen text-xs"></i></button><button data-k="delsector" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete sector"><i class="fas fa-trash text-xs"></i></button></div>`).join('');
   }
-  async function invite(email,btn){
-    email=email.trim().toLowerCase();btn&&(btn.disabled=true);
-    try{
-      if(!noFn){await fn('invite',email);toast('Invite sent to '+email)}
-      const {error}=await sb.storage.from(BUCKET).upload(`${email}/.keep`,new Blob(['']),{upsert:true,contentType:'text/plain'});
-      if(error)throw error;
-      if(noFn)toast('Folder created for '+email+'. Create their login in the Supabase dashboard.');
-      await home();
-    }catch(e){toast(e.message,false)}finally{btn&&(btn.disabled=false)}
-  }
-
   // ---- pop-up dialogs ----
   const modal=h=>{$('k-modal-box').innerHTML=h;$('k-modal').classList.remove('hidden');const i=$('k-modal-box').querySelector('input:not([readonly]),select');i&&i.focus()};
   const closeM=()=>$('k-modal').classList.add('hidden');
@@ -636,10 +628,9 @@ const K=(()=>{
     const r=await sb.from('client_profiles').upsert({user_id:uid,email:v.email,full_name:v.full_name||null,mobile:v.mobile||null,company:v.company||null,updated_at:new Date().toISOString()});
     if(r.error)throw r.error;
   }
-  async function createUser(v){ // invite + private folder + details; returns the new user's id
+  async function createUser(v){ // invite or create the account + details; returns the new user's id
     if(noFn)throw new Error('Deploy the admin-clients function first (README, step 4).');
     if(v.password)await fn('create',v.email,{password:v.password});else await fn('invite',v.email);
-    await sb.storage.from(BUCKET).upload(`${v.email}/.keep`,new Blob(['']),{upsert:true,contentType:'text/plain'});
     const r=await fn('list');clients=r.clients||[];
     const c=clients.find(x=>x.email===v.email);if(!c)throw new Error('The user was invited but could not be found. Press Refresh.');
     await saveProfile(c.id,v);return c.id;
@@ -647,11 +638,12 @@ const K=(()=>{
   const formVals=f=>({email:String(f.email.value||'').trim().toLowerCase(),full_name:f.full_name.value.trim(),mobile:f.mobile.value.trim(),company:f.company.value.trim(),password:(f.password&&f.password.value||'').trim()});
   const genPw=()=>{const a='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789',r=crypto.getRandomValues(new Uint32Array(12));return [...r].map(x=>a[x%a.length]).join('')};
 
-  function subDialog(uid){
+  function subDialog(uid,lead){
+    let pre=null;if(lead){const ex=lead.email&&rowsFor().find(r=>r.email===String(lead.email).toLowerCase());if(ex)uid=ex.id;else pre={email:lead.email||'',full_name:lead.name,mobile:lead.mobile,company:lead.company||''}}
     const users=rowsFor().filter(r=>r.account);
-    modal(`<h2 class="font-extrabold text-lg mb-3">Subscribe a user</h2><form data-k-form="subscribe" class="space-y-3">
-      <label class="${fl}">User<select name="user" class="${mt}">${uid?'':'<option value="">Select a user...</option>'}${users.map(u=>`<option value="${esc(u.id)}" ${u.id===uid?'selected':''}>${esc(label(u))}${(profiles[u.id]||{}).full_name?' ('+esc(u.email)+')':''}</option>`).join('')}${noFn?'':'<option value="__new">+ New user...</option>'}</select></label>
-      <div id="sub-new" class="hidden space-y-3 bg-gray-50 border border-gray-200 rounded-xl p-3">${userFields({},false).replace('name="email"','name="email" data-new="1"').replace(' required','')}</div>
+    modal(`<h2 class="font-extrabold text-lg mb-3">${lead?'Subscribe '+esc(lead.name):'Subscribe a user'}</h2>${lead&&uid?'<p class="text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2 mb-3">This lead already has a user account with the same email. The subscription is added to that account.</p>':''}<form data-k-form="subscribe" ${lead?`data-lead="${esc(lead.id)}"`:''} class="space-y-3">
+      <label class="${fl}">User<select name="user" class="${mt}">${uid||pre?'':'<option value="">Select a user...</option>'}${users.map(u=>`<option value="${esc(u.id)}" ${u.id===uid?'selected':''}>${esc(label(u))}${(profiles[u.id]||{}).full_name?' ('+esc(u.email)+')':''}</option>`).join('')}${noFn?'':`<option value="__new" ${pre?'selected':''}>+ New user...</option>`}</select></label>
+      <div id="sub-new" class="hidden space-y-3 bg-gray-50 border border-gray-200 rounded-xl p-3">${userFields(pre||{},false).replace('name="email"','name="email" data-new="1"').replace(' required','')}</div>
       <fieldset><legend class="text-xs font-bold mb-1">Sectors</legend><div class="space-y-1.5">${sectors.map(s=>`<label class="flex items-center gap-2 text-sm"><input type="checkbox" name="sec" value="${esc(s.id)}" class="w-4 h-4"><span>${esc(s.name)}</span><span data-cov="${esc(s.id)}" class="text-[11px] text-gray-500 ml-auto"></span></label>`).join('')}</div></fieldset>
       <div><p class="text-xs font-bold mb-1">Duration</p><div class="flex gap-2">${DUR.map(([v,l])=>`<label class="flex-1 text-center text-xs font-bold border border-gray-300 rounded-xl py-2.5 cursor-pointer has-[:checked]:bg-gray-900 has-[:checked]:text-white has-[:checked]:border-gray-900"><input type="radio" name="dur" value="${v}" class="sr-only" ${v==='1 year'?'checked':''}>${l}</label>`).join('')}</div></div>
       <div class="grid grid-cols-2 gap-3"><label class="${fl}">Start date<input type="date" name="start" value="${today()}" required class="${mt}"></label><label class="${fl}">End date (calculated)<input name="end" readonly class="${mt} bg-gray-100"></label></div>
@@ -681,11 +673,12 @@ const K=(()=>{
   const prefix=()=>[cur,...path].join('/');
   async function openRoot(root,label){cur=root;curLabel=label;path=[];await files()}
   async function files(){
+    setW('narrow');
     main().innerHTML='<p class="text-sm text-gray-500 p-4">Loading...</p>';
     const {data,error}=await sb.storage.from(BUCKET).list(prefix(),{limit:1000,sortBy:{column:'name',order:'asc'}});
     if(error){toast(error.message,false);return paintHome()}
     const list=(data||[]).filter(f=>!f.name.startsWith('.')).sort((a,b)=>(a.id===null?0:1)-(b.id===null?0:1));
-    const crumbs=`<button data-k="home" class="underline underline-offset-4">${tabK==='sectors'?'Sectors':'Clients'}</button><span>/</span><button data-k="up" data-i="-1" class="underline underline-offset-4">${esc(curLabel||cur)}</button>`+path.map((p,i)=>`<span>/</span><button data-k="up" data-i="${i}" class="underline underline-offset-4">${esc(p)}</button>`).join('');
+    const crumbs=`<button data-k="home" class="underline underline-offset-4">${tabK==='issues'?'HOT Info Issues':'Sectors'}</button><span>/</span><button data-k="up" data-i="-1" class="underline underline-offset-4">${esc(curLabel||cur)}</button>`+path.map((p,i)=>`<span>/</span><button data-k="up" data-i="${i}" class="underline underline-offset-4">${esc(p)}</button>`).join('');
     main().innerHTML=`<div class="flex flex-wrap items-center gap-2 text-sm font-bold">${crumbs}</div>
     <div id="drop" class="bg-white rounded-2xl border border-gray-200 p-4 flex flex-wrap items-center gap-2">
       <label class="text-xs bg-brand-600 hover:bg-brand-700 text-white font-bold px-4 py-2.5 rounded-xl cursor-pointer"><i class="fas fa-upload"></i> Upload files<input id="k-file" type="file" multiple class="hidden"></label>
@@ -721,6 +714,313 @@ const K=(()=>{
   }
   async function removePaths(paths){for(let i=0;i<paths.length;i+=100){const {error}=await sb.storage.from(BUCKET).remove(paths.slice(i,i+100));if(error)throw error}}
 
+  // ======================= shared helpers for Leads and Issues =======================
+  const EMAILRE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  async function fetchAll(table,sel,order){ // Supabase returns at most 1000 rows per request: read them all
+    const out=[];
+    for(let from=0;;from+=1000){
+      let q=sb.from(table).select(sel);
+      for(const [c,asc] of order)q=q.order(c,{ascending:asc});
+      const {data,error}=await q.range(from,from+999);
+      if(error)return {error};
+      out.push(...data);if(data.length<1000)break;
+    }
+    return {data:out};
+  }
+  async function loadXlsx(){
+    if(window.XLSX)return;
+    await new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=ok;s.onerror=()=>no(new Error('Could not load the Excel reader. Check your internet connection and try again.'));document.head.appendChild(s)});
+  }
+
+  // ======================= LEADS: start of the funnel =======================
+  let leads=[],leadsErr=false,lFilter='',lStatus='open',pendingImport=[];
+  const LCAP=300,LST=[['lead','Lead'],['potential','Potential']];
+  const stLabel=s=>s==='converted'?'Converted':s==='potential'?'Potential':'Lead';
+  const normKey=m=>String(m||'').replace(/\D/g,'').slice(-10);
+  async function loadLeads(){
+    const r=await fetchAll('leads','*',[['created_at',false],['id',true]]);
+    leadsErr=!!r.error;leads=leadsErr?[]:r.data;
+  }
+  function paintLeads(){
+    main().innerHTML=(leadsErr?warn('<b>Leads are not set up yet.</b> Run <code>supabase-step2-leads-and-issues.sql</code> in the Supabase SQL Editor (it is safe to run again), then press Refresh.'):'')
+    +`<div class="flex flex-wrap items-center gap-2"><button data-k="ladd" class="${btn1}"><i class="fas fa-user-plus"></i> Add lead</button>
+      <label class="${btn1} cursor-pointer"><i class="fas fa-file-excel"></i> Import from Excel<input id="l-file" type="file" accept=".xlsx,.xls,.csv" class="hidden"></label>
+      <button data-k="ltpl" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl" title="Excel file with the right columns"><i class="fas fa-download"></i> Template</button></div>
+      <div id="l-chips" class="flex flex-wrap gap-1.5"></div>
+      <div class="flex flex-wrap gap-2"><input id="l-q" type="search" placeholder="Search name, mobile, email, company or note" aria-label="Search leads" value="${esc(lFilter)}" class="${inp} flex-1 min-w-[12rem]">
+      <select id="l-st" aria-label="Filter by status" class="${inp} !w-auto">${[['open','Lead + Potential'],['lead','Lead only'],['potential','Potential only'],['converted','Converted to users'],['all','All']].map(([v,t])=>`<option value="${v}" ${v===lStatus?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div id="l-rows"></div>`;
+    paintLeadChips();paintLeadRows();
+  }
+  function paintLeadChips(){
+    const n=s=>leads.filter(l=>l.status===s).length;
+    $('l-chips').innerHTML=pill('bg-gray-200 text-gray-800',`Lead ${n('lead')}`)+pill('bg-amber-100 text-amber-800',`Potential ${n('potential')}`)+pill('bg-emerald-100 text-emerald-800',`Converted ${n('converted')}`);
+  }
+  function paintLeadRows(){
+    const q=lFilter.toLowerCase(),all=leads.filter(l=>(lStatus==='all'||(lStatus==='open'?l.status!=='converted':l.status===lStatus))&&(!q||[l.name,l.email,l.mobile,l.company,l.status_note].some(v=>String(v||'').toLowerCase().includes(q)))),rows=all.slice(0,LCAP);
+    const dash='<span class="text-gray-400">-</span>',ib='w-8 h-8 rounded-lg';
+    $('l-rows').innerHTML=!all.length?`<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">${leads.length?'No leads match.':'No leads yet. Add one, or import an Excel sheet with the columns Name, Email, Mobile Number, Company.'}</p>`
+    :`<p class="text-[11px] text-gray-500 mb-1">${all.length} lead${all.length===1?'':'s'}${all.length>LCAP?` (showing the first ${LCAP}: use search or the filter)`:''}</p>
+    <div class="bg-white rounded-2xl border border-gray-200 overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-left text-[11px] uppercase tracking-wide text-gray-500 bg-gray-50"><th class="px-3 py-2">Name</th><th class="px-3 py-2">Mobile</th><th class="px-3 py-2">Email</th><th class="px-3 py-2">Company</th><th class="px-3 py-2">Status</th><th class="px-3 py-2">Status description</th><th class="px-3 py-2"></th></tr></thead><tbody>`
+    +rows.map(l=>`<tr class="border-t border-gray-100 align-top ${l.status==='converted'?'bg-gray-50':''}">
+      <td class="px-3 py-2 font-bold min-w-[9rem]">${esc(l.name)}</td>
+      <td class="px-3 py-2 whitespace-nowrap"><a href="tel:${esc(l.mobile)}" class="text-brand-700 hover:underline">${esc(l.mobile)}</a></td>
+      <td class="px-3 py-2 min-w-[10rem] break-all">${l.email?`<a href="mailto:${esc(l.email)}" class="text-brand-700 hover:underline">${esc(l.email)}</a>`:dash}</td>
+      <td class="px-3 py-2 min-w-[8rem]">${l.company?esc(l.company):dash}</td>
+      <td class="px-3 py-2">${l.status==='converted'?pill('bg-emerald-100 text-emerald-800','Converted'):`<select data-k-lead="status" data-id="${esc(l.id)}" aria-label="Status of ${esc(l.name)}" class="${inp} !w-auto !py-1.5 ${l.status==='potential'?'!bg-amber-50 !border-amber-300':''}">${LST.map(([v,t])=>`<option value="${v}" ${v===l.status?'selected':''}>${t}</option>`).join('')}</select>`}</td>
+      <td class="px-3 py-2 min-w-[15rem]"><textarea data-k-lead="note" data-id="${esc(l.id)}" rows="2" maxlength="1000" aria-label="Status description for ${esc(l.name)}" placeholder="Where is this lead now? Last call, next step..." class="${inp}">${esc(l.status_note||'')}</textarea></td>
+      <td class="px-3 py-2 whitespace-nowrap">${l.status==='converted'?'':`<button data-k="lsub" data-id="${esc(l.id)}" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-3 py-2 rounded-lg mr-1" title="Create the user and subscribe to sectors"><i class="fas fa-calendar-plus"></i> Subscribe</button>`}<button data-k="ledit" data-id="${esc(l.id)}" class="${ib} bg-gray-100" aria-label="Edit lead" title="Edit"><i class="fas fa-pen text-xs"></i></button> <button data-k="ldel" data-id="${esc(l.id)}" class="${ib} bg-red-50 text-red-600" aria-label="Delete lead" title="Delete"><i class="fas fa-trash text-xs"></i></button></td></tr>`).join('')
+    +'</tbody></table></div>';
+  }
+  function leadDialog(id){
+    const l=id?leads.find(x=>x.id===id):{status:'lead'};
+    modal(`<h2 class="font-extrabold text-lg mb-3">${id?'Edit lead':'Add lead'}</h2><form data-k-form="lead" data-id="${esc(id||'')}" class="space-y-3">
+      <label class="${fl}">Name <span class="text-red-600">*</span><input name="name" required maxlength="80" value="${esc(l.name||'')}" class="${mt}"></label>
+      <label class="${fl}">Mobile number <span class="text-red-600">*</span><input name="mobile" type="tel" required maxlength="30" value="${esc(l.mobile||'')}" class="${mt}"></label>
+      <label class="${fl}">Email<input name="email" type="email" maxlength="120" value="${esc(l.email||'')}" class="${mt}"></label>
+      <label class="${fl}">Company<input name="company" maxlength="80" value="${esc(l.company||'')}" class="${mt}"></label>
+      ${l.status==='converted'?'':`<label class="${fl}">Status<select name="status" class="${mt}">${LST.map(([v,t])=>`<option value="${v}" ${v===l.status?'selected':''}>${t}</option>`).join('')}</select></label>`}
+      <label class="${fl}">Status description<textarea name="note" rows="3" maxlength="1000" placeholder="Anything about where this lead stands now" class="${mt}">${esc(l.status_note||'')}</textarea></label>
+      <div class="flex justify-end gap-2 pt-1"><button type="button" data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button class="${btn1}">${id?'Save':'Add lead'}</button></div></form>`);
+  }
+  async function saveLeadForm(f){
+    const el=f.elements,id=f.dataset.id,b0=f.querySelector('button:not([type=button])');
+    const v={name:el.name.value.trim(),mobile:el.mobile.value.trim(),email:el.email.value.trim()||null,company:el.company.value.trim()||null,status_note:el.note.value.trim()||null};
+    if(!v.name||!v.mobile)return toast('Name and mobile number are required.',false);
+    if(v.email&&!EMAILRE.test(v.email))return toast('That email address does not look right.',false);
+    const dup=leads.find(l=>l.id!==id&&normKey(l.mobile)===normKey(v.mobile));
+    if(dup&&!confirm(`${dup.name} already has this mobile number (${stLabel(dup.status)}). Save anyway?`))return;
+    b0.disabled=true;
+    try{
+      const now=new Date().toISOString();
+      if(id){const patch={...v,updated_at:now};if(el.status)patch.status=el.status.value;const r=await sb.from('leads').update(patch).eq('id',id);if(r.error)throw r.error}
+      else{const r=await sb.from('leads').insert({...v,status:el.status.value});if(r.error)throw r.error}
+      closeM();toast(id?'Lead saved':'Lead added');await home();
+    }catch(x){toast(x.message,false)}finally{b0.disabled=false}
+  }
+  // Excel / CSV import: headers Name, Email, Mobile Number, Company (Arabic headers work too)
+  const LCOLS=[['name',/^(full[\s_-]*)?name$|^الاسم$|^اسم/i],['email',/e-?mail|البريد|الايميل|الإيميل/i],['mobile',/mobile|phone|tel|whats|الموبايل|المحمول|الجوال|الهاتف|التليفون|^رقم/i],['company',/company|organi[sz]ation|firm|الشركة|شركة/i]];
+  async function importFile(file){
+    try{
+      await loadXlsx();
+      const wb=/\.csv$/i.test(file.name)?XLSX.read(await file.text(),{type:'string',raw:true}):XLSX.read(await file.arrayBuffer(),{type:'array'});
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''});
+      let h=-1,map={};
+      for(let i=0;i<Math.min(rows.length,10)&&h<0;i++){
+        const m={};rows[i].forEach((c,j)=>{const t=String(c).trim();if(!t)return;for(const [k,re] of LCOLS)if(!(k in m)&&re.test(t)){m[k]=j;break}});
+        if('name' in m&&'mobile' in m){h=i;map=m}
+      }
+      if(h<0)throw new Error('Could not find the columns. The first row of the sheet should have the headers: Name, Email, Mobile Number, Company.');
+      const existing=new Set(leads.map(l=>normKey(l.mobile))),seen=new Set(),ok=[],bad=[];let dups=0,fixed=0,badMail=0;
+      rows.slice(h+1).forEach((r,i)=>{
+        const line=h+i+2,g=k=>k in map?r[map[k]]:'',mraw=g('mobile');
+        const name=String(g('name')).trim();let email=String(g('email')).trim(),company=String(g('company')).trim(),mobile=typeof mraw==='number'?String(Math.round(mraw)):String(mraw).trim();
+        if(!name&&!mobile&&!email&&!company)return;
+        if(typeof mraw==='number'&&/^1[0125]\d{8}$/.test(mobile)){mobile='0'+mobile;fixed++}   // Excel drops the leading 0 of Egyptian mobiles
+        if(!name||!mobile){bad.push(`Row ${line}: ${!name&&!mobile?'name and mobile number':!name?'name':'mobile number'} missing`);return}
+        if(email&&!EMAILRE.test(email)){email='';badMail++}
+        const key=normKey(mobile);if(existing.has(key)||seen.has(key)){dups++;return}
+        seen.add(key);ok.push({name:name.slice(0,80),email:email||null,mobile:mobile.slice(0,30),company:company.slice(0,80)||null,status:'lead'});
+      });
+      pendingImport=ok;
+      modal(`<h2 class="font-extrabold text-lg mb-1">Import leads</h2><p class="text-xs text-gray-500 mb-3 break-all">${esc(file.name)}</p>
+        <ul class="text-sm space-y-1 mb-3"><li class="${ok.length?'text-emerald-800':'text-gray-700'}"><b>${ok.length}</b> new lead${ok.length===1?'':'s'} will be added with status "Lead".</li>
+        ${dups?`<li class="text-gray-700">${dups} skipped: mobile number already in Leads, or repeated in the file.</li>`:''}
+        ${bad.length?`<li class="text-red-700">${bad.length} skipped: name or mobile number missing.</li>`:''}
+        ${badMail?`<li class="text-gray-700">${badMail} email${badMail===1?'':'s'} did not look valid and ${badMail===1?'was':'were'} left empty.</li>`:''}
+        ${fixed?`<li class="text-gray-700">${fixed} mobile number${fixed===1?'':'s'} had lost the leading 0 in Excel: it was added back.</li>`:''}</ul>
+        ${bad.length?`<details class="text-xs text-gray-600 mb-3"><summary class="cursor-pointer font-bold">Show the skipped rows</summary><p class="mt-1">${bad.slice(0,20).map(esc).join('<br>')}${bad.length>20?'<br>...':''}</p></details>`:''}
+        ${ok.length?`<div class="border border-gray-200 rounded-xl divide-y text-xs mb-3">${ok.slice(0,4).map(o=>`<div class="px-3 py-1.5"><b>${esc(o.name)}</b> &middot; ${esc(o.mobile)}${o.company?' &middot; '+esc(o.company):''}</div>`).join('')}${ok.length>4?`<div class="px-3 py-1.5 text-gray-500">and ${ok.length-4} more</div>`:''}</div>`:''}
+        <div class="flex justify-end gap-2"><button type="button" data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button>${ok.length?`<button data-k="limport" class="${btn1}">Import ${ok.length}</button>`:''}</div>`);
+    }catch(x){toast(x.message,false)}
+  }
+
+  // ======================= HOT INFO ISSUES: the tender table =======================
+  const SOURCES=['Newspapers','Manzooma','Private'],IBLANK={q:'',sector:'',source:'',tf:'',tt:'',pf:'',pt:''};
+  let issues=[],issuesErr=false,imgUrl={},IF={...IBLANK},IS={k:'issue_no',d:-1},ICAP=150,imgFor=null;
+  const folderOf=r=>`sectors/${r.sector_id}/issues/issue-${String(r.issue_no).padStart(5,'0')}`;
+  async function signImages(rows){
+    const paths=rows.map(r=>r.image_path).filter(p=>p&&!imgUrl[p]);
+    for(let i=0;i<paths.length;i+=100){
+      const {data}=await sb.storage.from(BUCKET).createSignedUrls(paths.slice(i,i+100),3600);
+      (data||[]).forEach(x=>{if(x.signedUrl&&x.path)imgUrl[x.path]=x.signedUrl});
+    }
+  }
+  async function loadIssues(){
+    const [sr,r]=await Promise.all([sb.from('sectors').select('id,name').order('name'),fetchAll('issues','*',[['issue_no',true]])]);
+    sectErr=!!sr.error;sectors=sectErr?[]:(sr.data||[]);
+    issuesErr=!!r.error;issues=issuesErr?[]:r.data;
+    if(!issuesErr)await signImages(issues);
+  }
+  const setState=(t,bad)=>{const s=$('i-state');if(s){s.textContent=t;s.className='text-[11px] '+(bad?'text-red-700 font-bold':'text-gray-500')}};
+  function paintIssues(){
+    const lab='text-[11px] font-bold';
+    main().innerHTML=(issuesErr?warn('<b>HOT Info Issues is not set up yet.</b> Run <code>supabase-step2-leads-and-issues.sql</code> in the Supabase SQL Editor (it is safe to run again), then press Refresh.'):'')
+    +(!issuesErr&&sectErr?warn('<b>Sectors are not set up yet.</b> Run <code>supabase-setup.sql</code> in the Supabase SQL Editor, then press Refresh.'):'')
+    +`<div class="flex flex-wrap items-center gap-3"><button data-k="iadd" class="${btn1}"><i class="fas fa-plus"></i> Add row</button><span id="i-state" class="text-[11px] text-gray-500">Changes save automatically when you leave a cell</span><span id="i-count" class="ml-auto text-xs font-bold text-gray-700"></span></div>
+    <div class="flex flex-wrap items-end gap-2 bg-white border border-gray-200 rounded-2xl p-3">
+      <label class="${lab} flex-1 min-w-[12rem]">Search<input data-if="q" type="search" placeholder="Brief, tender source or number" value="${esc(IF.q)}" class="${inp} mt-1"></label>
+      <label class="${lab}">Sector<select data-if="sector" class="${inp} mt-1 !w-auto block"><option value="">All sectors</option>${sectors.map(s=>`<option value="${esc(s.id)}" ${s.id===IF.sector?'selected':''}>${esc(s.name)}</option>`).join('')}</select></label>
+      <label class="${lab}">Source<select data-if="source" class="${inp} mt-1 !w-auto block"><option value="">All sources</option>${SOURCES.map(s=>`<option ${s===IF.source?'selected':''}>${s}</option>`).join('')}</select></label>
+      <label class="${lab}">Tender date from<input data-if="tf" type="date" value="${IF.tf}" class="${inp} mt-1 !w-auto block"></label>
+      <label class="${lab}">to<input data-if="tt" type="date" value="${IF.tt}" class="${inp} mt-1 !w-auto block"></label>
+      <label class="${lab}">Published from<input data-if="pf" type="date" value="${IF.pf}" class="${inp} mt-1 !w-auto block"></label>
+      <label class="${lab}">to<input data-if="pt" type="date" value="${IF.pt}" class="${inp} mt-1 !w-auto block"></label>
+      <button data-k="iclear" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2.5 rounded-xl">Clear</button></div>
+    <div id="i-sheet"></div><input id="i-img" type="file" accept="image/*" class="hidden">`;
+    paintIssueRows();
+  }
+  const IW={sector_id:'min-w-[9rem]',source:'min-w-[7.5rem]',tender_brief:'min-w-[22rem] w-[22rem]',tender_source:'min-w-[11rem]',tb_price:'min-w-[6.5rem]',tender_date:'min-w-[8.5rem]',publishing_date:'min-w-[8.5rem]',insurance_value:'min-w-[7.5rem]'};
+  const CI='w-full bg-transparent px-2 py-1.5 text-[13px] outline-none focus:bg-blue-50 focus:shadow-[inset_0_0_0_2px_#1d4ed8]';
+  function cell(r,f){
+    const a=`data-cell data-i="${r.issue_no}" data-f="${f}"`;
+    if(f==='sector_id')return `<select ${a} class="${CI}">${sectors.map(s=>`<option value="${esc(s.id)}" ${s.id===r.sector_id?'selected':''}>${esc(s.name)}</option>`).join('')}</select>`;
+    if(f==='source')return `<select ${a} class="${CI}"><option value=""></option>${SOURCES.map(s=>`<option ${s===r.source?'selected':''}>${s}</option>`).join('')}</select>`;
+    if(f==='tender_brief')return `<textarea ${a} rows="1" class="${CI} resize-none leading-snug block">${esc(r[f]||'')}</textarea>`;
+    if(f==='tender_source')return `<input ${a} value="${esc(r[f]||'')}" maxlength="200" class="${CI}">`;
+    if(f==='tb_price'||f==='insurance_value')return `<input ${a} type="number" min="0" step="0.01" inputmode="decimal" value="${r[f]??''}" class="${CI} text-right tabular-nums">`;
+    return `<input ${a} type="date" value="${r[f]||''}" class="${CI}">`;
+  }
+  const autosize=t=>{t.style.height='auto';t.style.height=Math.max(32,t.scrollHeight)+'px'};
+  function paintIssueRows(){
+    const q=IF.q.toLowerCase();
+    const all=issues.filter(r=>(!IF.sector||r.sector_id===IF.sector)&&(!IF.source||r.source===IF.source)
+      &&(!q||[r.tender_brief,r.tender_source,String(r.issue_no)].some(v=>String(v||'').toLowerCase().includes(q)))
+      &&(!IF.tf||(r.tender_date&&r.tender_date>=IF.tf))&&(!IF.tt||(r.tender_date&&r.tender_date<=IF.tt))
+      &&(!IF.pf||(r.publishing_date&&r.publishing_date>=IF.pf))&&(!IF.pt||(r.publishing_date&&r.publishing_date<=IF.pt)));
+    const k=IS.k,d=IS.d,val=r=>k==='sector_id'?sname(r.sector_id).toLowerCase():r[k],empty=v=>v==null||v==='';
+    all.sort((a,b)=>{const x=val(a),y=val(b);if(empty(x))return empty(y)?0:1;if(empty(y))return -1;return (x<y?-1:x>y?1:0)*d});
+    const rows=all.slice(0,ICAP);
+    $('i-count').textContent=`${all.length===issues.length?all.length:all.length+' of '+issues.length} issue${issues.length===1?'':'s'}`;
+    const th=(f,l,w='')=>`<th class="border border-gray-300 bg-gray-200 px-2 py-1.5 text-left text-[11px] uppercase tracking-wide sticky top-0 z-10 ${w}"><button data-k="isort" data-f="${f}" class="inline-flex items-center gap-1 font-bold uppercase whitespace-nowrap">${l}<i class="fas ${IS.k===f?(IS.d>0?'fa-sort-up':'fa-sort-down'):'fa-sort text-gray-400'}"></i></button></th>`;
+    const th0=l=>`<th class="border border-gray-300 bg-gray-200 px-2 py-1.5 text-[11px] uppercase tracking-wide sticky top-0 z-10">${l}</th>`;
+    const F=['sector_id','source','tender_brief','tender_source','tb_price','tender_date','publishing_date','insurance_value'];
+    $('i-sheet').innerHTML=!issues.length?'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No issues yet. Press <b>Add row</b> to enter the first tender.</p>'
+    :!all.length?'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No issue matches these filters.</p>'
+    :`<div class="bg-white border border-gray-300 rounded-xl overflow-auto" style="max-height:calc(100vh - 17rem)"><table class="border-collapse text-sm" style="min-width:100%"><thead><tr>${th('issue_no','#','w-14')}${th('sector_id','Sector')}${th('source','Source')}${th('tender_brief','Tender brief')}${th('tender_source','Tender source')}${th('tb_price','TB price')}${th('tender_date','Tender date')}${th('publishing_date','Publishing date')}${th('insurance_value','Insurance value')}${th0('Image')}${th0('Documents')}${th0('')}</tr></thead><tbody>`
+      +rows.map(r=>`<tr class="bg-white hover:bg-blue-50/40"><td class="border border-gray-300 bg-gray-100 text-center text-[11px] text-gray-600 font-bold px-1">${r.issue_no}</td>`
+        +F.map(f=>`<td class="border border-gray-300 p-0 align-top ${IW[f]}">${cell(r,f)}</td>`).join('')
+        +`<td class="border border-gray-300 p-0 text-center">${r.image_path&&imgUrl[r.image_path]?`<button data-k="iimg" data-i="${r.issue_no}" class="block mx-auto p-1" title="View, replace or remove the image"><img src="${esc(imgUrl[r.image_path])}" alt="Tender image" class="h-9 w-12 object-cover rounded"></button>`:`<button data-k="iimgup" data-i="${r.issue_no}" class="block w-full px-3 py-2 text-gray-400 hover:text-brand-600" title="Upload the tender image" aria-label="Upload the tender image"><i class="fas fa-image"></i></button>`}</td>`
+        +`<td class="border border-gray-300 p-0"><button data-k="idocs" data-i="${r.issue_no}" class="w-full px-3 py-2 text-xs font-bold text-brand-700 hover:bg-brand-50 whitespace-nowrap" title="Tender documents folder"><i class="fas fa-folder-open"></i> Docs</button></td>`
+        +`<td class="border border-gray-300 p-0"><button data-k="idel" data-i="${r.issue_no}" class="w-full px-3 py-2 text-red-500 hover:bg-red-50" aria-label="Delete this row" title="Delete this row"><i class="fas fa-trash text-xs"></i></button></td></tr>`).join('')
+      +`</tbody></table></div>`+(all.length>ICAP?`<div class="text-center pt-2"><button data-k="imore" class="text-xs bg-white border border-gray-300 hover:bg-gray-50 font-bold px-4 py-2.5 rounded-xl">Show ${Math.min(150,all.length-ICAP)} more (${all.length-ICAP} not shown)</button></div>`:'');
+    $('i-sheet').querySelectorAll('textarea').forEach(autosize);
+  }
+  async function moveIssue(row,newId){ // the documents follow the issue when its sector changes
+    const from=folderOf(row),to=folderOf({...row,sector_id:newId}),files=await listAll(from);
+    if(!files.length)return;
+    if(!confirm(`Move this issue's ${files.length} document${files.length===1?'':'s'} to the "${sname(newId)}" library?\n\nSubscribers of "${sname(row.sector_id)}" will no longer see them; subscribers of "${sname(newId)}" will.`))throw new Error('CANCEL');
+    for(const p of files){const {error}=await sb.storage.from(BUCKET).move(p,to+p.slice(from.length));if(error)throw error}
+  }
+  async function saveCell(el){
+    const no=+el.dataset.i,f=el.dataset.f,row=issues.find(r=>r.issue_no===no);if(!row)return;
+    let v=el.value;
+    if(f==='tb_price'||f==='insurance_value'){v=v===''?null:Number(v);if(v!==null&&(!isFinite(v)||v<0)){toast('Enter a number of 0 or more.',false);el.value=row[f]??'';return}}
+    else if(f==='tender_date'||f==='publishing_date')v=v||null;
+    else if(f==='source'||f==='tender_source')v=v.trim()||null;
+    else if(f==='tender_brief')v=v.trim();
+    if((row[f]??'')===(v??''))return;
+    setState('Saving...');
+    try{
+      if(f==='sector_id')await moveIssue(row,v);
+      const r=await sb.from('issues').update({[f]:v,updated_at:new Date().toISOString()}).eq('issue_no',no);
+      if(r.error)throw r.error;
+      row[f]=v;setState('All changes saved');
+    }catch(x){
+      el.value=row[f]??'';if(el.tagName==='TEXTAREA')autosize(el);
+      if(x.message==='CANCEL')setState('Nothing changed');else{setState(x.message,true);toast(x.message,false)}
+    }
+  }
+  async function uploadImage(no,file){
+    const row=issues.find(r=>r.issue_no===no);if(!row)return;
+    if(!/^image\//.test(file.type))return toast('Choose an image file.',false);
+    setState('Uploading the image...');
+    try{
+      file=await shrink(file);
+      if(file.size>8e6)throw new Error('The image is over 8 MB. Please use a smaller one.');
+      const ext=((file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')).slice(0,5)||'jpg',path=`issue-images/${no}/${Date.now().toString(36)}.${ext}`;
+      const up=await sb.storage.from(BUCKET).upload(path,file,{contentType:file.type||undefined,upsert:false});if(up.error)throw up.error;
+      const u=await sb.from('issues').update({image_path:path,updated_at:new Date().toISOString()}).eq('issue_no',no);
+      if(u.error){await sb.storage.from(BUCKET).remove([path]);throw u.error}
+      if(row.image_path)await sb.storage.from(BUCKET).remove([row.image_path]);
+      row.image_path=path;await signImages([row]);setState('All changes saved');paintIssueRows();
+    }catch(x){setState(x.message,true);toast(x.message,false)}
+  }
+
+  // ======================= actions for the Leads and Issues buttons =======================
+  const ACT={
+    ladd:()=>leadDialog(''),
+    ledit:t=>leadDialog(t.dataset.id),
+    async ldel(t){const l=leads.find(x=>x.id===t.dataset.id);if(!l||!confirm(`Delete the lead "${l.name}"?`))return;
+      const r=await sb.from('leads').delete().eq('id',l.id);if(r.error)throw r.error;leads=leads.filter(x=>x!==l);toast('Lead deleted');paintLeadChips();paintLeadRows()},
+    async lsub(t){ // create the user and subscribe: from here the lead is handled like any other user
+      const l=leads.find(x=>x.id===t.dataset.id);if(!l)return;t.disabled=true;
+      try{await loadUsers();
+        if(noFn)throw new Error('NOFN');
+        if(sectErr||subErr)return toast('Subscriptions are not set up yet: run the SQL files in the Supabase SQL Editor, then press Refresh.',false);
+        if(!sectors.length)return toast('Add at least one sector first (Users & sectors, Sectors tab).',false);
+        subDialog('',l);
+      }finally{t.disabled=false}},
+    async ltpl(){await loadXlsx();const ws=XLSX.utils.aoa_to_sheet([['Name','Email','Mobile Number','Company'],['Ahmed Hassan','ahmed@example.com','01012345678','Example Co']]);
+      ws['!cols']=[{wch:24},{wch:28},{wch:18},{wch:24}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Leads');XLSX.writeFile(wb,'leads-template.xlsx')},
+    async limport(t){t.disabled=true;t.textContent='Importing...';
+      try{for(let i=0;i<pendingImport.length;i+=200){const r=await sb.from('leads').insert(pendingImport.slice(i,i+200));if(r.error)throw r.error}
+        toast(`${pendingImport.length} lead${pendingImport.length===1?'':'s'} imported`);pendingImport=[];closeM();await home();
+      }catch(x){toast(x.message,false);t.disabled=false;t.textContent='Try again'}},
+    async iadd(){
+      if(!sectors.length)return toast('Add at least one sector first (Users & sectors, Sectors tab).',false);
+      const r=await sb.from('issues').insert({sector_id:IF.sector||sectors[0].id}).select().single();if(r.error)throw r.error;
+      issues.push(r.data);IF={...IBLANK,sector:IF.sector};IS={k:'issue_no',d:-1};paintIssues();
+      const c=document.querySelector(`[data-i="${r.data.issue_no}"][data-f="tender_brief"]`);c&&c.focus();
+    },
+    iclear:()=>{IF={...IBLANK};ICAP=150;paintIssues()},
+    isort:t=>{const f=t.dataset.f;IS=IS.k===f?{k:f,d:-IS.d}:{k:f,d:1};paintIssueRows()},
+    imore:()=>{ICAP+=150;paintIssueRows()},
+    async idocs(t){const r=issues.find(x=>x.issue_no===+t.dataset.i);if(!r)return;tabK='issues';await openRoot(folderOf(r),`Issue ${r.issue_no}`)},
+    iimgup:t=>{closeM();imgFor=+t.dataset.i;$('i-img').click()},
+    iimg(t){const no=+t.dataset.i,r=issues.find(x=>x.issue_no===no);if(!r||!imgUrl[r.image_path])return;
+      modal(`<h2 class="font-extrabold text-lg mb-3">Tender image, issue ${no}</h2><a href="${esc(imgUrl[r.image_path])}" target="_blank" rel="noopener" title="Open full size"><img src="${esc(imgUrl[r.image_path])}" alt="Tender image" class="w-full max-h-[60vh] object-contain rounded-lg border bg-gray-50"></a>
+      <div class="flex justify-between gap-2 pt-3"><button data-k="iimgdel" data-i="${no}" class="text-xs bg-red-50 text-red-700 hover:bg-red-100 font-bold px-4 py-2.5 rounded-xl">Remove</button><div class="flex gap-2"><button data-k="iimgup" data-i="${no}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Replace</button><button data-k="mclose" class="${btn1}">Close</button></div></div>`)},
+    async iimgdel(t){const r=issues.find(x=>x.issue_no===+t.dataset.i);if(!r||!r.image_path)return;
+      const u=await sb.from('issues').update({image_path:null,updated_at:new Date().toISOString()}).eq('issue_no',r.issue_no);if(u.error)throw u.error;
+      await removePaths([r.image_path]);r.image_path=null;closeM();toast('Image removed');paintIssueRows()},
+    async idel(t){const r=issues.find(x=>x.issue_no===+t.dataset.i);if(!r)return;
+      const files=await listAll(folderOf(r));
+      if(!confirm(`Delete issue ${r.issue_no}${r.tender_brief?` ("${r.tender_brief.slice(0,60)}")`:''}?\n\nThis also deletes its ${files.length} document${files.length===1?'':'s'} and its image. This cannot be undone.`))return;
+      await removePaths(files);if(r.image_path)await removePaths([r.image_path]);
+      const d=await sb.from('issues').delete().eq('issue_no',r.issue_no);if(d.error)throw d.error;
+      issues=issues.filter(x=>x!==r);toast('Issue deleted');paintIssueRows()}
+  };
+  // Inline edits: leads (status, description), issue cells, filters, imports
+  document.addEventListener('change',async e=>{
+    const t=e.target;if(!t||!t.closest)return;
+    const lead=t.closest('[data-k-lead]');
+    if(lead){
+      const l=leads.find(x=>x.id===lead.dataset.id);if(!l)return;
+      const isSt=lead.dataset.kLead==='status',patch=isSt?{status:lead.value}:{status_note:lead.value.trim()||null};
+      if((l[isSt?'status':'status_note']||'')===(isSt?patch.status:(patch.status_note||'')))return;
+      const r=await sb.from('leads').update({...patch,updated_at:new Date().toISOString()}).eq('id',l.id);
+      if(r.error){toast(r.error.message,false);lead.value=isSt?l.status:(l.status_note||'');return}
+      Object.assign(l,patch);toast(isSt?`${l.name}: ${stLabel(l.status)}`:'Description saved');if(isSt){paintLeadChips();lead.classList.toggle('!bg-amber-50',l.status==='potential');lead.classList.toggle('!border-amber-300',l.status==='potential')}
+      return;
+    }
+    const c=t.closest('[data-cell]');if(c){saveCell(c);return}
+    if(t.id==='l-file'){const f=t.files[0];t.value='';if(f)importFile(f);return}
+    if(t.id==='l-st'){lStatus=t.value;paintLeadRows();return}
+    if(t.id==='i-img'){const f=t.files[0];t.value='';if(f&&imgFor)uploadImage(imgFor,f)}
+  });
+  document.addEventListener('input',e=>{
+    const t=e.target;if(!t||!t.closest)return;
+    if(t.matches('textarea[data-cell]'))autosize(t);
+    if(t.id==='l-q'){lFilter=t.value;paintLeadRows();return}
+    const f=t.closest('[data-if]');if(f){IF[f.dataset.if]=f.value;ICAP=150;paintIssueRows()}
+  });
+  document.addEventListener('keydown',e=>{ // Enter saves the cell and moves down one row (Alt+Enter moves up), like a sheet
+    const el=e.target;if(e.key!=='Enter'||e.shiftKey||!el.matches||!el.matches('[data-cell]'))return;
+    e.preventDefault();const td=el.closest('td'),tr=td.parentElement,nx=e.altKey?tr.previousElementSibling:tr.nextElementSibling,i=[...tr.children].indexOf(td);
+    el.blur();const n=nx&&nx.children[i]&&nx.children[i].querySelector('[data-cell]');if(n)n.focus();
+  });
+
   // ---- events ----
   document.addEventListener('click',async e=>{
     const t=e.target.closest('[data-k]');if(!t||!sb)return;const k=t.dataset.k,n=t.dataset.n,em=t.dataset.e;
@@ -728,7 +1028,6 @@ const K=(()=>{
       if(k==='signout'){await sb.auth.signOut()}
       else if(k==='refresh'){cur?await files():await home()}
       else if(k==='home')await home();
-      else if(k==='open'){tabK='clients';await openRoot(em,em)}
       else if(k==='tab'){tabK=t.dataset.t;paintHome()}
       else if(k==='opensector'){const x=sectors.find(v=>v.id===t.dataset.s);tabK='sectors';await openRoot('sectors/'+x.id,x.name)}
       else if(k==='newuser')userDialog('');
@@ -745,14 +1044,16 @@ const K=(()=>{
       else if(k==='rensector'){const x=sectors.find(v=>v.id===t.dataset.s),nm=prompt('New name for this sector',x.name);
         if(nm&&nm.trim()&&nm.trim()!==x.name){const r=await sb.from('sectors').update({name:nm.trim().slice(0,40)}).eq('id',x.id);if(r.error)throw r.error;toast('Sector renamed');await home()}}
       else if(k==='delsector'){const x=sectors.find(v=>v.id===t.dataset.s);
+        const ic=await sb.from('issues').select('issue_no',{count:'exact',head:true}).eq('sector_id',x.id);
+        if(!ic.error&&ic.count>0)throw new Error(`"${x.name}" still has ${ic.count} issue${ic.count===1?'':'s'} in HOT Info Issues. Move or delete them first.`);
         if(confirm(`Delete the sector "${x.name}"?\n\nIts subscriptions and ALL files inside it are removed. This cannot be undone.`)){
           await removePaths(await listAll('sectors/'+x.id));
           const r=await sb.from('sectors').delete().eq('id',x.id);if(r.error)throw r.error;toast('Sector deleted');await home()}}
+      else if(ACT[k]){await ACT[k](t)}
       else if(k==='up'){path=path.slice(0,+t.dataset.i+1);await files()}
       else if(k==='in'){path.push(n);await files()}
-      else if(k==='invite-folder')await invite(em,t);
       else if(k==='resend'){t.disabled=true;const r=await fn('resend',em);toast(r.kind==='reset'?'Password-reset email sent to '+em:'New invite sent to '+em);t.disabled=false}
-      else if(k==='remove'){if(confirm(`Delete the user ${em}?\n\nTheir account, details and subscriptions are removed and they can no longer sign in. Files in their private folder stay until you delete them.`)){await fn('remove',em);toast('User deleted');await home()}}
+      else if(k==='remove'){if(confirm(`Delete the user ${em}?\n\nTheir account, details and subscriptions are removed and they can no longer sign in.`)){await fn('remove',em);toast('User deleted');await home()}}
       else if(k==='mkdir'){const raw=prompt('Folder name');if(raw){const nm=cleanFolder(raw);const {error}=await sb.storage.from(BUCKET).upload(`${prefix()}/${nm}/.keep`,new Blob(['']),{upsert:true,contentType:'text/plain'});if(error)throw error;await files()}}
       else if(k==='dl'){const {data,error}=await sb.storage.from(BUCKET).createSignedUrl(`${prefix()}/${n}`,60,{download:n});if(error)throw error;const a=document.createElement('a');a.href=data.signedUrl;a.download=n;document.body.appendChild(a);a.click();a.remove()}
       else if(k==='rm'){if(confirm(`Delete "${n}"? This cannot be undone.`)){await removePaths([`${prefix()}/${n}`]);toast('File deleted');await files()}}
@@ -761,7 +1062,7 @@ const K=(()=>{
   });
   document.addEventListener('submit',async e=>{
     const f=e.target.closest('[data-k-form]');if(!f)return;e.preventDefault();
-    if(f.dataset.kForm==='invite')return invite(f.email.value,f.querySelector('button'));
+    if(f.dataset.kForm==='lead')return saveLeadForm(f);
     const b0=f.querySelector('button:not([type=button])');
     if(f.dataset.kForm==='user'){
       const v=formVals(f),uid=f.dataset.u;b0.disabled=true;
@@ -792,6 +1093,7 @@ const K=(()=>{
         }
         const r=await sb.from('subscription_periods').insert(chosen.map(s=>({user_id:uid,sector_id:s,duration:dur,start_date:start,end_date:end})));
         if(r.error)throw new Error(r.error.code==='23P01'?'This user already has a subscription to one of these sectors during that period.':r.error.message);
+        if(f.dataset.lead){const lr=await sb.from('leads').update({status:'converted',converted_user_id:uid,updated_at:new Date().toISOString()}).eq('id',f.dataset.lead);if(lr.error)toast('Subscribed, but the lead could not be marked as converted: '+lr.error.message,false)}
         toast(`Subscribed to ${chosen.length} sector${chosen.length===1?'':'s'}: ${fd(start)} to ${fd(end)}`);closeM();await home();
       }catch(x){toast(x.message==='NOFN'?'The admin-clients function is not deployed yet (README, step 4).':x.message,false)}finally{b0.disabled=false}
       return;
@@ -818,10 +1120,12 @@ const K=(()=>{
     if(v==='dragover')box.classList.add('drop');else box.classList.remove('drop');
     if(v==='drop')uploadFiles(e.dataTransfer.files);
   }));
-  return {start};
+  // A form the browser refuses to submit used to fail silently; now it says which field is the problem.
+  document.addEventListener('invalid',e=>{const t=e.target;toast('Cannot continue: please check "'+(t.name||t.id||'a field')+'" ('+(t.validationMessage||'invalid')+')',false)},true);
+  return {start,go};
 })();
 
-showPane(location.hash==='#clients'||/type=recovery/.test(location.hash)?'clients':'content');
+showPane(/type=recovery/.test(location.hash)?'clients':(['#leads','#clients','#issues'].includes(location.hash.split('&')[0])?location.hash.slice(1):'content'));
 </script>
 </body>
 </html>
