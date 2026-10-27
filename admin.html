@@ -559,6 +559,7 @@ const K=(()=>{
     folders.forEach(n=>{const k=n.toLowerCase(),r=m.get(k);if(r)r.folder=true;else m.set(k,{email:k,account:false,folder:true})});
     return [...m.values()].sort((a,b)=>(label(a)).localeCompare(label(b)));
   };
+  const sectorsEmpty=()=>!sectors.length;
   const label=r=>((profiles[r.id]||{}).full_name||r.email);
   const badge=r=>!r.account?pill('bg-gray-100 text-gray-600','Folder only')
     :r.confirmed?pill('bg-emerald-50 text-emerald-700','Account active'):pill('bg-amber-100 text-amber-800','Invite pending');
@@ -583,7 +584,7 @@ const K=(()=>{
     const rows=all.filter(r=>{const p=profiles[r.id]||{};return (!q||[r.email,p.full_name,p.company,p.mobile].some(v=>String(v||'').toLowerCase().includes(q)))&&stMatch(r,stFilter)});
     main().innerHTML=nav()
     +(noFn?warn('<b>Account tools are not deployed yet.</b> You can still manage files in existing folders. To create users from here, deploy the <code>admin-clients</code> function (README, step 4).'):'')
-    +`<div class="flex flex-wrap gap-2"><button data-k="newuser" class="${btn1}"><i class="fas fa-user-plus"></i> New user</button><button data-k="subscribe" class="${btn1}" ${sectors.length?'':'disabled'}><i class="fas fa-calendar-plus"></i> Subscribe a user</button></div>`
+    +`<div class="flex flex-wrap gap-2"><button data-k="newuser" class="${btn1}"><i class="fas fa-user-plus"></i> New user</button><button data-k="subscribe" class="${btn1}"><i class="fas fa-calendar-plus"></i> Subscribe a user</button></div>`
     +`<div class="flex items-center justify-between pt-2"><h2 class="font-extrabold text-lg">Users <span class="text-sm font-normal text-gray-500">(${rows.length}${rows.length!==all.length?' of '+all.length:''})</span></h2></div>`
     +`<div class="flex flex-wrap gap-2"><input id="k-filter" type="search" placeholder="Search name, email, company or mobile" aria-label="Search users" value="${esc(filter)}" class="${inp} flex-1 min-w-[12rem]"><select id="k-st" aria-label="Filter by subscription status" class="${inp} !w-auto">${STF.map(([v,l])=>`<option value="${v}" ${v===stFilter?'selected':''}>${l}</option>`).join('')}</select></div>`
     +(rows.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No users match.</p>')
@@ -592,7 +593,7 @@ const K=(()=>{
       <button data-k="open" data-e="${esc(r.email)}" class="flex-1 min-w-0 text-left"><span class="block font-bold text-sm truncate">${esc(label(r))}</span><span class="block text-[11px] text-gray-500 truncate">${p.full_name?esc(r.email):''}${p.company?(p.full_name?' &middot; ':'')+esc(p.company):''}${p.mobile?' &middot; '+esc(p.mobile):''}</span><span class="flex flex-wrap items-center gap-1.5 mt-1">${badge(r)}${s?ubadge(s):''}</span></button>
       <div class="flex items-center gap-1.5">
         <button data-k="open" data-e="${esc(r.email)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg" title="Private folder"><i class="fas fa-folder-open"></i> Files</button>
-        ${r.account?`<button data-k="subscribe" data-u="${esc(r.id)}" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-3 py-2 rounded-lg" ${sectors.length&&!subErr?'':'disabled'}><i class="fas fa-calendar-plus"></i> Subscribe</button><button data-k="edituser" data-u="${esc(r.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Edit user" title="Edit details"><i class="fas fa-pen text-xs"></i></button><button data-k="resend" data-e="${esc(r.email)}" data-c="${r.confirmed?1:0}" class="w-8 h-8 rounded-lg bg-gray-100" title="${r.confirmed?'Send a password-reset email':'Send the invite again'}" aria-label="Send email"><i class="fas fa-envelope text-xs"></i></button><button data-k="remove" data-e="${esc(r.email)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete user" title="Delete user"><i class="fas fa-user-xmark text-xs"></i></button>`
+        ${r.account?`<button data-k="subscribe" data-u="${esc(r.id)}" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-calendar-plus"></i> Subscribe</button><button data-k="edituser" data-u="${esc(r.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Edit user" title="Edit details"><i class="fas fa-pen text-xs"></i></button><button data-k="resend" data-e="${esc(r.email)}" data-c="${r.confirmed?1:0}" class="w-8 h-8 rounded-lg bg-gray-100" title="${r.confirmed?'Send a password-reset email':'Send the invite again'}" aria-label="Send email"><i class="fas fa-envelope text-xs"></i></button><button data-k="remove" data-e="${esc(r.email)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete user" title="Delete user"><i class="fas fa-user-xmark text-xs"></i></button>`
         :(noFn?'':`<button data-k="invite-folder" data-e="${esc(r.email)}" class="text-xs bg-[#f3ecdc] text-[#7a6540] hover:bg-[#e9dec4] font-bold px-3 py-2 rounded-lg">Invite</button>`)}
       </div>${pills(r)}</div>`}).join('');
   }
@@ -731,7 +732,11 @@ const K=(()=>{
       else if(k==='opensector'){const x=sectors.find(v=>v.id===t.dataset.s);tabK='sectors';await openRoot('sectors/'+x.id,x.name)}
       else if(k==='newuser')userDialog('');
       else if(k==='edituser')userDialog(t.dataset.u);
-      else if(k==='subscribe')subDialog(t.dataset.u||'');
+      else if(k==='subscribe'){
+        if(subErr)toast('Subscriptions are not set up yet: run supabase-step1-subscriptions.sql in the Supabase SQL Editor, then press Refresh.',false);
+        else if(sectorsEmpty())toast('Add at least one sector first (Sectors tab).',false);
+        else subDialog(t.dataset.u||'');
+      }
       else if(k==='mclose')closeM();
       else if(k==='delper'){const p=periods.find(x=>x.id===t.dataset.id);
         if(p&&confirm(`Delete this subscription period?\n\n${sname(p.sector_id)}: ${fd(p.start_date)} to ${fd(p.end_date)}`)){const r=await sb.from('subscription_periods').delete().eq('id',p.id);if(r.error)throw r.error;toast('Subscription period deleted');await home()}}
