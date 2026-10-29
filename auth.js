@@ -7,6 +7,13 @@
   const css=(k,h)=>{if(!document.querySelector(`link[href*="${k}"]`)){const l=document.createElement('link');l.rel='stylesheet';l.href=h;document.head.appendChild(l)}};
   css('styles.css','styles.css');css('phosphor','https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css');
   let sb=null,user=null,C=null,shown=false;const subs=[];
+  // "Keep me signed in": checked = session kept in localStorage (survives closing the browser); unchecked = sessionStorage (ends when the tab closes)
+  const FLAG='khip-remember',remember=()=>{try{return localStorage.getItem(FLAG)!=='0'}catch(e){return true}};
+  const store={
+    getItem:k=>{try{return sessionStorage.getItem(k)??localStorage.getItem(k)}catch(e){return null}},
+    setItem:(k,v)=>{try{const on=remember();(on?localStorage:sessionStorage).setItem(k,v);(on?sessionStorage:localStorage).removeItem(k)}catch(e){}},
+    removeItem:k=>{try{sessionStorage.removeItem(k);localStorage.removeItem(k)}catch(e){}}
+  };
 
   // Header buttons: Login, or My files + sign out
   const box=document.createElement('div');box.className='auth-box';
@@ -27,10 +34,10 @@
   back.addEventListener('click',e=>{if(e.target===back||e.target.closest('.auth-x'))close()});
   addEventListener('keydown',e=>{if(e.key==='Escape')close()});
   function open(mode){
-    const T={login:['Sign in','Access your files. You will stay signed in on this device until you sign out.'],reset:['Reset password','We will email you a reset link.'],newpw:['Set your password','Choose a password with at least 8 characters.'],signup:['Create account','Use your email address.']}[mode];
+    const T={login:['Sign in','Access your files.'],reset:['Reset password','We will email you a reset link.'],newpw:['Set your password','Choose a password with at least 8 characters.'],signup:['Create account','Use your email address.']}[mode];
     const body=back.querySelector('#auth-body'),em=mode!=='newpw',pw=mode!=='reset';
     body.innerHTML=`<h2 id="auth-t" class="auth-h">${T[0]}</h2><p class="auth-p">${T[1]}</p>
-      <form novalidate>${em?'<input class="auth-in" name="email" type="email" placeholder="Email" autocomplete="email" required>':''}${pw?`<input class="auth-in" name="password" type="password" placeholder="Password" autocomplete="${mode==='login'?'current-password':'new-password'}" required>`:''}
+      <form novalidate>${em?'<input class="auth-in" name="email" type="email" placeholder="Email" autocomplete="email" required>':''}${pw?`<input class="auth-in" name="password" type="password" placeholder="Password" autocomplete="${mode==='login'?'current-password':'new-password'}" required>`:''}${mode==='login'?`<label class="auth-p" style="display:flex;align-items:center;gap:.5rem;margin:.25rem 0 .5rem;cursor:pointer"><input type="checkbox" name="remember" ${remember()?'checked':''}> Keep me signed in on this device</label>`:''}
       <p class="auth-msg" role="alert"></p><button class="auth-go">${T[0]}</button></form>
       <div class="auth-links">${mode==='login'?'<a href="#" data-m="reset">Forgot password?</a>'+(C&&C.allowSignUp?'<a href="#" data-m="signup">Create account</a>':''):mode==='newpw'?'':'<a href="#" data-m="login">Back to sign in</a>'}</div>`;
     const form=body.querySelector('form'),msg=(t,ok)=>{const m=form.querySelector('.auth-msg');m.textContent=t;m.className='auth-msg'+(ok?' ok':'')};
@@ -39,7 +46,7 @@
       msg('');btn.disabled=true;
       try{
         if(!sb)throw new Error('Sign-in is not set up yet.');
-        if(mode==='login'){const {error}=await sb.auth.signInWithPassword({email,password:p});if(error)throw new Error('Incorrect email or password.');close();if(!/my-stuff/.test(location.pathname))location.href='my-stuff.html'}
+        if(mode==='login'){try{localStorage.setItem(FLAG,f.get('remember')?'1':'0')}catch(e){}const {error}=await sb.auth.signInWithPassword({email,password:p});if(error)throw new Error('Incorrect email or password.');close();if(!/my-stuff/.test(location.pathname))location.href='my-stuff.html'}
         else if(mode==='reset'){await sb.auth.resetPasswordForEmail(email,{redirectTo:base+'my-stuff.html'});msg('If this email is registered, a reset link is on its way.',1)}
         else if(mode==='signup'){const {error}=await sb.auth.signUp({email,password:p,options:{emailRedirectTo:base+'my-stuff.html'}});if(error)throw error;msg('Check your email to confirm your account.',1)}
         else{if(p.length<8)throw new Error('Use at least 8 characters.');const {error}=await sb.auth.updateUser({password:p});if(error)throw error;close();location.href='my-stuff.html'}
@@ -53,7 +60,7 @@
       await Promise.all([window.supabase?0:load(LIB),window.KHIP_SUPABASE?0:load('supabase-config.js')]);
       C=window.KHIP_SUPABASE;
       if(!C||/YOUR-/.test(C.url||'')){console.warn('KHIP: add your Supabase URL and anon key to supabase-config.js');return}
-      sb=window.supabase.createClient(C.url,C.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'khip-auth'}});
+      sb=window.supabase.createClient(C.url,C.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'khip-auth',storage:store}});
       const {data}=await sb.auth.getSession();user=data.session?data.session.user:null;paint();
       sb.auth.onAuthStateChange((ev,s)=>{user=s?s.user:null;paint();subs.forEach(f=>f(user));
         if(ev==='PASSWORD_RECOVERY'||(ev==='SIGNED_IN'&&invite&&!shown)){shown=true;open('newpw')}});

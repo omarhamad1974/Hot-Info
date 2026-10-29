@@ -9,7 +9,7 @@ window.KRich=(function(){
     let out='',open=false;
     for(const l of String(t??'').split('\n')){
       const b=l.match(BUL);
-      if(b){if(!open){out+='<ul class="list-disc pl-5 space-y-1 my-2">';open=true}out+='<li>'+inl(b[1])+'</li>';continue}
+      if(b){if(!open){out+='<ul class="list-disc ps-5 space-y-1 my-2">';open=true}out+='<li>'+inl(b[1])+'</li>';continue}
       if(open){out+='</ul>';open=false}
       const h=l.match(HEAD);
       if(h)out+='<h4 class="font-display text-xl font-semibold text-title mt-4 mb-1">'+inl(h[1])+'</h4>';

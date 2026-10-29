@@ -174,3 +174,24 @@ a.ct-tile:hover{border-color:rgb(var(--c-accent-rgb));transform:translateY(-2px)
 .rel-track{display:flex;gap:.75rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.25rem .125rem .75rem;scrollbar-width:thin}
 .rel-card{flex:0 0 min(14rem,70%);scroll-snap-align:start}
 .rel-card:hover{transform:none}
+
+/* ---------- Language button and Arabic / right-to-left (see lang.js) ---------- */
+.lang-btn{font:inherit;font-size:.8125rem;line-height:1;padding:.5rem .9rem;border-radius:999px;border:1px solid #d6d3d1;background:#fff;color:rgb(var(--c-ink-rgb));cursor:pointer;white-space:nowrap;transition:border-color .2s,color .2s}
+.lang-btn:hover,.lang-btn:focus-visible{border-color:rgb(var(--c-accent-rgb,29 78 216));color:rgb(var(--c-accent-rgb,29 78 216))}
+html[dir=rtl] body,html[dir=rtl] .font-sans,html[dir=rtl] button,html[dir=rtl] input,html[dir=rtl] textarea,html[dir=rtl] select{font-family:'Cairo','Segoe UI',Tahoma,Arial,sans-serif}
+html[dir=rtl] .font-display{font-family:'Noto Naskh Arabic','Cairo',serif}
+html[dir=rtl] *{letter-spacing:0!important}
+html[dir=rtl] .khip,html[dir=rtl] .khip-lg{direction:ltr;unicode-bidi:isolate}
+html[dir=rtl] #khip-bar .kf i{left:auto;right:14px}
+html[dir=rtl] #khip-bar input{padding:10px 40px 10px 56px}
+html[dir=rtl] #khip-bar .ks{right:auto;left:6px}
+html[dir=rtl] #khip-bar .ks i{transform:scaleX(-1)}
+html[dir=rtl] .auth-x{right:auto;left:.75rem}
+/* Arabic pages (phase 2): About and service pages */
+html[dir=rtl]:not([data-ar-ready]) [data-t],html[dir=rtl]:not([data-ar-ready]) [data-svc-page]{visibility:hidden}
+html[dir=rtl] .tm-track{transform:translateX(calc(var(--i) * (100% + var(--g)) / var(--pv)))}
+html[dir=rtl] .tm-view{direction:rtl}
+html[dir=rtl] .ct-tile{text-align:start}
+html[dir=rtl] #m-body,html[dir=rtl] .band{text-align:start}
+html[dir=rtl] .map-go{direction:rtl}
+html[dir=rtl] #mena-map,html[dir=rtl] #map-wrap svg{direction:ltr}

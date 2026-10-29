@@ -65,6 +65,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
   <header class="sticky top-12 z-30 bg-white/95 backdrop-blur border-b shadow-sm">
     <div class="max-w-3xl mx-auto px-4 py-3 flex items-center gap-2">
       <div class="min-w-0 flex-1"><h1 class="font-extrabold truncate" id="repo-name"></h1><p id="state" class="text-[11px] text-gray-500">Loaded</p></div>
+      <div id="lang-seg" class="flex rounded-xl overflow-hidden border border-gray-200 text-xs font-bold flex-shrink-0" role="group" aria-label="Content language"><button data-act="lang" data-l="en" class="px-3 py-2">EN</button><button data-act="lang" data-l="ar" class="px-3 py-2" lang="ar" dir="rtl">عربي</button></div>
       <button data-act="discard" id="discard" disabled class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-40 font-bold px-3 py-2 rounded-xl" title="Discard unsaved changes" aria-label="Discard unsaved changes"><i class="fas fa-rotate-left"></i></button>
       <button data-act="backup" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl" title="Download a copy" aria-label="Download a copy"><i class="fas fa-download"></i></button>
       <button data-act="out" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl">Sign out</button>
@@ -115,12 +116,15 @@ details[open]>summary .chev{transform:rotate(90deg)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="supabase-config.js"></script>
 <script src="theme.js"></script>
+<script src="lang.js" data-passive></script>
 <script>
 /* ============================ shared ============================ */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(m,ok=true){const t=$('toast');t.textContent=m;t.className=`fixed bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-sm px-4 py-2.5 rounded-xl text-sm font-bold shadow-xl text-white ${ok?'bg-emerald-600':'bg-red-600'}`;clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hidden'),ok?4000:7000)}
 const inp='w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white font-normal';
+const PH='المحتوى العربي'; // shown on the site wherever Arabic has not been written (About, service pages, team, testimonials)
+const PHSEC=new Set(['employees','testimonials','services']);
 const sizeOf=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
 
 let pane='content';
@@ -138,10 +142,12 @@ const SC={
  jurisdictions:{label:'Jurisdictions',icon:'fa-globe-africa',one:'country',title:'country',req:['country'],f:[['country','Country'],['code','Country code, 2 letters (eg, ae, sa)'],['tag','Tag'],['brief','Overview (the country card shows the first 5 lines)','area'],['details','Filing details','area']]},
  news:{label:'News',icon:'fa-newspaper',one:'article',title:'title',req:['title','excerpt'],f:[['title','Title'],['date','Date','date'],['category','Category (label)','select'],['image','Image','img'],['excerpt','Short summary','area'],['text','Full article','area']]},
  services:{label:'Services',icon:'fa-balance-scale',one:'service',title:'title',req:['title','description'],f:[['title','Title'],['icon','Icon (optional, e.g. ph-lightbulb)'],['description','1. Brief (on the home page card, and the top of the pop-up)','area'],['details','2. Pop-up content (more information, shown when the card is opened)','area'],['page','Dedicated page file (e.g. patents.html). Adds the "More information" button'],['pageContent','3. Dedicated page content. Text before the first ## is the introduction; each ## Heading becomes a card on the page','area']]},
+ testimonials:{label:'Testimonials',icon:'fa-quote-right',one:'testimonial',title:'name',req:['name','text'],f:[['name','Client name'],['role','Role and company (eg, CEO, Acme)'],['text','Testimonial','plain']]},
+ employees:{label:'Team',icon:'fa-users',one:'team member',title:'name',req:['name','position'],f:[['name','Name'],['position','Position'],['image','Photo (square; resized and cropped to fit automatically)','img']]},
 };
 const GEN=[['aboutMainText','About text (home page)','area'],['about','Short tagline'],['social.linkedin','LinkedIn URL'],['social.youtube','YouTube URL'],['chatPrompts','Suggestions typed into the WhatsApp box (one per line)','lines'],['newsCategories','News categories / labels (one per line)','lines']];
 const DEFCATS=['General','KHIP News','Intellectual Property','Patents','Trademarks','Translation'];
-let S={},D=null,sha='',tab='general',dirty=false,openItem=null,q='',ASSETS=[];
+let S={},D=null,sha='',tab='general',dirty=false,openItem=null,q='',ASSETS=[],lang='en',DEN=null,DAR=null,shaAR='';
 
 const get=(o,p)=>p.split('.').reduce((a,k)=>a?.[k],o)??'';
 const set=(o,p,v)=>{const k=p.split('.'),l=k.pop();k.forEach(x=>o=o[x]??={});o[l]=v};
@@ -164,37 +170,42 @@ async function connect(creds){
   S=creds;
   try{
     const j=await api(S.p,{query:'?ref='+encodeURIComponent(S.b)});
-    D=JSON.parse(unb64(j.content));sha=j.sha;
+    D=JSON.parse(unb64(j.content));sha=j.sha;DEN=D;lang='en';DAR=null;shaAR='';
     try{ASSETS=(await api('assets',{query:'?ref='+encodeURIComponent(S.b)})).map(f=>f.name)}catch{}
   }catch(e){$('login-err').textContent=e instanceof SyntaxError?'The data file is not valid JSON.':e.message;$('login-err').classList.remove('hidden');return}
   localStorage.setItem('khip-admin',JSON.stringify({o:S.o,r:S.r,b:S.b,p:S.p}));
   if($('f-s').checked)sessionStorage.setItem('khip-admin-t',S.t);
   $('login').classList.add('hidden');$('app').classList.remove('hidden');
-  $('repo-name').textContent=`${S.o}/${S.r}`;q='';openItem=null;mark(false);tabs();view();
+  $('repo-name').textContent=`${S.o}/${S.r}`;q='';openItem=null;mark(false);tabs();view();syncLang();
   $('assets').innerHTML=ASSETS.map(n=>`<option value="${esc(n)}">`).join('');
 }
 
 function tabs(){
-  const all=[['general','General','fa-house'],['colors','Colors','fa-palette'],['backgrounds','Backgrounds','fa-fill-drip'],...Object.entries(SC).map(([k,v])=>[k,v.label,v.icon])];
+  const all=[['general','General','fa-house'],...(lang==='ar'?[['pagetext','Page text','fa-file-alt'],['ui','Interface text','fa-language']]:[['colors','Colors','fa-palette'],['backgrounds','Backgrounds','fa-fill-drip']]),...Object.entries(SC).map(([k,v])=>[k,v.label,v.icon])];
   $('tabs').innerHTML=all.map(([k,l,i])=>`<button data-act="tab" data-k="${k}" class="flex-shrink-0 text-xs font-bold px-3 py-2 rounded-xl ${k===tab?'bg-brand-600 text-white':'bg-gray-100 hover:bg-gray-200'}"><i class="fas ${i}"></i> ${l}${SC[k]?` (${(D[k]||[]).length})`:''}</button>`).join('');
 }
 const tb=(k,p,title,inner,cls='')=>`<button type="button" onmousedown="event.preventDefault()" data-act="fmt" data-k="${k}" data-t="${p}" title="${title}" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 ${cls}">${inner}</button>`;
 function fld(base,[k,l,t],req=[]){
-  const p=base+k,v=get(D,p),star=req.includes(k)?'<span class="text-red-600" title="Required"> *</span>':'';let h;
-  if(t==='area')h=`<div class="flex items-center gap-1 mb-1">${tb('b',p,'Bold','B','text-sm font-bold')}${tb('h',p,'Subtitle','H','text-xs font-bold')}${tb('l',p,'Bullet list','<i class="fas fa-list-ul text-xs"></i>')}<span class="text-[11px] text-gray-500 ml-2">**bold** &nbsp; ## subtitle &nbsp; - bullet</span></div><textarea data-p="${p}" aria-label="${esc(l)}" rows="5" class="${inp}">${esc(v)}</textarea>`;
-  else if(t==='lines')h=`<textarea data-p="${p}" data-lines="1" aria-label="${esc(l)}" rows="4" class="${inp}">${esc(Array.isArray(v)?v.join('\n'):v)}</textarea>`;
-  else if(t==='select'){const o=((D.newsCategories||[]).filter(Boolean).length?D.newsCategories.filter(Boolean):DEFCATS).slice(),cur=v||o[0];if(cur&&!o.includes(cur))o.push(cur);h=`<select data-p="${p}" aria-label="${esc(l)}" class="${inp}">${o.map(x=>`<option ${x===cur?'selected':''}>${esc(x)}</option>`).join('')}</select>`}
-  else if(t==='img')h=`<div class="flex items-center gap-2"><img data-prev="${p}" src="${esc(imgSrc(v))}" alt="" onerror="this.style.visibility='hidden'" class="w-12 h-12 rounded-lg object-cover bg-gray-200 flex-shrink-0"><input data-p="${p}" aria-label="${esc(l)}" value="${esc(v)}" list="assets" placeholder="File name in assets, or upload" class="${inp}"><label class="flex-shrink-0 text-xs bg-brand-50 text-brand-700 font-bold px-3 py-2.5 rounded-lg cursor-pointer hover:bg-brand-100" title="Upload an image"><i class="fas fa-upload"></i><input type="file" accept="image/*" data-up="${p}" class="hidden"></label></div>`;
-  else h=`<input data-p="${p}" aria-label="${esc(l)}" type="${t==='date'?'date':'text'}" value="${esc(v)}" class="${inp}">`;
-  return `<div><span class="text-xs font-bold text-gray-700">${esc(l)}${star}</span>${h}</div>`;
+  const p=base+k;let v=get(D,p);const star=req.includes(k)&&lang!=='ar'?'<span class="text-red-600" title="Required"> *</span>':'';let h;
+  const showPh=lang==='ar'&&PHSEC.has(base.split('.')[0]),xa=(lang==='ar'?'dir="rtl"':'')+(showPh?` placeholder="${PH}"`:''),ref=lang==='ar'?enRef(p):'';
+  if(showPh&&v===PH)v='';
+  if(t==='area')h=`<div class="flex items-center gap-1 mb-1">${tb('b',p,'Bold','B','text-sm font-bold')}${tb('h',p,'Subtitle','H','text-xs font-bold')}${tb('l',p,'Bullet list','<i class="fas fa-list-ul text-xs"></i>')}<span class="text-[11px] text-gray-500 ml-2">**bold** &nbsp; ## subtitle &nbsp; - bullet</span></div><textarea data-p="${p}" ${xa} aria-label="${esc(l)}" rows="5" class="${inp}">${esc(v)}</textarea>`;
+  else if(t==='plain')h=`<textarea data-p="${p}" ${xa} aria-label="${esc(l)}" rows="4" class="${inp}">${esc(v)}</textarea>`;
+  else if(t==='lines')h=`<textarea data-p="${p}" ${xa} data-lines="1" aria-label="${esc(l)}" rows="4" class="${inp}">${esc(Array.isArray(v)?v.join('\n'):v)}</textarea>`;
+  else if(t==='select'){const o=((D.newsCategories||[]).filter(Boolean).length?D.newsCategories.filter(Boolean):DEFCATS).slice(),cur=v||o[0];if(cur&&!o.includes(cur))o.push(cur);h=`<select data-p="${p}" ${xa} aria-label="${esc(l)}" class="${inp}">${o.map(x=>`<option ${x===cur?'selected':''}>${esc(x)}</option>`).join('')}</select>`}
+  else if(t==='img')h=`<div class="flex items-center gap-2"><img data-prev="${p}" src="${esc(imgSrc(v))}" alt="" onerror="this.style.visibility='hidden'" class="w-12 h-12 rounded-lg object-cover bg-gray-200 flex-shrink-0"><input data-p="${p}" ${xa} aria-label="${esc(l)}" value="${esc(v)}" list="assets" placeholder="File name in assets, or upload" class="${inp}"><label class="flex-shrink-0 text-xs bg-brand-50 text-brand-700 font-bold px-3 py-2.5 rounded-lg cursor-pointer hover:bg-brand-100" title="Upload an image"><i class="fas fa-upload"></i><input type="file" accept="image/*" data-up="${p}" class="hidden"></label></div>`;
+  else h=`<input data-p="${p}" ${xa} aria-label="${esc(l)}" type="${t==='date'?'date':'text'}" value="${esc(v)}" class="${inp}">`;
+  return `<div><span class="text-xs font-bold text-gray-700">${esc(l)}${star}</span>${ref?`<span class="block text-[11px] text-gray-500 mb-1 line-clamp-3" dir="ltr">${esc(ref)}</span>`:''}${h}</div>`;
 }
 function view(){
   const m=$('view');
-  if(tab==='general'){m.innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">${GEN.map(f=>fld('',f)).join('')}</div>`;return}
+  if(tab==='general'){if(lang==='ar')return viewGenAr();m.innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">${langCard()}${GEN.map(f=>fld('',f)).join('')}</div>`;return}
+  if(tab==='ui')return viewUi();
+  if(tab==='pagetext')return viewPT();
   if(tab==='colors')return viewColors();
   if(tab==='backgrounds')return viewBg();
   const s=SC[tab],arr=D[tab]=D[tab]||[];
-  m.innerHTML=`<div class="flex items-center justify-between"><h2 class="font-extrabold text-lg">${s.label}</h2><button data-act="add" class="text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] font-bold px-3.5 py-2 rounded-xl"><i class="fas fa-plus"></i> Add ${s.one}</button></div>`
+  m.innerHTML=`<div class="flex items-center justify-between"><h2 class="font-extrabold text-lg">${s.label}</h2>${lang==='ar'?'':`<button data-act="add" class="text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] font-bold px-3.5 py-2 rounded-xl"><i class="fas fa-plus"></i> Add ${s.one}</button>`}</div>`
   +(arr.length>5?`<input id="filter" type="search" placeholder="Search ${s.label.toLowerCase()}" aria-label="Search ${s.label.toLowerCase()}" value="${esc(q)}" class="${inp}">`:'')
   +'<div id="items" class="space-y-3"></div>';
   items();
@@ -204,12 +215,12 @@ function items(){
   const rows=arr.map((x,i)=>[x,i]).filter(([x])=>!ql||s.f.some(([k])=>String(x[k]??'').toLowerCase().includes(ql)));
   $('items').innerHTML=(arr.length?'':`<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">Nothing here yet. Add the first ${s.one}.</p>`)
   +(arr.length&&!rows.length?'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No match.</p>':'')
-  +rows.map(([x,i])=>`<details ${openItem===`${tab}.${i}`?'open':''} class="bg-white rounded-2xl border border-gray-200 shadow-sm"><summary class="flex items-center gap-2 p-3 cursor-pointer"><i class="fas fa-chevron-right chev text-[10px] text-gray-400"></i>${imgF&&x[imgF[0]]?`<img src="${esc(imgSrc(x[imgF[0]]))}" alt="" onerror="this.style.display='none'" class="w-8 h-8 rounded-md object-cover bg-gray-200 flex-shrink-0">`:''}<span class="flex-1 min-w-0 font-bold text-sm truncate">${esc(x[s.title]||'Untitled '+s.one)}</span>
-    <button data-act="up" data-i="${i}" ${i&&!ql?'':'disabled'} aria-label="Move up" class="w-8 h-8 rounded-lg bg-gray-100 disabled:opacity-30"><i class="fas fa-arrow-up text-xs"></i></button>
+  +rows.map(([x,i])=>`<details ${openItem===`${tab}.${i}`?'open':''} class="bg-white rounded-2xl border border-gray-200 shadow-sm"><summary class="flex items-center gap-2 p-3 cursor-pointer"><i class="fas fa-chevron-right chev text-[10px] text-gray-400"></i>${imgF&&x[imgF[0]]?`<img src="${esc(imgSrc(x[imgF[0]]))}" alt="" onerror="this.style.display='none'" class="w-8 h-8 rounded-md object-cover bg-gray-200 flex-shrink-0">`:''}<span class="flex-1 min-w-0 font-bold text-sm truncate">${esc(x[s.title]||(lang==='ar'&&DEN[tab][i]?DEN[tab][i][s.title]:'')||'Untitled '+s.one)}</span>
+    ${lang==='ar'?'':`<button data-act="up" data-i="${i}" ${i&&!ql?'':'disabled'} aria-label="Move up" class="w-8 h-8 rounded-lg bg-gray-100 disabled:opacity-30"><i class="fas fa-arrow-up text-xs"></i></button>
     <button data-act="down" data-i="${i}" ${i<arr.length-1&&!ql?'':'disabled'} aria-label="Move down" class="w-8 h-8 rounded-lg bg-gray-100 disabled:opacity-30"><i class="fas fa-arrow-down text-xs"></i></button>
     <button data-act="dup" data-i="${i}" aria-label="Duplicate" title="Duplicate" class="w-8 h-8 rounded-lg bg-gray-100"><i class="fas fa-clone text-xs"></i></button>
-    <button data-act="del" data-i="${i}" aria-label="Delete" class="w-8 h-8 rounded-lg bg-red-50 text-red-600"><i class="fas fa-trash text-xs"></i></button></summary>
-    <div class="p-4 pt-1 space-y-3 border-t">${s.f.map(f=>fld(`${tab}.${i}.`,f,s.req)).join('')}</div></details>`).join('');
+    <button data-act="del" data-i="${i}" aria-label="Delete" class="w-8 h-8 rounded-lg bg-red-50 text-red-600"><i class="fas fa-trash text-xs"></i></button>`}</summary>
+    <div class="p-4 pt-1 space-y-3 border-t">${(lang==='ar'?s.f.filter(f=>TRF[tab].includes(f[0])):s.f).map(f=>fld(`${tab}.${i}.`,f,s.req)).join('')}</div></details>`).join('');
 }
 
 /* ---------- Colors and Backgrounds (saved as "theme" in app-data.json; applied by theme.js) ---------- */
@@ -317,7 +328,91 @@ function bad(k,i,f,msg){
   const el=document.querySelector(`[data-p="${k}.${i}.${f}"]`);if(el){el.classList.add('bad');el.focus();el.scrollIntoView({block:'center'})}
   return msg;
 }
+/* ---------- Arabic content: app-data.ar.json mirrors the English file; empty fields fall back to English on the site ---------- */
+const TRF={carousel:['title','subtitle','tag'],jurisdictions:['country','tag','brief','details'],news:['title','excerpt','text'],services:['title','description','details','pageContent'],testimonials:['name','role','text'],employees:['name','position']};
+const UIK=Object.keys(KLang.DICT.en).filter(k=>typeof KLang.DICT.en[k]==='string'&&k!=='switch_to');
+const arPath=()=>S.p.replace(/\.json$/,'')+'.ar.json';
+const enRef=p=>{const v=get(DEN,p);return Array.isArray(v)?v.join(' / '):String(v||'')};
+const PAGES=[['about','about.html','About page'],['patents','patents.html','Patents page'],['trademarks','trademarks.html','Trademarks page'],['translation','translation.html','Translation page']];
+let PT=null; // text blocks of each page, read from the page files themselves: {stem:[[key,English text],...]}
+async function loadPT(){
+  PT={};
+  for(const [stem,file] of PAGES){
+    try{
+      const j=await api(file,{query:'?ref='+encodeURIComponent(S.b)}),doc=new DOMParser().parseFromString(unb64(j.content),'text/html');
+      PT[stem]=[['_title',(doc.title||'').trim()],...[...doc.querySelectorAll('[data-t]')].map(e=>[e.dataset.t,e.textContent.replace(/\s+/g,' ').trim()])];
+    }catch(e){PT[stem]=[]}
+  }
+}
+const ptLabel=k=>k==='_title'?'Browser tab title':k.replace(/_/g,' ');
+function viewPT(){
+  const ar=D.pageText||{};
+  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-4"><p class="text-xs text-gray-600">The fixed text of the About page and of the Patents, Trademarks and Translation pages. The English text is shown above each box. Until you write Arabic here, the site shows <b dir="rtl">${PH}</b>. The long text of each service page (introduction and cards) is written under <b>Services</b>, field 3.</p>`
+  +PAGES.map(([stem,,label])=>`<details class="rounded-xl border border-gray-200"><summary class="p-3 cursor-pointer font-bold text-sm">${label}${PT&&PT[stem]?` (${PT[stem].length})`:''}</summary><div class="p-3 pt-1 space-y-3 border-t">${
+    (PT&&PT[stem]&&PT[stem].length?PT[stem].map(([k,en])=>{const v=(ar[stem]||{})[k]||'',p=`pageText.${stem}.${k}`;
+      return `<div><span class="text-xs font-bold text-gray-700">${esc(ptLabel(k))}</span><span class="block text-[11px] text-gray-500 mb-1 line-clamp-3" dir="ltr">${esc(en)}</span>${en.length>70?`<textarea data-p="${p}" dir="rtl" placeholder="${PH}" aria-label="${esc(ptLabel(k))}" rows="3" class="${inp}">${esc(v)}</textarea>`:`<input data-p="${p}" dir="rtl" placeholder="${PH}" aria-label="${esc(ptLabel(k))}" value="${esc(v)}" class="${inp}">`}</div>`}).join(''):'<p class="text-xs text-gray-500">Could not read this page from GitHub, so its text blocks are not listed.</p>')
+  }</div></details>`).join('')+'</div>';
+}
+function mirror(en,ar){ // the Arabic form always has the same items, in the same order, as the English content
+  ar=ar||{};
+  const o={aboutMainText:ar.aboutMainText||'',about:ar.about||'',chatPrompts:ar.chatPrompts||[],newsCategories:(en.newsCategories||[]).map((c,i)=>(ar.newsCategories||[])[i]||''),ui:{...(ar.ui||{})},pageText:{}};
+  for(const [stem,,] of PAGES){o.pageText[stem]={...((ar.pageText||{})[stem]||{})};for(const k in o.pageText[stem])if(o.pageText[stem][k]===PH)o.pageText[stem][k]=''}
+  for(const [sec,fs] of Object.entries(TRF)){
+    const a=ar[sec]||[];
+    o[sec]=(en[sec]||[]).map((x,i)=>{const b=a.find(y=>y&&y.id!=null&&String(y.id)===String(x.id))||(x.id==null?a[i]:null)||{};const r={id:x.id};fs.forEach(f=>r[f]=b[f]&&b[f]!==PH?b[f]:'');return r});
+  }
+  return o;
+}
+function compact(ar){ // only what has been written is saved
+  const o={},has=v=>String(v||'').trim()!=='';
+  for(const k of ['aboutMainText','about'])if(has(ar[k]))o[k]=ar[k];
+  if((ar.chatPrompts||[]).length)o.chatPrompts=ar.chatPrompts;
+  if((ar.newsCategories||[]).some(has))o.newsCategories=ar.newsCategories;
+  const ui=Object.fromEntries(Object.entries(ar.ui||{}).filter(([,v])=>has(v)));if(Object.keys(ui).length)o.ui=ui;
+  const pt={};for(const [stem,v] of Object.entries(ar.pageText||{})){const r=Object.fromEntries(Object.entries(v||{}).filter(([,x])=>has(x)));if(Object.keys(r).length)pt[stem]=r}
+  if(Object.keys(pt).length)o.pageText=pt;
+  for(const [sec,fs] of Object.entries(TRF)){
+    const rows=(ar[sec]||[]).map(x=>{const r={id:x.id};let n=0;fs.forEach(f=>{if(has(x[f])){r[f]=x[f];n++}});return n?r:null}).filter(Boolean);
+    if(rows.length)o[sec]=rows;
+  }
+  return o;
+}
+function syncLang(){
+  document.querySelectorAll('[data-act="lang"]').forEach(b=>{const on=b.dataset.l===lang;b.className='px-3 py-2 '+(on?'bg-brand-600 text-white':'bg-white hover:bg-gray-100')});
+  $('repo-name').textContent=`${S.o}/${S.r}`+(lang==='ar'?' · Arabic':'');
+}
+async function switchLang(l){
+  if(l===lang||!D)return;
+  if(dirty)return toast('Save or discard your changes before switching language.',false);
+  if(l==='ar'){
+    DEN=D;
+    if(DAR===null){
+      try{const j=await api(arPath(),{query:'?ref='+encodeURIComponent(S.b)});DAR=JSON.parse(unb64(j.content));shaAR=j.sha}
+      catch(e){if(e.status===404){DAR={};shaAR=''}else return toast(e instanceof SyntaxError?'app-data.ar.json is not valid JSON.':e.message,false)}
+    }
+    if(PT===null)await loadPT();
+    D=mirror(DEN,DAR);
+  }else D=DEN;
+  lang=l;tab='general';openItem=null;q='';mark(false);tabs();view();syncLang();
+}
+async function saveAr(){
+  $('save').disabled=true;$('state').textContent='Saving...';
+  try{
+    const out=compact(D),body={message:'Update Arabic content via admin page',content:b64(new TextEncoder().encode(JSON.stringify(out,null,2)+'\n')),branch:S.b};
+    if(shaAR)body.sha=shaAR;
+    const j=await api(arPath(),{method:'PUT',body});shaAR=j.content.sha;DAR=out;mark(false);tabs();toast('Arabic content saved. The site updates in a minute or two.');
+  }catch(e){mark(true);toast(e.message,false)}
+}
+const langCard=()=>`<div class="rounded-xl bg-brand-50 border border-brand-100 p-3"><label class="block text-xs font-bold">Site languages<select data-p="languages" class="${inp} mt-1">${[['en','English only'],['ar','Arabic only (right-to-left)'],['both','English and Arabic (visitors choose with a button in the header)']].map(([v,t])=>`<option value="${v}" ${(D.languages||'en')===v?'selected':''}>${t}</option>`).join('')}</select></label><p class="text-[11px] text-gray-600 mt-1.5">Use the <b>EN | عربي</b> switch at the top of this page to write the Arabic content. It has the same items as the English content; anything left empty shows the English text on the Arabic site. Save the English settings here to apply the language choice.</p></div>`;
+function viewGenAr(){
+  const f=GEN.filter(x=>['aboutMainText','about','chatPrompts'].includes(x[0])),cats=DEN.newsCategories||[];
+  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">${f.map(x=>fld('',x)).join('')}${cats.length?`<div><span class="text-xs font-bold text-gray-700">News categories (same order as the English list)</span>${cats.map((c,i)=>`<label class="block mt-1.5"><span class="block text-[11px] text-gray-500" dir="ltr">${esc(c)}</span><input data-p="newsCategories.${i}" dir="rtl" value="${esc((D.newsCategories||[])[i]||'')}" class="${inp}"></label>`).join('')}</div>`:''}</div>`;
+}
+function viewUi(){
+  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><p class="text-xs text-gray-600">The short words the site uses (menu, buttons, headings). The grey Arabic is a starting suggestion; type your own to replace it, or leave a box empty to keep it. <b>{x}</b> is replaced automatically by a name.</p>${UIK.map(k=>`<label class="block"><span class="block text-[11px] text-gray-500" dir="ltr">${esc(KLang.DICT.en[k])}</span><input data-p="ui.${k}" dir="rtl" value="${esc((D.ui||{})[k]||'')}" placeholder="${esc(KLang.DICT.ar[k])}" class="${inp}"></label>`).join('')}</div>`;
+}
 async function save(){
+  if(lang==='ar')return saveAr();
   const err=validate();if(err)return toast(err,false);
   cleanTheme();
   $('save').disabled=true;$('state').textContent='Saving...';
@@ -341,7 +436,7 @@ async function shrink(file){
   }catch{return file}
 }
 // Carousel, news and team photos are resized and center-cropped to fit their frame, so they always cover it
-const FIT=[[/^carousel\./,1.875,1800],[/^news\./,2,1600]];
+const FIT=[[/^carousel\./,1.875,1800],[/^news\./,2,1600],[/^employees\./,1,800]];
 async function fit(file,ratio,W){
   if(!/^image\/(jpeg|png|webp)$/.test(file.type)||!window.createImageBitmap)return file;
   try{
@@ -406,9 +501,10 @@ document.addEventListener('click',e=>{
   else if(a==='preset'){const pr=PRESETS.find(x=>x[0]===t.dataset.k);if(pr&&confirm(`Use the "${pr[1]}" palette? It replaces the site colors above (your own colors are kept).`)){Object.assign(theme().colors,pr[2]);mark();view()}}
   else if(a==='cc-add'){theme().custom.push({id:'c'+Date.now().toString(36),name:'',hex:'#8aa6d6'});mark();view()}
   else if(a==='cc-del'){const c=theme().custom[i];if(c&&confirm(`Delete "${c.name||c.hex}"? Sections that use it go back to their normal background.`)){theme().custom.splice(i,1);mark();view()}}
+  else if(a==='lang')switchLang(t.dataset.l);
   else if(a==='fmt')fmt(t.dataset.k,t.dataset.t);
   else if(a==='save')save();
-  else if(a==='discard'){if(confirm('Discard all unsaved changes and reload from GitHub?')){dirty=false;connect(S)}}
+  else if(a==='discard'){if(confirm('Discard all unsaved changes and reload from GitHub?')){dirty=false;if(lang==='ar'){DAR=null;D=DEN;lang='en';switchLang('ar')}else connect(S)}}
   else if(a==='backup'){const l=document.createElement('a');l.href=URL.createObjectURL(new Blob([JSON.stringify(D,null,2)],{type:'application/json'}));l.download='app-data-backup.json';l.click()}
   else if(a==='out'){if(!dirty||confirm('You have unsaved changes. Sign out anyway?')){sessionStorage.removeItem('khip-admin-t');dirty=false;location.reload()}}
 });
@@ -426,7 +522,7 @@ if(tk&&$('f-o').value){$('f-t').value=tk;$('f-s').checked=true;connect({o:$('f-o
 const K=(()=>{
   const C=window.KHIP_SUPABASE||{},BUCKET=C.bucket||'client-files';
   const configured=!!(C.url&&C.anonKey&&!/YOUR-/.test(C.url)&&window.supabase);
-  let sb=null,me=null,clients=[],folders=[],noFn=false,cur=null,curLabel='',path=[],started=false,sectors=[],sectErr=false,tabK='clients',recovery=/type=recovery/.test(location.hash);
+  let sb=null,me=null,clients=[],folders=[],noFn=false,cur=null,curLabel='',path=[],started=false,sectors=[],sectErr=false,tabK='overview',recovery=/type=recovery/.test(location.hash);
   const redirect=location.origin+location.pathname.replace(/[^/]*$/,'')+'my-stuff.html';
   const adminUrl=location.origin+location.pathname+'#clients';
   const main=()=>$('k-main');
@@ -557,20 +653,20 @@ const K=(()=>{
   const label=r=>((profiles[r.id]||{}).full_name||r.email);
   const badge=r=>!r.account?pill('bg-gray-100 text-gray-600','Folder only')
     :r.confirmed?pill('bg-emerald-50 text-emerald-700','Account active'):pill('bg-amber-100 text-amber-800','Invite pending');
-  const TITLES={leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues'};
+  const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues'};
   const setW=w=>{main().className=w==='wide'?'p-3 space-y-3':w==='mid'?'max-w-6xl mx-auto p-4 space-y-3':'max-w-3xl mx-auto p-4 space-y-3'};
   async function home(){
     cur=null;path=[];$('k-title').textContent=TITLES[tabK]||'Admin';main().innerHTML=LOADING;
-    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else await loadUsers();
+    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
     paintHome();
   }
-  const paintHome=()=>{setW(tabK==='issues'?'wide':tabK==='leads'?'mid':'narrow');tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():paintClients()};
+  const paintHome=()=>{setW(tabK==='issues'?'wide':tabK==='leads'?'mid':'narrow');tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
   function go(p){ // called by the top bar: leads | clients | issues
-    tabK=p==='clients'?(tabK==='sectors'?'sectors':'clients'):p;
+    tabK=p==='clients'?(['overview','clients','sectors'].includes(tabK)?tabK:'overview'):p;
     if(!started||!sb)start();else if(me)home();
   }
   const warn=(t)=>`<div class="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl p-4">${t}</div>`;
-  const nav=()=>`<div class="flex gap-1.5">${[['clients','Users','fa-users'],['sectors','Sectors','fa-layer-group']].map(([k,l,i])=>`<button data-k="tab" data-t="${k}" class="text-xs font-bold px-4 py-2 rounded-xl ${k===tabK?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>`
+  const nav=()=>`<div class="flex gap-1.5">${[['overview','Overview','fa-chart-pie'],['clients','Users','fa-users'],['sectors','Sectors','fa-layer-group']].map(([k,l,i])=>`<button data-k="tab" data-t="${k}" class="text-xs font-bold px-4 py-2 rounded-xl ${k===tabK?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>`
     +(sectErr?warn('<b>Sectors are not set up yet.</b> Run <code>supabase-setup.sql</code> in the Supabase SQL Editor (it is safe to run again).'):'')
     +(!sectErr&&subErr?warn('<b>Subscriptions are not set up yet.</b> Run <code>supabase-step1-subscriptions.sql</code> in the Supabase SQL Editor (it is safe to run again), then press Refresh.'):'');
   const btn1='text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap';
@@ -609,6 +705,43 @@ const K=(()=>{
     +`<h2 class="font-extrabold text-lg pt-2">Sectors <span class="text-sm font-normal text-gray-500">(${sectors.length})</span></h2>`
     +(sectors.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No sectors yet.</p>')
     +sectors.map(x=>`<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex items-center gap-3"><i class="fas fa-layer-group text-brand-600"></i><div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${esc(x.name)}</p><p class="text-[11px] text-gray-500">${count(x.id)} current subscriber${count(x.id)===1?'':'s'} &middot; folder <code>sectors/${esc(x.id)}</code></p></div><button data-k="opensector" data-s="${esc(x.id)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-folder-open"></i> Files</button><button data-k="rensector" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Rename sector" title="Rename"><i class="fas fa-pen text-xs"></i></button><button data-k="delsector" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete sector"><i class="fas fa-trash text-xs"></i></button></div>`).join('');
+  }
+
+  // ---- overview dashboard ----
+  let ovLeads=null;
+  const who=u=>{const p=profiles[u]||{},c=clients.find(x=>x.id===u)||{};return p.full_name||c.email||'Unknown user'};
+  function pairs(){ // one row per user + sector, looking at all of that pair's periods (a renewal hides the old end date)
+    const t=today(),m={};
+    periods.forEach(p=>{const k=p.user_id+'|'+p.sector_id,x=m[k]||(m[k]={uid:p.user_id,sid:p.sector_id,last:'',active:null,upcoming:false});
+      if(p.end_date>x.last)x.last=p.end_date;const st=pstate(p,t);if(st==='active')x.active=p;else if(st==='upcoming')x.upcoming=true});
+    return Object.values(m).map(x=>({...x,left:Math.round((Date.parse(x.last)-Date.parse(t))/864e5)}));
+  }
+  function paintOverview(){
+    const P=pairs(),ac=P.filter(x=>x.active),soon=ac.filter(x=>x.left<=14).sort((a,b)=>a.left-b.left),
+      gone=P.filter(x=>!x.active&&!x.upcoming&&x.left<0&&x.left>=-30).sort((a,b)=>b.left-a.left),
+      acc=rowsFor(),CAP=20,
+      stat=(n,l,c,f)=>`<${f?'button data-k="ovfilter" data-f="'+f+'"':'div'} class="text-left bg-white rounded-2xl border border-gray-200 shadow-sm p-3"><span class="block text-2xl font-extrabold ${c}">${n}</span><span class="block text-[11px] text-gray-500 leading-tight">${l}</span></${f?'button':'div'}>`,
+      row=(x,ended)=>{const p=profiles[x.uid]||{};
+        return `<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex flex-wrap items-center gap-x-3 gap-y-2"><div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${esc(who(x.uid))}</p><p class="text-[11px] text-gray-500 truncate">${esc(sname(x.sid))} &middot; ${ended?'ended':'ends'} ${fd(x.last)}${p.mobile?' &middot; '+esc(p.mobile):''}</p><span class="inline-block mt-1">${ended?pill('bg-red-100 text-red-700',`Ended ${-x.left} day${x.left===-1?'':'s'} ago`):pill(x.left<=3?'bg-red-100 text-red-700':'bg-amber-100 text-amber-800',x.left<=0?'Ends today':`${x.left} day${x.left===1?'':'s'} left`)}</span></div>
+        <div class="flex items-center gap-1.5"><button data-k="renew" data-u="${esc(x.uid)}" data-s="${esc(x.sid)}" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-rotate"></i> Renew</button>${ended?'':`<button data-k="extend" data-p="${esc(x.active.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-lg" title="Add extra days"><i class="fas fa-calendar-plus"></i> Extend</button><button data-k="suspend" data-u="${esc(x.uid)}" data-s="${esc(x.sid)}" class="text-xs bg-red-50 text-red-700 hover:bg-red-100 font-bold px-3 py-2 rounded-lg" title="Stop access now"><i class="fas fa-ban"></i> Suspend</button>`}</div></div>`},
+      list=(a,ended)=>a.slice(0,CAP).map(x=>row(x,ended)).join('')+(a.length>CAP?`<p class="text-[11px] text-gray-500">+ ${a.length-CAP} more. Export to Excel to see all.</p>`:''),
+      L=ovLeads;
+    main().innerHTML=nav()
+    +`<div class="flex items-center justify-between pt-2"><h2 class="font-extrabold text-lg">Overview</h2><button data-k="ovexport" class="${btn1}"><i class="fas fa-file-excel"></i> Export to Excel</button></div>`
+    +`<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">${stat(new Set(ac.map(x=>x.uid)).size,'Subscribers now','text-emerald-700','active')}${stat(new Set(soon.map(x=>x.uid)).size,'Ending within 14 days','text-amber-700')}${stat(acc.filter(r=>ustate(r.id).k==='ended').length,'Expired','text-red-700','ended')}${stat(acc.filter(r=>ustate(r.id).k==='none').length,'Never subscribed','text-gray-700','none')}</div>`
+    +(L?`<button data-k="ovleads" class="w-full text-left bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex items-center gap-3"><i class="fas fa-bullseye text-brand-600"></i><span class="flex-1 text-sm"><b>Leads:</b> ${L.lead||0} new &middot; ${L.potential||0} potential &middot; ${L.converted||0} converted</span><i class="fas fa-chevron-right text-xs text-gray-400"></i></button>`:'')
+    +`<h2 class="font-extrabold text-lg pt-2">Sectors</h2>`
+    +(sectors.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No sectors yet.</p>')
+    +sectors.map(x=>{const a=ac.filter(v=>v.sid===x.id),e=a.filter(v=>v.left<=14).length;
+      return `<button data-k="opensector" data-s="${esc(x.id)}" class="w-full text-left bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex items-center gap-3"><i class="fas fa-layer-group text-brand-600"></i><span class="flex-1 min-w-0 font-bold text-sm truncate">${esc(x.name)}</span>${e?pill('bg-amber-100 text-amber-800',e+' ending soon'):''}<span class="text-xs text-gray-600 whitespace-nowrap">${a.length} subscriber${a.length===1?'':'s'}</span></button>`}).join('')
+    +`<h2 class="font-extrabold text-lg pt-2">Ending soon <span class="text-sm font-normal text-gray-500">(${soon.length})</span></h2>`+(soon.length?list(soon,false):'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">Nothing ends in the next 14 days.</p>')
+    +`<h2 class="font-extrabold text-lg pt-2">Expired in the last 30 days <span class="text-sm font-normal text-gray-500">(${gone.length})</span></h2>`+(gone.length?list(gone,true):'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No recent expirations.</p>');
+  }
+  async function exportSubs(){
+    await loadXlsx();const P=pairs();
+    const rows=P.sort((a,b)=>who(a.uid).localeCompare(who(b.uid))||sname(a.sid).localeCompare(sname(b.sid))).map(x=>{const p=profiles[x.uid]||{},c=clients.find(v=>v.id===x.uid)||{};
+      return {Name:p.full_name||'',Email:c.email||p.email||'',Mobile:p.mobile||'',Company:p.company||'',Sector:sname(x.sid),Status:x.active?'Active':x.upcoming?'Starts later':'Ended','Ends on':x.last,'Days left':x.left}});
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Subscriptions');XLSX.writeFile(wb,'subscriptions-'+today()+'.xlsx');
   }
   // ---- pop-up dialogs ----
   const modal=h=>{$('k-modal-box').innerHTML=h;$('k-modal').classList.remove('hidden');const i=$('k-modal-box').querySelector('input:not([readonly]),select');i&&i.focus()};
@@ -1029,6 +1162,19 @@ const K=(()=>{
       else if(k==='refresh'){cur?await files():await home()}
       else if(k==='home')await home();
       else if(k==='tab'){tabK=t.dataset.t;paintHome()}
+      else if(k==='ovfilter'){stFilter=t.dataset.f;filter='';tabK='clients';paintHome()}
+      else if(k==='ovleads'){tabK='leads';await home()}
+      else if(k==='ovexport'){t.disabled=true;await exportSubs();t.disabled=false}
+      else if(k==='renew'){subDialog(t.dataset.u);const c=document.querySelector(`[data-k-form="subscribe"] [name=sec][value="${t.dataset.s}"]`);if(c){c.checked=true;subRefresh()}}
+      else if(k==='extend'){const p=periods.find(x=>x.id===t.dataset.p);if(!p)return;
+        const n=parseInt(prompt(`Extend ${who(p.user_id)}'s ${sname(p.sector_id)} subscription by how many days?\n\nIt currently ends on ${fd(p.end_date)}.`,'7'),10);
+        if(n>0&&n<=730){const r=await sb.from('subscription_periods').update({end_date:addDays(p.end_date,n)}).eq('id',p.id);
+          if(r.error)throw new Error(r.error.code==='23P01'?'That would overlap this user\'s next subscription period for the same sector.':r.error.message);
+          toast(`Extended by ${n} day${n===1?'':'s'} until ${fd(addDays(p.end_date,n))}`);await home()}}
+      else if(k==='suspend'){const u=t.dataset.u,sc=t.dataset.s,td=today(),mine=periods.filter(p=>p.user_id===u&&p.sector_id===sc&&p.end_date>=td);
+        if(mine.length&&confirm(`Stop ${who(u)}'s access to ${sname(sc)} now?\n\nThey lose access today. You can subscribe them again at any time.`)){
+          for(const p of mine){const r=p.start_date>=td?await sb.from('subscription_periods').delete().eq('id',p.id):await sb.from('subscription_periods').update({end_date:addDays(td,-1)}).eq('id',p.id);if(r.error)throw r.error}
+          toast('Access suspended');await home()}}
       else if(k==='opensector'){const x=sectors.find(v=>v.id===t.dataset.s);tabK='sectors';await openRoot('sectors/'+x.id,x.name)}
       else if(k==='newuser')userDialog('');
       else if(k==='edituser')userDialog(t.dataset.u);

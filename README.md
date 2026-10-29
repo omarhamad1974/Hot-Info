@@ -10,7 +10,7 @@ Open `https://YOUR-SITE/admin.html`. It has two areas, switched from the dark ba
 
 **Website content** (saves to `app-data.json` on GitHub)
 - Sign in with a GitHub fine-grained token (Contents: read and write, for this repository only). The repository name field starts as `Hot-Info`; enter your GitHub username or organization once and the browser remembers it.
-- Tabs: General, **Colors**, **Backgrounds**, Carousel, Jurisdictions, News, Services, Products, Testimonials, Team.
+- Tabs: General, **Colors**, **Backgrounds**, Carousel, Jurisdictions, News, Services, Testimonials, Team.
 - **Colors**: the site palette. Ten colors (titles, dark, gold, accent blue, sand, page and section backgrounds, body text) start at the colors the site always used; change any of them, pick a ready-made palette, or add your own named colors. Also sets the **section width** on tablet and desktop (67% is about two thirds).
 - **Backgrounds**: give any section (home, About, Patents, Trademarks, Translation) a background color from the palette, or a photo that covers the section (with an optional darkening slider). Text turns light on dark backgrounds by itself; the "Text color" option overrides that.
 - Text boxes support `**bold**`, `## subtitle` and `- bullet` (use the B, H and list buttons).
@@ -23,6 +23,18 @@ Open `https://YOUR-SITE/admin.html`. It has two areas, switched from the dark ba
 - Open a client to upload (button or drag and drop), create folders, download and delete.
 - Arabic or other non-Latin file names are replaced with a safe name (Supabase storage rejects them); the original extension is kept.
 - Re-send an invite, or send a password reset, with the envelope button. Remove an account with the person icon (their files stay until you delete them).
+
+## Arabic (right-to-left) site, phase 2 of 3
+Files: `lang.js` (language engine), `app-data.ar.json` (the Arabic content), `service-page.js`, plus `index.html`, `about.html`, `patents.html`, `trademarks.html`, `translation.html`, `footer.js`, `styles.css`, `rich.js`, `admin.html`.
+- **Choose the languages:** admin, Website content, General tab, **Site languages**: English only, Arabic only, or both. With both, a button in the header (العربية / English) switches; the visitor's choice is remembered. Save to GitHub to apply.
+- **Write the Arabic content:** in the admin use the **EN | عربي** switch at the top. The Arabic form has the same items as the English content, with the English text above each box. Images, dates, icons and ids are shared. Saving in Arabic mode writes only `app-data.ar.json`.
+- **The placeholder "المحتوى العربي":** nothing is translated for you. On the About page, the Patents, Trademarks and Translation pages, the team and the testimonials, every piece of Arabic text that has not been written yet shows the placeholder **المحتوى العربي**. Write the Arabic in the admin and it replaces the placeholder. (Home page carousel, jurisdictions and news still show the English text when their Arabic is empty, as in phase 1.)
+- **Phase 2 covers:**
+  - **About page** (`about.html`): all its fixed text is written under Arabic > **Page text** > About page. The service cards and pop-ups use the Arabic of the Services tab; country names and filing guidelines use the Arabic of the Jurisdictions tab.
+  - **Service pages** (`patents.html`, `trademarks.html`, `translation.html`): the introduction and cards come from Services > field **3. Dedicated page content** in Arabic (same `##` rules as English). Until then they show the placeholder, in as many cards as the English page has. The short fixed text (figures, headings, "Talk to our team" box) is under Arabic > **Page text** > the page. The page name in the menu follows the service's Arabic title.
+  - **Team** and **Testimonials**: new tabs in the admin (English mode) to add, edit, reorder, duplicate and delete. Team photos are resized and cropped to a square automatically. Write each person's Arabic name and position, and each testimonial's Arabic name, role and text, in Arabic mode.
+  - **Interface text** tab: now also holds the short words used on these pages (menu, Phone, Email, buttons). Suggested Arabic is built in; type your own to replace it.
+- Still English only until phase 3: My files and the sign-in pop-up.
 
 ## Leads, HOT Info Issues, sector-only access (step 2)
 Run `supabase-step2-leads-and-issues.sql` once in the Supabase SQL Editor (safe to run again), then reload `admin.html`. The top bar now has **Website content | Leads | Users & sectors | HOT Info Issues**.
@@ -89,7 +101,7 @@ Client sign-in is no longer in the bar: clients open `my-stuff.html` directly, w
 
 ## Checks
 
-`node scripts/validate.js` checks `app-data.json` (required fields, duplicate ids, missing images, bad links). GitHub runs it on every push (`.github/workflows/validate.yml`).
+`node scripts/validate.js` checks `app-data.json` (required fields, duplicate ids, missing images, bad links) and `app-data.ar.json` (valid JSON, ids that exist in the English file, page text keys that exist in their page). GitHub runs it on every push (`.github/workflows/validate.yml`).
 
 ## Notes
 - The site loads Tailwind from its CDN, which is fine for this size but is not meant for heavy production use. If pages feel slow, compile Tailwind once and replace the CDN script.
