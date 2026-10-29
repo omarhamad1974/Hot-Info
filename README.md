@@ -107,3 +107,26 @@ Client sign-in is no longer in the bar: clients open `my-stuff.html` directly, w
 - The site loads Tailwind from its CDN, which is fine for this size but is not meant for heavy production use. If pages feel slow, compile Tailwind once and replace the CDN script.
 - Contact phone numbers, email and office text are written directly in the HTML pages (about, patents, trademarks, translation); change them there.
 - `theme.js` must stay in the same folder as the pages. Without a `theme` block in `app-data.json` the site simply uses the default colors.
+
+## Tender images (Phase 2)
+
+1. Run `supabase-step3-tender-images.sql` once in the Supabase SQL Editor (safe to run again). It creates the private `tender-images` bucket (1 MB per file) and the `tender_images` and `tenders` tables, admin only.
+2. Reload `admin.html`. The top bar now has **Tender images**.
+3. Type the source paper, page and publish date once, then press **Choose image**. Use an image that is already cropped (JPG, PNG or WebP, up to 1 MB). It is uploaded as it is, with no resizing. The page number goes up by one after each upload.
+
+### Reading the text (Phase 3)
+
+1. Run `supabase-step4-ocr.sql` once in the SQL Editor (it adds the usage log).
+2. Deploy the function: Supabase, Edge Functions, Create a new function, name it exactly `ocr-tender`, paste `supabase/functions/ocr-tender/index.ts`, Deploy. Leave "Verify JWT" on. (Or: `supabase functions deploy ocr-tender`.)
+3. The secrets `OCR_SPACE_API_KEY` and `GEMINI_API_KEY` must exist. Optional secrets: `OCR_SPACE_ENGINE` (1 or 2, default 1) and `GEMINI_MODEL` (default `gemini-2.5-flash`).
+4. In Tender images press **Read text** on an image, then **Read with OCR.space** (or **Read with Gemini**). The text appears in an editable box and is saved automatically; fix mistakes and press **Save text**.
+5. If OCR.space refuses because of its per-IP limit, the message offers **Try from this browser**. That sends the OCR.space key to your own admin browser for that one call.
+6. The counter on the page shows readings this month per provider (OCR.space allows 25,000 a month).
+
+### Rows and review (Phase 4)
+
+1. Run `supabase-step5-parse.sql` once in the SQL Editor.
+2. Deploy the function `parse-tenders` the same way as `ocr-tender` (Edge Functions, Create a new function, paste `supabase/functions/parse-tenders/index.ts`, leave "Verify JWT" on). It uses the secret `GEMINI_API_KEY` (optional `GEMINI_PARSE_MODEL`).
+3. In **Read text**, check the Arabic, then press **Turn into rows**. Gemini splits the text into tenders (text only). Arabic digits, prices and dates are then normalized by code, not by the model.
+4. The review table opens: fix any cell (it saves when you leave it). Amber cells = date or price could not be read (hover to see what was printed). The file icon shows the original text of that tender. Press the circle to approve a row, or **Approve all**. A row needs entity and subject to be approved.
+5. When every row of an image is approved, the page offers to delete the picture to save storage. The text and the tenders stay.
