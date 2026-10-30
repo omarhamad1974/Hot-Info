@@ -1129,7 +1129,7 @@ const K=(()=>{
   // Images are cropped offline and uploaded as they are (JPG, PNG or WebP, max 1 MB: the OCR.space free limit).
   // The private "tender-images" bucket stores them; source paper, page and publish date are entered once per image.
   const TB='tender-images',TMAXB=1024*1024,TTYPES={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
-  let timgs=[],timgErr=false,tUse=null,TR=null,trows=[],trErr=false,tCnt={},tUrl={},tMonth=0,TF={source:'',page:'',date:''},tPapers=[];
+  let timgs=[],timgErr=false,tUse=null,TR=null,trows=[],trErr=false,tCnt={},tUrl={},tMonth=0,TF={source:'',page:'',date:''},tPapers=[],tView='images',tSect=[],tKw=[],tKwErr=false,tSV=[],tSVErr=false,tOpen=new Set(['_none']),TS={by:'session_date',from:'',to:'',status:'all'};
   const TST={uploaded:['bg-gray-100 text-gray-700','Uploaded'],text_read:['bg-blue-100 text-blue-800','Text read'],parsed:['bg-amber-100 text-amber-800','Needs review'],approved:['bg-emerald-100 text-emerald-800','Approved']};
   async function loadTenderImages(){
     const m0=today().slice(0,8)+'01';
@@ -1144,12 +1144,14 @@ const K=(()=>{
       (t.data||[]).forEach(q=>{const c=tCnt[q.image_id]||(tCnt[q.image_id]={n:0,ok:0});c.n++;if(q.status==='approved')c.ok++})}
     const paths=timgs.map(x=>x.image_path).filter(p=>p&&!tUrl[p]);
     if(paths.length){const {data}=await sb.storage.from(TB).createSignedUrls(paths,3600);(data||[]).forEach(x=>{if(x.signedUrl&&x.path)tUrl[x.path]=x.signedUrl})}
+    await loadSectorData();
     if(TR)await loadReview();
   }
   function paintTenders(){
     if(TR&&tById(TR))return paintReview();TR=null;
+    if(tView==='sector')return paintSectorView();
     const lab='text-[11px] font-bold';
-    main().innerHTML=(timgErr?warn('<b>Tender images is not set up yet.</b> Run <code>supabase-step3-tender-images.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
+    main().innerHTML=tNav()+(timgErr?warn('<b>Tender images is not set up yet.</b> Run <code>supabase-step3-tender-images.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
     +`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">
       <p class="text-xs font-bold">1. Newspaper details <span class="font-normal text-gray-500">(kept for the next image)</span></p>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -1161,9 +1163,11 @@ const K=(()=>{
       <p class="text-xs font-bold">2. Add the image</p>
       <div class="flex flex-wrap gap-2">
         <button data-k="tpick" class="${btn1}"><i class="fas fa-image"></i> Choose image</button>
+        <button data-k="tcam" class="${btn1}"><i class="fas fa-camera"></i> Take photo</button>
       </div>
       <input id="t-file" type="file" accept="image/jpeg,image/png,image/webp" class="hidden">
-      <p class="text-[11px] text-gray-500">Use an image that is already cropped (JPG, PNG or WebP, up to 1 MB). It is uploaded exactly as it is. This month: <b>${tMonth}</b> of about 1,000 images.${tUse?` Text readings this month: OCR.space <b>${tUse.ocrspace}</b> of 25,000, Gemini <b>${tUse.gemini}</b>.`:''}</p>
+      <input id="t-cam" type="file" accept="image/*" capture="environment" class="hidden">
+      <p class="text-[11px] text-gray-500">JPG, PNG or WebP, up to 1 MB. After you pick or take a photo you can crop it, rotate it and make it easier to read. If you change nothing, it is uploaded exactly as it is. This month: <b>${tMonth}</b> of about 1,000 images.${tUse?` Text readings this month: OCR.space <b>${tUse.ocrspace}</b> of 25,000, Gemini <b>${tUse.gemini}</b>.`:''}</p>
     </div>`
     +`<h2 class="font-extrabold text-lg pt-1">Uploaded images <span class="text-sm font-normal text-gray-500">(latest ${timgs.length})</span></h2>`
     +(!timgErr&&!timgs.length?'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No images yet.</p>':'')
@@ -1300,17 +1304,19 @@ const K=(()=>{
       <div class="flex-1 min-w-[8rem]"><p class="font-bold text-sm truncate">${esc(img.source_paper||'')}${img.page?` &middot; p. ${esc(img.page)}`:''} &middot; ${img.publish_date?fd(img.publish_date):''}</p><p id="t-sum" class="text-[11px] text-gray-500"></p></div>
       <button data-k="ttext" data-id="${esc(img.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-language"></i> Text</button>
       <button data-k="treparse" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-rotate"></i> Read rows again</button>
+      <button data-k="tclassify" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-tags"></i> Classify</button>
       <button data-k="tadd" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-plus"></i> Add row</button>
       <button data-k="tapproveall" class="${btn1}"><i class="fas fa-check-double"></i> Approve all</button></div>
-    <p class="text-[11px] text-gray-600">Check each row against the image and fix mistakes (the cells save when you leave them). <b class="bg-amber-100 px-1">Amber</b> = the date or price could not be read: hover to see what was printed. Press the circle to approve a row.</p>`
+    <p class="text-[11px] text-gray-600">Check each row against the image and fix mistakes (the cells save when you leave them). <b class="bg-amber-100 px-1">Amber</b> = the date or price could not be read: hover to see what was printed. Press the circle to approve a row. <b>Sectors:</b> <span class="bg-amber-100 px-1">amber</span> = suggested by the keywords, <span class="bg-emerald-100 px-1">green</span> = confirmed by you.</p>`
     +(trows.length?`<div class="bg-white border border-gray-300 rounded-xl overflow-auto" style="max-height:calc(100vh - 16rem)"><table class="border-collapse text-sm" style="min-width:100%"><thead><tr>
-      ${['','#','Entity','Subject','Booklet price','Session date','Bid bond','Link',''].map((h,i)=>`<th class="sticky top-0 z-10 bg-gray-100 border border-gray-300 px-2 py-2 text-left text-xs font-bold whitespace-nowrap">${h}</th>`).join('')}</tr></thead><tbody>`
+      ${['','#','Entity','Subject','Sectors','Booklet price','Session date','Bid bond','Link',''].map((h,i)=>`<th class="sticky top-0 z-10 bg-gray-100 border border-gray-300 px-2 py-2 text-left text-xs font-bold whitespace-nowrap">${h}</th>`).join('')}</tr></thead><tbody>`
       +trows.map(r=>{const raw=r.session_date_raw?` title="Printed: ${esc(r.session_date_raw)}"`:'',rp=r.booklet_price_raw?` title="Printed: ${esc(r.booklet_price_raw)}"`:'';
         return `<tr data-row="${esc(r.id)}" class="${tRowCls(r)} align-top">
         <td class="border border-gray-300 text-center">${tOkBtn(r)}</td>
         <td class="border border-gray-300 px-2 py-1.5 text-xs text-gray-500">${r.position||''}</td>
         <td class="border border-gray-300 p-0 ${TW.entity}"><textarea data-tc="entity" data-id="${esc(r.id)}" dir="rtl" lang="ar" rows="1" class="${TC}${amber(!r.entity)}">${esc(r.entity)}</textarea></td>
         <td class="border border-gray-300 p-0 ${TW.subject}"><textarea data-tc="subject" data-id="${esc(r.id)}" dir="rtl" lang="ar" rows="1" class="${TC}${amber(!r.subject)}">${esc(r.subject)}</textarea></td>
+        ${tSectCell(r)}
         <td class="border border-gray-300 p-0 ${TW.booklet_price}"${rp}><input data-tc="booklet_price" data-id="${esc(r.id)}" inputmode="decimal" value="${r.booklet_price==null?'':esc(r.booklet_price)}" class="${TC}${amber(r.booklet_price==null&&r.booklet_price_raw)}"></td>
         <td class="border border-gray-300 p-0 ${TW.session_date}"${raw}><input data-tc="session_date" data-id="${esc(r.id)}" type="date" value="${esc(r.session_date||'')}" class="${TC}${amber(!r.session_date&&r.session_date_raw)}"></td>
         <td class="border border-gray-300 p-0 ${TW.bid_bond}"><textarea data-tc="bid_bond" data-id="${esc(r.id)}" dir="rtl" lang="ar" rows="1" class="${TC}">${esc(r.bid_bond||'')}</textarea></td>
@@ -1388,10 +1394,221 @@ const K=(()=>{
         <pre dir="rtl" lang="ar" class="whitespace-pre-wrap text-sm leading-7 bg-gray-50 border rounded-lg p-3 max-h-[45vh] overflow-auto font-sans">${esc(r.raw_text||'(none)')}</pre>
         <div class="flex justify-end pt-3"><button data-k="mclose" class="${btn1}">Close</button></div>`);$('k-modal-box').classList.add('!max-w-3xl')}
   });
+
+  // ---- Phase 5: sectors of tenders (keywords -> suggested sectors -> admin confirms; grouped view by period) ----
+  const tFold=v=>tDigits(String(v||'')).replace(/[ً-ْٰـ]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase().replace(/\s+/g,' ').trim();
+  const tSName=id=>(tSect.find(x=>x.id===id)||{name:id}).name;
+  async function loadSectorData(){
+    const [a,b]=await Promise.all([sb.from('sectors').select('id,name').order('name'),sb.from('sector_keywords').select('id,sector_id,keyword').order('keyword')]);
+    tSect=a.error?[]:(a.data||[]);tKwErr=!!b.error;tKw=tKwErr?[]:(b.data||[]).map(k=>({...k,f:tFold(k.keyword)}));
+  }
+  const tMatch=r=>{const hay=tFold((r.subject||'')+' '+(r.entity||''));return tSect.filter(s=>tKw.some(k=>k.sector_id===s.id&&k.f&&hay.includes(k.f))).map(s=>s.id)};
+  async function tClassify(rows){ // only tenders with no sector yet; the result is a SUGGESTION until the admin confirms
+    if(tKwErr)throw new Error('Run supabase-step6-sectors.sql first, then press Refresh.');
+    if(!tKw.length)throw new Error('There are no keywords yet. Press Keywords and add some.');
+    const todo=rows.filter(r=>!(r.sector_ids||[]).length),groups={};
+    todo.forEach(r=>{const ids=tMatch(r);if(ids.length){r._ids=ids;(groups[ids.join(',')]=groups[ids.join(',')]||[]).push(r)}});
+    let hit=0;
+    for(const [k,list] of Object.entries(groups)){
+      const patch={sector_ids:k.split(','),sectors_confirmed:false,updated_at:new Date().toISOString()};
+      const u=await sb.from('tenders').update(patch).in('id',list.map(r=>r.id));if(u.error)throw u.error;
+      list.forEach(r=>{Object.assign(r,patch);delete r._ids});hit+=list.length;
+    }
+    return {tried:todo.length,hit};
+  }
+  const tChips=r=>{const ids=r.sector_ids||[];return ids.length?ids.map(id=>pill(r.sectors_confirmed?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800',esc(tSName(id)))).join(' '):'<span class="text-[11px] text-gray-400">none</span>'};
+  const tSectBtns=r=>`<button data-k="tsect" data-id="${esc(r.id)}" class="w-7 h-7 rounded-lg bg-gray-100" aria-label="Edit sectors" title="Edit sectors"><i class="fas fa-pen text-[10px]"></i></button>`
+    +((r.sector_ids||[]).length&&!r.sectors_confirmed?` <button data-k="tsconf" data-id="${esc(r.id)}" class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700" aria-label="Confirm sectors" title="Confirm these sectors"><i class="fas fa-check text-[10px]"></i></button>`:'');
+  const tSectCell=r=>`<td class="border border-gray-300 px-1.5 py-1 min-w-[10rem]"><div class="flex flex-wrap gap-1 items-center">${tChips(r)} ${tSectBtns(r)}</div></td>`;
+  const tFind=id=>trows.find(x=>x.id===id)||tSV.find(x=>x.id===id);
+  const tNav=()=>`<div class="flex gap-1.5">${[['images','Images','fa-camera'],['sector','By sector','fa-layer-group']].map(([k,l,i])=>`<button data-k="tmode" data-v="${k}" class="text-xs font-bold px-4 py-2 rounded-xl ${k===tView?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>`;
+  function tDefaults(){
+    if(TS.from)return;const d=new Date(today()+'T00:00:00Z'),y=d.getUTCFullYear(),m=d.getUTCMonth();
+    const iso=x=>x.toISOString().slice(0,10);TS.from=iso(new Date(Date.UTC(y,m,1)));TS.to=iso(new Date(Date.UTC(y,m+2,0)));
+  }
+  async function loadSectorView(){
+    tDefaults();
+    let q=sb.from('tenders').select('id,entity,subject,booklet_price,session_date,publish_date,bid_bond,source_paper,status,sector_ids,sectors_confirmed').order(TS.by,{ascending:true}).limit(1000);
+    if(TS.from)q=q.gte(TS.by,TS.from);if(TS.to)q=q.lte(TS.by,TS.to);if(TS.status!=='all')q=q.eq('status',TS.status);
+    const r=await q;tSVErr=!!r.error;tSV=tSVErr?[]:(r.data||[]);
+  }
+  const tCard=r=>`<div class="px-3 py-2.5 border-t border-gray-100 space-y-1.5">
+    <p dir="rtl" lang="ar" class="text-sm font-bold leading-6">${esc(r.entity||'-')}</p>
+    <p dir="rtl" lang="ar" class="text-sm leading-6 text-gray-800">${esc(r.subject||'-')}</p>
+    <p class="text-[11px] text-gray-500">Session: <b>${r.session_date?fd(r.session_date):'-'}</b> &middot; Published: ${r.publish_date?fd(r.publish_date):'-'}${r.source_paper?' &middot; '+esc(r.source_paper):''} &middot; Booklet: ${r.booklet_price==null?'-':esc(r.booklet_price)} &middot; Bid bond: <span dir="rtl">${esc(r.bid_bond||'-')}</span> ${r.status==='approved'?pill('bg-emerald-100 text-emerald-800','Approved'):pill('bg-gray-100 text-gray-700','Draft')}</p>
+    <div class="flex flex-wrap gap-1 items-center">${tChips(r)} ${tSectBtns(r)}</div></div>`;
+  function paintSectorView(){
+    tDefaults();
+    const none=tSV.filter(r=>!(r.sector_ids||[]).length),sug=tSV.filter(r=>(r.sector_ids||[]).length&&!r.sectors_confirmed);
+    const grp=(key,title,list,extra='')=>`<details data-tg="${esc(key)}" ${tOpen.has(key)?'open':''} class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <summary class="px-3 py-3 cursor-pointer flex items-center gap-2 font-bold text-sm"><span class="flex-1">${esc(title)}</span>${extra}<span class="text-xs font-normal text-gray-500">${list.length}</span></summary>${list.length?list.map(tCard).join(''):'<p class="px-3 py-3 text-xs text-gray-500 border-t border-gray-100">No tenders in this period.</p>'}</details>`;
+    main().innerHTML=tNav()
+    +((tKwErr||tSVErr)?warn('<b>Sectors for tenders are not set up yet.</b> Run <code>supabase-step6-sectors.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
+    +(!tSect.length&&!tKwErr?warn('There are no sectors yet. Add them first in <b>Users &amp; sectors</b>, then come back.'):'')
+    +`<div class="bg-white p-3 rounded-2xl border border-gray-200 space-y-2">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <label class="text-[11px] font-bold">Period by<select data-ts="by" class="${inp}"><option value="session_date" ${TS.by==='session_date'?'selected':''}>Session date</option><option value="publish_date" ${TS.by==='publish_date'?'selected':''}>Publish date</option></select></label>
+        <label class="text-[11px] font-bold">From<input data-ts="from" type="date" value="${esc(TS.from)}" class="${inp}"></label>
+        <label class="text-[11px] font-bold">To<input data-ts="to" type="date" value="${esc(TS.to)}" class="${inp}"></label>
+        <label class="text-[11px] font-bold">Show<select data-ts="status" class="${inp}"><option value="all" ${TS.status==='all'?'selected':''}>All tenders</option><option value="approved" ${TS.status==='approved'?'selected':''}>Approved only</option><option value="draft" ${TS.status==='draft'?'selected':''}>Drafts only</option></select></label>
+      </div>
+      <div class="flex flex-wrap gap-2 items-center">
+        <button data-k="tclassifyall" class="${btn1}"><i class="fas fa-tags"></i> Classify unclassified (${none.length})</button>
+        <button data-k="tconfirmall" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-check-double"></i> Confirm suggested (${sug.length})</button>
+        <button data-k="tkw" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-key"></i> Keywords</button>
+      </div>
+      <p class="text-[11px] text-gray-500">${tSV.length} tender${tSV.length===1?'':'s'} in this period${tSV.length>=1000?' (showing the first 1,000)':''}. Tenders without the chosen date are not listed. A tender in several sectors appears under each. Classify only touches tenders that have no sector yet.</p></div>`
+    +grp('_none','Unclassified',none)
+    +tSect.map(s=>{const list=tSV.filter(r=>(r.sector_ids||[]).includes(s.id));return grp(s.id,s.name,list,list.some(r=>!r.sectors_confirmed)?pill('bg-amber-100 text-amber-800','to confirm'):'')}).join('');
+  }
+  document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.tg){d.open?tOpen.add(d.dataset.tg):tOpen.delete(d.dataset.tg)}},true);
+
+  // ---- Prepare an image before upload: rotate, crop, make easier to read (all in the browser) ----
+  let TP=null;
+  const tCv=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));return c};
+  const tFit=(src,max)=>{const k=Math.min(1,max/Math.max(src.width,src.height));const c=tCv(src.width*k,src.height*k);c.getContext('2d').drawImage(src,0,0,c.width,c.height);return c};
+  async function tLoadBitmap(file){
+    if(window.createImageBitmap){try{return await createImageBitmap(file,{imageOrientation:'from-image'})}catch(_){}}
+    return await new Promise((ok,no)=>{const u=URL.createObjectURL(file),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=()=>no(new Error('This image could not be opened.'));i.src=u});
+  }
+  const tOptsOn=o=>o.sharp||o.bw||o.auto||o.contrast>0;
+  function tProcess(cv,o){ // auto levels -> contrast -> black and white -> sharpen
+    if(!tOptsOn(o))return;
+    const ctx=cv.getContext('2d'),w=cv.width,h=cv.height,img=ctx.getImageData(0,0,w,h),d=img.data;
+    if(o.auto){const hist=new Uint32Array(256);for(let i=0;i<d.length;i+=4)hist[(d[i]*.299+d[i+1]*.587+d[i+2]*.114)|0]++;
+      const n=w*h;let a=0,lo=0,hi=255;for(let v=0;v<256;v++){a+=hist[v];if(a>=n*.01){lo=v;break}}a=0;for(let v=255;v>=0;v--){a+=hist[v];if(a>=n*.01){hi=v;break}}
+      if(hi-lo>20){const k=255/(hi-lo);for(let i=0;i<d.length;i+=4)for(let c=0;c<3;c++)d[i+c]=Math.max(0,Math.min(255,(d[i+c]-lo)*k))}}
+    const f=1+o.contrast/100*1.5;
+    for(let i=0;i<d.length;i+=4){let r=d[i],g=d[i+1],b=d[i+2];
+      if(o.bw){r=g=b=r*.299+g*.587+b*.114}
+      if(o.contrast>0){r=(r-128)*f+128;g=(g-128)*f+128;b=(b-128)*f+128}
+      d[i]=r<0?0:r>255?255:r;d[i+1]=g<0?0:g>255?255:g;d[i+2]=b<0?0:b>255?255:b}
+    if(o.sharp){const src=new Uint8ClampedArray(d),a=.7,c0=1+4*a;
+      for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=(y*w+x)*4;
+        for(let c=0;c<3;c++){const v=c0*src[i+c]-a*(src[i+c-4]+src[i+c+4]+src[i+c-w*4]+src[i+c+w*4]);d[i+c]=v<0?0:v>255?255:v}}}
+    ctx.putImageData(img,0,0);
+  }
+  function tPaintPrev(){
+    if(!TP)return;const cv=$('tp-cv');if(!cv)return;cv.width=TP.prev.width;cv.height=TP.prev.height;
+    cv.getContext('2d').drawImage(TP.prev,0,0);tProcess(cv,TP.o);
+  }
+  function tPaintBox(){
+    const b=$('tp-box');if(!b||!TP)return;const c=TP.crop;
+    b.style.left=c.x0*100+'%';b.style.top=c.y0*100+'%';b.style.width=(c.x1-c.x0)*100+'%';b.style.height=(c.y1-c.y0)*100+'%';
+  }
+  const tCropped=()=>{const c=TP.crop;return c.x0>0.001||c.y0>0.001||c.x1<0.999||c.y1<0.999};
+  const tChanged=()=>tCropped()||TP.rot!==0||tOptsOn(TP.o);
+  function tSetBase(cv){TP.base=cv;TP.prev=tFit(cv,1000);TP.crop={x0:0,y0:0,x1:1,y1:1};tPaintPrev();tPaintBox();tPrepInfo()}
+  function tPrepInfo(){
+    const m=$('tp-info');if(!m||!TP)return;const f=TP.file,okOrig=!!TTYPES[f.type]&&f.size<=TMAXB;
+    m.textContent=okOrig?(tChanged()?'You changed the image. Press Upload edited to use the changes, or Upload original to ignore them.':'Nothing changed. Upload original sends the file exactly as it is.')
+      :(TTYPES[f.type]?`This photo is ${sizeOf(f.size)}. It will be shrunk to fit the 1 MB limit when you upload it.`:'This file type will be converted to JPG when you upload it.');
+    const o=$('tp-orig');if(o)o.disabled=!okOrig;
+  }
+  async function tPrep(file){
+    toast('Opening the image...');
+    const bmp=await tLoadBitmap(file);
+    TP={file,o:{sharp:false,bw:false,auto:false,contrast:0},rot:0};
+    const base=tFit(bmp,3000);
+    modal(`<h2 class="font-extrabold text-lg mb-1">Prepare the image</h2>
+      <p class="text-[11px] text-gray-600 mb-2">Drag the corners or move the frame to crop. Turn on the options below if the print is faint. Nothing changes unless you press <b>Upload edited</b>.</p>
+      <div class="flex justify-center bg-gray-100 rounded-lg p-2"><div id="tp-wrap" class="relative inline-block overflow-hidden select-none" style="touch-action:none"><canvas id="tp-cv" class="block" style="max-width:100%;max-height:48vh;width:auto;height:auto"></canvas>
+        <div id="tp-box" data-h="move" class="absolute border-2 border-white" style="box-shadow:0 0 0 9999px rgba(0,0,0,.55);cursor:move">
+          ${['nw','ne','sw','se'].map(h=>`<span data-h="${h}" class="absolute w-7 h-7 bg-white border-2 border-gray-700 rounded-full" style="${h[0]==='n'?'top:-14px':'bottom:-14px'};${h[1]==='w'?'left:-14px':'right:-14px'};cursor:${h==='nw'||h==='se'?'nwse':'nesw'}-resize"></span>`).join('')}</div></div></div>
+      <div class="flex flex-wrap gap-2 items-center pt-2 text-xs font-bold">
+        <button data-k="tprot" data-d="-1" class="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg" aria-label="Rotate left"><i class="fas fa-rotate-left"></i></button>
+        <button data-k="tprot" data-d="1" class="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg" aria-label="Rotate right"><i class="fas fa-rotate-right"></i></button>
+        <button data-k="tpreset" class="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg">Reset crop</button>
+        <label class="flex items-center gap-1.5"><input type="checkbox" data-tp="auto" class="w-4 h-4"> Brighten paper</label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" data-tp="sharp" class="w-4 h-4"> Sharpen</label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" data-tp="bw" class="w-4 h-4"> Black &amp; white</label>
+        <label class="flex items-center gap-1.5 basis-full sm:basis-auto">Contrast <input type="range" min="0" max="100" value="0" data-tp="contrast" class="w-40"></label></div>
+      <p id="tp-info" class="text-[11px] text-gray-600 pt-2"></p>
+      <div class="flex flex-wrap justify-end gap-2 pt-3"><button data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button>
+        <button id="tp-orig" data-k="tpuporig" class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-40 font-bold px-4 py-2.5 rounded-xl">Upload original</button>
+        <button data-k="tpupedit" class="${btn1}">Upload edited</button></div>`);
+    $('k-modal-box').classList.add('!max-w-3xl');tSetBase(base);
+  }
+  let tRaf=0;const tSchedule=()=>{cancelAnimationFrame(tRaf);tRaf=requestAnimationFrame(()=>{tPaintPrev();tPrepInfo()})};
+  document.addEventListener('input',e=>{const t=e.target,k=t&&t.dataset&&t.dataset.tp;if(!k||!TP)return;TP.o[k]=t.type==='checkbox'?t.checked:+t.value;tSchedule()});
+  // crop frame: drag the box (move) or a corner
+  let tDrag=null;
+  document.addEventListener('pointerdown',e=>{const h=e.target&&e.target.closest&&e.target.closest('[data-h]');if(!h||!TP||!$('tp-wrap'))return;
+    e.preventDefault();tDrag={h:h.dataset.h,x:e.clientX,y:e.clientY,c:{...TP.crop}};try{h.setPointerCapture(e.pointerId)}catch(_){}});
+  document.addEventListener('pointermove',e=>{if(!tDrag||!TP)return;const r=$('tp-wrap').getBoundingClientRect(),dx=(e.clientX-tDrag.x)/r.width,dy=(e.clientY-tDrag.y)/r.height,c=tDrag.c,m=.06,cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+    let {x0,y0,x1,y1}=c;
+    if(tDrag.h==='move'){const w=x1-x0,h=y1-y0;x0=cl(x0+dx,0,1-w);y0=cl(y0+dy,0,1-h);x1=x0+w;y1=y0+h}
+    else{if(tDrag.h.includes('w'))x0=cl(x0+dx,0,x1-m);else x1=cl(x1+dx,x0+m,1);
+         if(tDrag.h.includes('n'))y0=cl(y0+dy,0,y1-m);else y1=cl(y1+dy,y0+m,1)}
+    TP.crop={x0,y0,x1,y1};tPaintBox()});
+  const tDragEnd=()=>{if(tDrag){tDrag=null;tPrepInfo()}};
+  document.addEventListener('pointerup',tDragEnd);document.addEventListener('pointercancel',tDragEnd);
+  async function tExport(){ // crop + enhance, shrunk until it fits 1 MB
+    const b=TP.base,c=TP.crop,sx=c.x0*b.width,sy=c.y0*b.height,sw=(c.x1-c.x0)*b.width,sh=(c.y1-c.y0)*b.height;
+    for(const k of [1,.85,.7,.55,.4]){
+      const cv=tCv(sw*k,sh*k);cv.getContext('2d').drawImage(b,sx,sy,sw,sh,0,0,cv.width,cv.height);tProcess(cv,TP.o);
+      for(const q of [.9,.8,.7,.6]){const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',q));if(blob&&blob.size<=TMAXB-4096)return blob}
+    }
+    throw new Error('Could not make this image small enough (1 MB). Try cropping closer.');
+  }
+  async function tFinishUpload(file){
+    toast('Uploading...');await tUpload(file);
+    if(/^\d+$/.test(TF.page.trim()))TF.page=String(+TF.page.trim()+1);
+    TP=null;closeM();toast('Uploaded ('+sizeOf(file.size)+')');await home();
+  }
+  Object.assign(ACT,{
+    tcam(){if(tNeedDetails())return;$('t-cam').click()},
+    tprot(t){if(!TP)return;const d=+t.dataset.d,b=TP.base,c=tCv(b.height,b.width),x=c.getContext('2d');
+      x.translate(c.width/2,c.height/2);x.rotate(d*Math.PI/2);x.drawImage(b,-b.width/2,-b.height/2);TP.rot=(TP.rot+d+4)%4;tSetBase(c)},
+    tpreset(){if(!TP)return;TP.crop={x0:0,y0:0,x1:1,y1:1};tPaintBox();tPrepInfo()},
+    async tpuporig(){if(!TP)return;const f=TP.file;if(!TTYPES[f.type]||f.size>TMAXB)return toast('The original cannot be uploaded as it is.',false);await tFinishUpload(f)},
+    async tpupedit(){if(!TP)return;toast('Preparing the image...');const blob=await tExport(),n=(TP.file.name||'photo').replace(/\.[^.]+$/,'')+'.jpg';
+      await tFinishUpload(new File([blob],n,{type:'image/jpeg'}))},
+  });
+  document.addEventListener('change',async e=>{const t=e.target,k=t&&t.dataset&&t.dataset.ts;if(!k)return;TS[k]=t.value;
+    try{await loadSectorView();paintSectorView()}catch(x){toast(x.message,false)}});
+  function tKwModal(){
+    modal(`<h2 class="font-extrabold text-lg mb-1">Sector keywords</h2>
+      <p class="text-[11px] text-gray-600 mb-3">A tender gets a sector when its entity or subject contains one of that sector's keywords. Spelling variants of ا أ إ آ and ي ى and ه ة are treated as the same. Add several at once, separated by commas.</p>
+      ${tSect.length?`<div class="space-y-3 max-h-[60vh] overflow-auto pr-1">${tSect.map(s=>`<div class="border border-gray-200 rounded-xl p-2.5 space-y-2"><p class="font-bold text-sm">${esc(s.name)}</p>
+        <div class="flex flex-wrap gap-1.5">${tKw.filter(k=>k.sector_id===s.id).map(k=>`<span dir="rtl" class="text-xs bg-gray-100 rounded-full pl-1 pr-2.5 py-1 inline-flex items-center gap-1">${esc(k.keyword)}<button data-k="tkwdel" data-id="${esc(k.id)}" class="w-5 h-5 rounded-full hover:bg-black/10" aria-label="Remove ${esc(k.keyword)}"><i class="fas fa-xmark text-[10px]"></i></button></span>`).join('')||'<span class="text-[11px] text-gray-400">No keywords yet.</span>'}</div>
+        <div class="flex gap-2"><input id="kw-${esc(s.id)}" dir="rtl" lang="ar" placeholder="مستشفى، أدوية، مستلزمات طبية" class="${inp}"><button data-k="tkwadd" data-s="${esc(s.id)}" class="${btn1}">Add</button></div></div>`).join('')}</div>`:'<p class="text-sm text-gray-600">There are no sectors yet. Add them in Users &amp; sectors.</p>'}
+      <div class="flex justify-end pt-3"><button data-k="tkwdone" class="${btn1}">Done</button></div>`);
+    $('k-modal-box').classList.add('!max-w-3xl');
+  }
+  Object.assign(ACT,{
+    async tmode(t){tView=t.dataset.v;if(tView==='sector'){main().innerHTML=LOADING;await loadSectorData();await loadSectorView()}else{TR=null}paintTenders()},
+    async tclassify(){const r=await tClassify(trows);paintReview();toast(r.tried?`${r.hit} of ${r.tried} tender${r.tried===1?'':'s'} got suggested sectors. Please confirm them.`:'Every row already has a sector.',r.tried?r.hit>0:true)},
+    async tclassifyall(){if(!tSV.filter(r=>!(r.sector_ids||[]).length).length)return toast('Nothing to classify in this period.',false);
+      const r=await tClassify(tSV);paintSectorView();toast(`${r.hit} of ${r.tried} tender${r.tried===1?'':'s'} got suggested sectors. Please confirm them.`,r.hit>0)},
+    async tconfirmall(){const l=tSV.filter(r=>(r.sector_ids||[]).length&&!r.sectors_confirmed);if(!l.length)return toast('Nothing to confirm.',false);
+      if(!confirm(`Confirm the suggested sectors of ${l.length} tender${l.length===1?'':'s'}?\n\nHave you checked them?`))return;
+      const u=await sb.from('tenders').update({sectors_confirmed:true,updated_at:new Date().toISOString()}).in('id',l.map(r=>r.id));if(u.error)throw u.error;
+      l.forEach(r=>r.sectors_confirmed=true);paintSectorView();toast(l.length+' confirmed')},
+    async tsconf(t){const r=tFind(t.dataset.id);if(!r)return;
+      const u=await sb.from('tenders').update({sectors_confirmed:true,updated_at:new Date().toISOString()}).eq('id',r.id);if(u.error)throw u.error;r.sectors_confirmed=true;paintTenders()},
+    tsect(t){const r=tFind(t.dataset.id);if(!r)return;
+      if(!tSect.length)return toast('There are no sectors yet. Add them in Users & sectors.',false);
+      modal(`<h2 class="font-extrabold text-lg mb-1">Sectors of this tender</h2>
+        <p dir="rtl" lang="ar" class="text-sm leading-6 bg-gray-50 border rounded-lg p-2 mb-3 max-h-24 overflow-auto">${esc(r.subject||'')}</p>
+        <div class="space-y-1.5 max-h-[45vh] overflow-auto">${tSect.map(s=>`<label class="flex items-center gap-2 text-sm"><input type="checkbox" name="tsec" value="${esc(s.id)}" ${(r.sector_ids||[]).includes(s.id)?'checked':''} class="w-4 h-4"> ${esc(s.name)}</label>`).join('')}</div>
+        <div class="flex justify-end gap-2 pt-3"><button data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button data-k="tsectsave" data-id="${esc(r.id)}" class="${btn1}">Save and confirm</button></div>`)},
+    async tsectsave(t){const r=tFind(t.dataset.id);if(!r)return;
+      const ids=[...document.querySelectorAll('#k-modal-box input[name="tsec"]:checked')].map(i=>i.value);
+      const patch={sector_ids:ids,sectors_confirmed:ids.length>0,updated_at:new Date().toISOString()};
+      const u=await sb.from('tenders').update(patch).eq('id',r.id);if(u.error)throw u.error;Object.assign(r,patch);closeM();paintTenders();toast('Saved')},
+    tkw(){tKwModal()},
+    tkwdone(){closeM();tView==='sector'&&paintSectorView()},
+    async tkwadd(t){const s=t.dataset.s,inp1=$('kw-'+s);if(!inp1)return;
+      const list=[...new Set(inp1.value.split(/[,،;\n]+/).map(x=>x.trim()).filter(x=>x.length>=2))];if(!list.length)return toast('Type at least one keyword (2 letters or more).',false);
+      const r=await sb.from('sector_keywords').upsert(list.map(keyword=>({sector_id:s,keyword})),{onConflict:'sector_id,keyword',ignoreDuplicates:true});if(r.error)throw r.error;
+      await loadSectorData();tKwModal();toast(list.length+' added')},
+    async tkwdel(t){const r=await sb.from('sector_keywords').delete().eq('id',t.dataset.id);if(r.error)throw r.error;await loadSectorData();tKwModal()},
+  });
   document.addEventListener('change',e=>{const c=e.target&&e.target.closest&&e.target.closest('[data-tc]');if(c)tSaveCell(c).catch(x=>toast(x.message,false))});
   document.addEventListener('input',e=>{const t=e.target;if(t&&t.matches&&t.matches('textarea[data-tc]'))autosize(t)});
-  document.addEventListener('change',async e=>{const t=e.target;if(!t||t.id!=='t-file')return;const f=t.files[0];t.value='';if(!f||tNeedDetails())return;
-    try{toast('Uploading...');await tUpload(f);if(/^\d+$/.test(TF.page.trim()))TF.page=String(+TF.page.trim()+1);toast('Uploaded ('+sizeOf(f.size)+')');await home()}catch(x){toast(x.message,false)}});
+  document.addEventListener('change',e=>{const t=e.target;if(!t||(t.id!=='t-file'&&t.id!=='t-cam'))return;const f=t.files[0];t.value='';if(!f||tNeedDetails())return;
+    tPrep(f).catch(x=>toast(x.message,false))});
   document.addEventListener('input',e=>{const t=e.target,k=t&&t.dataset&&t.dataset.tf;if(k){TF[k]=t.value;t.classList.remove('bad')}});
 
   // Inline edits: leads (status, description), issue cells, filters, imports
