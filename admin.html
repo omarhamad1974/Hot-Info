@@ -1228,13 +1228,13 @@ const K=(()=>{
     const {data,error}=await sb.functions.invoke(fname,{body});
     if(error){let j=null,st=error.context&&error.context.status;try{j=await error.context.json()}catch{}
       if(error.name==='FunctionsFetchError'||st===404)throw new Error('The '+fname+' function is not deployed yet (see README, Tender images).');
-      const e=new Error((j&&j.error)||error.message);e.blocked=!!(j&&j.blocked);throw e}
-    if(data&&data.error){const e=new Error(data.error);e.blocked=!!data.blocked;throw e}
+      const e=new Error((j&&j.error)||error.message);e.blocked=!!(j&&j.blocked);e.debug=j&&j.debug;throw e}
+    if(data&&data.error){const e=new Error(data.error);e.blocked=!!data.blocked;e.debug=data.debug;throw e}
     return data;
   }
   const tMsg=(h,bad)=>{const m=$('t-ocrmsg');if(m){m.className='text-[11px] '+(bad?'text-red-700 font-bold':'text-gray-600');m.innerHTML=h}};
   const tCount=()=>{const a=$('t-text'),c=$('t-chars');if(a&&c)c.textContent=a.value.length.toLocaleString()+' characters'};
-  const tBusy=on=>document.querySelectorAll('#k-modal-box [data-k^="tocr"],#k-modal-box [data-k="tbrowser"],#k-modal-box [data-k="tsavetext"],#k-modal-box [data-k="tparse"]').forEach(b=>b.disabled=on);
+  const tBusy=on=>document.querySelectorAll('#k-modal-box [data-k^="tocr"],#k-modal-box [data-k="tbrowser"],#k-modal-box [data-k="tsavetext"],#k-modal-box [data-k="tparse"],#k-modal-box [data-k="tpreview"]').forEach(b=>b.disabled=on);
   Object.assign(ACT,{
     tread(t){const x=tById(t.dataset.id);if(!x)return;const u=tUrl[x.image_path];
       modal(`<h2 class="font-extrabold text-lg mb-2">Read text <span class="text-sm font-normal text-gray-500">${esc(x.source_paper||'')}${x.page?` &middot; p. ${esc(x.page)}`:''}</span></h2>
@@ -1247,7 +1247,8 @@ const K=(()=>{
         <p id="t-ocrmsg" class="text-[11px] text-gray-600 min-h-[1rem]">${x.ocr_text?`Saved text from ${x.ocr_provider==='gemini'?'Gemini':x.ocr_provider==='ocrspace'?'OCR.space':'an earlier reading'}. Fix any mistakes below, then press Save text.`:'No text yet. Press a Read button.'}</p>
         <textarea id="t-text" dir="rtl" lang="ar" rows="12" class="${inp} leading-7" placeholder="النص يظهر هنا">${esc(x.ocr_text||'')}</textarea>
         <p id="t-chars" class="text-[11px] text-gray-500"></p>
-        <div class="flex justify-end gap-2 pt-3"><button data-k="tdone" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Close</button><button data-k="tsavetext" data-id="${esc(x.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl">Save text</button><button data-k="tparse" data-id="${esc(x.id)}" class="${btn1}"><i class="fas fa-table-list"></i> Turn into rows</button></div>`);
+        <div id="t-prev" class="space-y-2 pt-2"></div>
+        <div class="flex justify-end gap-2 pt-3"><button data-k="tdone" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Close</button><button data-k="tsavetext" data-id="${esc(x.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl">Save text</button><button data-k="tpreview" data-id="${esc(x.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-eye"></i> Preview rows</button><button data-k="tparse" data-id="${esc(x.id)}" class="${btn1}"><i class="fas fa-table-list"></i> Turn into rows</button></div>`);
       $('k-modal-box').classList.add('!max-w-3xl');tCount();$('t-text').oninput=tCount},
     async tocr(t){const x=tById(t.dataset.id),ta=$('t-text');if(!x)return;
       if(ta.value.trim()&&!confirm('Replace the text in the box with a new reading?'))return;
@@ -1384,23 +1385,44 @@ const K=(()=>{
     if(patch.status==='draft'){const tr=el.closest('[data-row]'),b=tr&&tr.querySelector('[data-k="tok"]');tRowStyle(el,r);b&&(b.outerHTML=tOkBtn(r));await tImgStatus()}
     tSum();
   }
-  async function tParseRun(x){
+  const tDbg=d=>d?`<p class="text-[11px] text-gray-600 bg-gray-50 border border-gray-200 rounded-lg p-2">Parser <b>${esc(d.parser)}</b>${d.model?' ('+esc(d.model)+')':''} &middot; ${d.chars} characters${d.chunks?' in '+d.chunks+' part'+(d.chunks===1?'':'s'):''} &middot; the model found <b>${d.ai_rows??'-'}</b>${d.per_chunk&&d.per_chunk.length>1?' ('+d.per_chunk.join(' + ')+')':''} &middot; kept <b>${d.kept??'-'}</b>${d.saved!=null?' &middot; saved <b>'+d.saved+'</b>':''}${d.ms?' &middot; '+(d.ms/1000).toFixed(1)+' s':''}</p>`:'';
+  const tPrevCards=rows=>`<div class="space-y-2 max-h-[40vh] overflow-auto pr-1">`+rows.map(q=>`<div class="rounded-xl border border-gray-200 bg-white p-2.5 space-y-1">
+      <div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-gray-900 text-white text-[11px] font-bold flex items-center justify-center">${q.position}</span><p dir="rtl" lang="ar" class="flex-1 text-sm font-bold leading-6">${esc(q.entity||'(no entity)')}</p></div>
+      <p dir="rtl" lang="ar" class="text-sm leading-6">${esc(q.subject||'(no subject)')}</p>
+      <p class="text-[11px] text-gray-600">Session: ${q.session_date?`<b>${fd(q.session_date)}</b>`:`<span class="bg-amber-100 px-1">${esc(q.session_date_raw||'not found')}</span>`} &middot; Booklet: ${q.booklet_price!=null?`<b>${esc(q.booklet_price)}</b>`:`<span class="bg-amber-100 px-1">${esc(q.booklet_price_raw||'-')}</span>`} &middot; Bid bond: <span dir="rtl">${esc(q.bid_bond||'-')}</span>${q.link?' &middot; '+esc(q.link):''}</p>
+      ${q.flags?`<p class="text-[11px] text-amber-800">Check: ${esc(q.flags)}</p>`:''}</div>`).join('')+`</div>`;
+  async function tParseRun(x,keep){
     toast('Turning the text into rows... up to 40 seconds');
     const r=await tFn({image_id:x.id},'parse-tenders');
     TR=x.id;x.status='parsed';await loadReview();
     if(trErr)throw new Error('The rows were saved but the page cannot read them: '+trMsg+' (run supabase-step7-grants.sql in the SQL Editor, then press Refresh).');
     if(!trows.length)throw new Error(`The function says it saved ${r.saved??r.count} rows, but the page sees none. Run supabase-step7-grants.sql in the SQL Editor, then press Refresh.`);
-    tCnt[x.id]={n:trows.length,ok:trows.filter(q=>q.status==='approved').length};closeM();paintTenders();
-    toast(`${r.count} tender${r.count===1?'':'s'} found${r.flagged?`, ${r.flagged} need a closer look`:''}. Please review every row.`);
+    tCnt[x.id]={n:trows.length,ok:trows.filter(q=>q.status==='approved').length};
+    if(keep){ // stay in the window and show what happened, step by step
+      paintTenders();const pv=$('t-prev');
+      if(pv)pv.innerHTML=`<div class="text-xs bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg p-2.5"><b><i class="fas fa-circle-check"></i> Done.</b> ${r.count} tender${r.count===1?'':'s'} found, <b>${r.saved??'?'}</b> saved in the database, and the page read back <b>${trows.length}</b>${r.flagged?`. ${r.flagged} need a closer look`:''}.</div>`+tDbg(r.debug)+tPrevCards(r.rows||[])
+        +`<div class="flex justify-end"><button data-k="tdone" class="${btn1}"><i class="fas fa-table-list"></i> Open the review table</button></div>`;
+      tMsg('Done. Check the rows below, then open the review table.');
+    }else{closeM();paintTenders();toast(`${r.count} tender${r.count===1?'':'s'} found${r.flagged?`, ${r.flagged} need a closer look`:''}. Please review every row.`)}
+    return r;
   }
   Object.assign(ACT,{
     async tparse(t){const x=tById(t.dataset.id),ta=$('t-text');if(!x)return;const text=ta.value.trim();
       if(text.length<20)return toast('Read the text first.',false);
       const c=tCnt[x.id];if(c&&c.n-c.ok>0&&!confirm(`This image already has ${c.n-c.ok} draft row${c.n-c.ok===1?'':'s'}. They will be replaced (approved rows stay). Continue?`))return;
-      tBusy(true);tMsg('Saving the text, then splitting it into tenders...');
+      tBusy(true);$('t-prev').innerHTML='';tMsg('Step 1 of 3: saving the text...');
       try{if(text!==(x.ocr_text||'')){const patch={ocr_text:text,updated_at:new Date().toISOString()};const u=await sb.from('tender_images').update(patch).eq('id',x.id);if(u.error)throw u.error;Object.assign(x,patch)}
-        await tParseRun(x)}
-      catch(e){tMsg(esc(e.message),true)}finally{tBusy(false)}},
+        tMsg('Step 2 of 3: the AI is splitting the text into tenders and the rows are being saved... up to 40 seconds');
+        await tParseRun(x,true)}
+      catch(e){tMsg(esc(e.message),true);const pv=$('t-prev');if(pv)pv.innerHTML=tDbg(e.debug)}finally{tBusy(false)}},
+    async tpreview(t){const x=tById(t.dataset.id),ta=$('t-text');if(!x)return;const text=ta.value.trim();
+      if(text.length<20)return toast('Read the text first.',false);
+      tBusy(true);$('t-prev').innerHTML='';tMsg('Preview: saving the text, then asking the AI... nothing is saved as rows');
+      try{if(text!==(x.ocr_text||'')){const patch={ocr_text:text,updated_at:new Date().toISOString()};const u=await sb.from('tender_images').update(patch).eq('id',x.id);if(u.error)throw u.error;Object.assign(x,patch)}
+        const r=await tFn({image_id:x.id,dry_run:true},'parse-tenders');
+        $('t-prev').innerHTML=`<div class="text-xs bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-2.5"><b><i class="fas fa-eye"></i> Preview only: nothing was saved.</b> ${r.count} tender${r.count===1?'':'s'} found${r.flagged?`, ${r.flagged} need a closer look`:''}. If this looks right, press <b>Turn into rows</b>.</div>`+tDbg(r.debug)+tPrevCards(r.rows||[]);
+        tMsg('Preview ready.')}
+      catch(e){tMsg(esc(e.message),true);$('t-prev').innerHTML=tDbg(e.debug)}finally{tBusy(false)}},
     async trev(t){TR=t.dataset.id;await loadReview();paintTenders()},
     async tback(){TR=null;await home()},
     ttext:t=>ACT.tread(t),
