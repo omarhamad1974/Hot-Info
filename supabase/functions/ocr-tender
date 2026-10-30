@@ -1,0 +1,138 @@
+// Edge Function: ocr-tender
+// Reads the Arabic text of one uploaded tender image and saves it in tender_images.ocr_text.
+// Providers (swappable, see PROVIDERS below):
+//   ocrspace  OCR.space free API, language "ara"   (secret OCR_SPACE_API_KEY)
+//   gemini    Gemini free tier, image -> plain text (secret GEMINI_API_KEY)
+// Optional secrets: OCR_SPACE_ENGINE (default "1"), GEMINI_MODEL (default "gemini-2.5-flash").
+// The keys stay here. Only a signed-in admin can call this function.
+//
+// Actions (POST JSON):
+//   { action: "read", image_id, provider: "ocrspace" | "gemini", engine?: "1" | "2" }
+//   { action: "browser_key" }   admin only: returns the OCR.space key so the admin's browser can call
+//                               OCR.space itself when its per-IP limit blocks this server (used rarely).
+//
+// Deploy:  supabase functions deploy ocr-tender      (leave "Verify JWT" on)
+import { createClient } from "npm:@supabase/supabase-js@2";
+
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+class Blocked extends Error {}   // the provider refused because of a limit (per IP, per day, per minute)
+
+// ---------------------------------------------------------------- providers
+async function ocrSpace(blob: Blob, name: string, engine: string): Promise<string> {
+  const key = Deno.env.get("OCR_SPACE_API_KEY");
+  if (!key) throw new Error("The secret OCR_SPACE_API_KEY is not set in Supabase.");
+  const form = new FormData();
+  form.append("language", "ara");
+  form.append("OCREngine", engine);
+  form.append("scale", "true");
+  form.append("detectOrientation", "true");
+  form.append("isOverlayRequired", "false");
+  form.append("file", blob, name);
+  const res = await fetch("https://api.ocr.space/parse/image", { method: "POST", headers: { apikey: key }, body: form });
+  const txt = await res.text();
+  let j: any = null;
+  try { j = JSON.parse(txt); } catch { /* not JSON */ }
+  const msg = j ? [].concat(j.ErrorMessage ?? []).join(" ") : txt.slice(0, 200);
+  if (res.status === 403 || res.status === 429 || /maximum|limit|too many|blocked|rate/i.test(msg)) {
+    throw new Blocked(msg || `OCR.space refused the request (HTTP ${res.status}).`);
+  }
+  if (!res.ok || !j) throw new Error(`OCR.space error (HTTP ${res.status}): ${msg}`);
+  if (j.IsErroredOnProcessing) throw new Error("OCR.space: " + (msg || "could not read the image."));
+  return (j.ParsedResults ?? []).map((p: any) => p.ParsedText ?? "").join("\n").trim();
+}
+
+async function gemini(blob: Blob): Promise<string> {
+  const key = Deno.env.get("GEMINI_API_KEY");
+  if (!key) throw new Error("The secret GEMINI_API_KEY is not set in Supabase.");
+  const model = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let bin = ""; for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
+  const prompt =
+    "This is a cropped newspaper image of Arabic tender (مناقصات) announcements. Transcribe ALL the text exactly as printed, " +
+    "in reading order (right to left, top to bottom). Do not translate, summarize, correct or add anything. " +
+    "Keep numbers and dates exactly as written. Put a blank line between separate announcements. Output only the text.";
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: blob.type || "image/jpeg", data: btoa(bin) } }] }],
+      generationConfig: { temperature: 0 },
+    }),
+  });
+  const j = await res.json().catch(() => null);
+  if (res.status === 429) throw new Blocked("Gemini free limit reached for now. Try again later.");
+  if (!res.ok) throw new Error(`Gemini error (HTTP ${res.status}): ${j?.error?.message ?? "unknown"}`);
+  const out = (j?.candidates?.[0]?.content?.parts ?? []).map((p: any) => p.text ?? "").join("").trim();
+  if (!out) throw new Error("Gemini returned no text" + (j?.promptFeedback?.blockReason ? ` (${j.promptFeedback.blockReason})` : "."));
+  return out;
+}
+
+// Add another provider here (and a button in admin.html) without touching the rest.
+const PROVIDERS: Record<string, (blob: Blob, name: string, engine: string) => Promise<string>> = {
+  ocrspace: (b, n, e) => ocrSpace(b, n, e),
+  gemini: (b) => gemini(b),
+};
+
+// ---------------------------------------------------------------- handler
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  if (req.method !== "POST") return json({ error: "POST only" }, 405);
+
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const anon = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const auth = req.headers.get("Authorization") ?? "";
+
+  const caller = createClient(url, anon, { global: { headers: { Authorization: auth } } });
+  const { data: { user } } = await caller.auth.getUser();
+  if (!user) return json({ error: "Please sign in again." }, 401);
+  const { data: isAdmin } = await caller.rpc("is_admin");
+  if (isAdmin !== true) return json({ error: "This account is not an admin." }, 403);
+
+  const admin = createClient(url, service, { auth: { persistSession: false } });
+  let b: Record<string, string> = {};
+  try { b = await req.json(); } catch { /* empty body */ }
+
+  if (b.action === "browser_key") {
+    const key = Deno.env.get("OCR_SPACE_API_KEY");
+    return key ? json({ key }) : json({ error: "The secret OCR_SPACE_API_KEY is not set in Supabase." });
+  }
+  if (b.action !== "read") return json({ error: "Unknown action." }, 400);
+
+  const provider = String(b.provider ?? "ocrspace");
+  const run = PROVIDERS[provider];
+  if (!run) return json({ error: "Unknown provider." }, 400);
+  const engine = ["1", "2"].includes(String(b.engine)) ? String(b.engine) : (Deno.env.get("OCR_SPACE_ENGINE") ?? "1");
+  if (!UUID.test(String(b.image_id ?? ""))) return json({ error: "Bad image id." }, 400);
+
+  const { data: row, error: e1 } = await admin.from("tender_images").select("id,image_path,status").eq("id", b.image_id).single();
+  if (e1 || !row) return json({ error: "Image not found." }, 404);
+  if (!row.image_path) return json({ error: "This image was already deleted." }, 400);
+  const { data: blob, error: e2 } = await admin.storage.from("tender-images").download(row.image_path);
+  if (e2 || !blob) return json({ error: "Could not open the image in storage." }, 500);
+
+  const log = (ok: boolean, chars: number, error?: string) =>
+    admin.from("ocr_log").insert({ image_id: row.id, provider, via: "server", ok, chars, error: error?.slice(0, 300) }).then(() => {}, () => {});
+  try {
+    const text = await run(blob, row.image_path.split("/").pop() ?? "image", engine);
+    if (!text) { await log(false, 0, "empty"); return json({ error: "No text was found in this image." }); }
+    const patch: Record<string, unknown> = { ocr_text: text, ocr_provider: provider, updated_at: new Date().toISOString() };
+    if (["uploaded", "text_read"].includes(row.status)) patch.status = "text_read";
+    const { error: e3 } = await admin.from("tender_images").update(patch).eq("id", row.id);
+    if (e3) return json({ error: "Read the text but could not save it: " + e3.message }, 500);
+    await log(true, text.length);
+    return json({ text, provider, status: patch.status ?? row.status });
+  } catch (e) {
+    const m = e instanceof Error ? e.message : String(e);
+    await log(false, 0, m);
+    return json({ error: m, blocked: e instanceof Blocked });
+  }
+});
