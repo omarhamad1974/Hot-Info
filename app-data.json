@@ -1,14 +1,21 @@
 {
   "languages": "ar",
   "about": "",
-  "aboutMainText": "**KHIP** provides comprehensive intellectual property protection services tailored to a diverse client portfolio, ranging from individual entrepreneurs and independent inventors to multinational corporations. Grounded in a deep, strategic understanding of global IP frameworks, our firm acts as a trusted partner throughout the innovation lifecycle, safeguarding original concepts, nurturing early-stage discoveries, and facilitating successful market entry to secure maximum commercial value and strategic advantage.",
+  "aboutMainText": "هوت انفرمبشن \nالأفضل منذ 20 عاما .. نحن شركة ممتازة و مميزه \nهوت انفرمبشن \nالأفضل منذ 20 عاما .. نحن شركة ممتازة و مميزه \n",
   "carousel": [
     {
       "id": "1",
       "title": "Using Legal Skills with Technical Knowledge",
       "subtitle": "Discover legal and IP services.",
       "tag": "Featured",
-      "image": "./assets/slider1.jpg"
+      "image": "mvvcn74s-84337.jpg"
+    },
+    {
+      "id": "5",
+      "title": "Using Legal Skills with Technical Knowledge (copy)",
+      "subtitle": "Discover legal and IP services.",
+      "tag": "Featured",
+      "image": "mvvcnuma-84331.jpg"
     },
     {
       "id": "2",
@@ -343,12 +350,11 @@
     }
   ],
   "social": {
-    "linkedin": "https://www.linkedin.com/company/khip/"
+    "linkedin": ""
   },
   "chatPrompts": [
-    "How can KHIP help you?",
-    "Drop us a message about your inquiry",
-    "kHIP is pleased to answer your questions"
+    "اشترك مع هوت انفرمبشن",
+    "ارسل لنا استفسارك هنا"
   ],
   "theme": {
     "colors": {
@@ -368,11 +374,9 @@
     "sections": {}
   },
   "newsCategories": [
-    "General",
-    "KHIP News",
-    "Intellectual Property",
-    "Patents",
-    "Trademarks",
-    "Translation"
+    "مناقصات",
+    "عملات",
+    "معارض",
+    "مناقصات خاصة"
   ]
 }
