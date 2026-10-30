@@ -27,6 +27,26 @@ if(d.theme!==undefined){
     if(s.mode==='image'){const f=s.image?resolve(s.image):null;if(!s.image)errs.push(`theme.sections.${k}: image missing`);else if(f&&!fs.existsSync(path.join('.',f)))errs.push(`theme.sections.${k}: image not found ${s.image}`)}
   }
 }
+
+// app-data.ar.json (Arabic content): must be valid JSON; every item id must exist in the English file;
+// every pageText key must match a data-t block in its page.
+if(fs.existsSync('app-data.ar.json')){
+  let a=null;try{a=JSON.parse(fs.readFileSync('app-data.ar.json','utf8'))}catch(e){errs.push('app-data.ar.json: not valid JSON')}
+  if(a){
+    for(const k of ['carousel','jurisdictions','news','services','testimonials','employees','products']){
+      if(a[k]===undefined)continue;
+      if(!Array.isArray(a[k])){errs.push(`app-data.ar.json ${k}: must be an array`);continue}
+      const have=new Set((d[k]||[]).map(x=>String(x.id)));
+      a[k].forEach((x,i)=>{if(x&&x.id!=null&&!have.has(String(x.id)))errs.push(`app-data.ar.json ${k}[${i}]: id "${x.id}" is not in app-data.json`)});
+    }
+    for(const [stem,keys] of Object.entries(a.pageText||{})){
+      const f=stem+'.html';
+      if(!fs.existsSync(f)){errs.push(`app-data.ar.json pageText: no page ${f}`);continue}
+      const html=fs.readFileSync(f,'utf8');
+      for(const key of Object.keys(keys||{}))if(key!=='_title'&&!html.includes(`data-t="${key}"`))errs.push(`app-data.ar.json pageText.${stem}.${key}: no such text block in ${f}`);
+    }
+  }
+}
 for(const [k,v] of Object.entries(d.social||{}))if(v&&!/^https:\/\//.test(v))errs.push(`social.${k}: must start with https://`);
 if(errs.length){console.error(errs.join('\n'));process.exit(1)}
 console.log('app-data.json OK');
