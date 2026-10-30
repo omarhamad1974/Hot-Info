@@ -1174,7 +1174,8 @@ const K=(()=>{
       <input id="t-cam" type="file" accept="image/*" capture="environment" class="hidden">
       <p class="text-[11px] text-gray-500">JPG, PNG or WebP, up to 1 MB. After you pick or take a photo you can crop it, rotate it and make it easier to read. If you change nothing, it is uploaded exactly as it is. This month: <b>${tMonth}</b> of about 1,000 images.${tUse?` Text readings this month: OCR.space <b>${tUse.ocrspace}</b> of 25,000, Gemini <b>${tUse.gemini}</b>.`:''}</p>
     </div>`
-    +`<h2 class="font-extrabold text-lg pt-1">Uploaded images <span class="text-sm font-normal text-gray-500">(latest ${timgs.length})</span></h2>`
+    +`<div class="flex items-center justify-between gap-2 flex-wrap pt-1"><h2 class="font-extrabold text-lg">Uploaded images <span class="text-sm font-normal text-gray-500">(latest ${timgs.length})</span></h2>
+      <button data-k="tparseall" class="${btn1}" title="Turn the saved text of every image into a tender row"><i class="fas fa-table-list"></i> Turn all into rows</button></div>`
     +(!timgErr&&!timgs.length?'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No images yet.</p>':'')
     +timgs.map(x=>{const st=TST[x.status]||TST.uploaded,u=x.image_path&&tUrl[x.image_path];
       return `<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex items-center gap-3">
@@ -1421,14 +1422,147 @@ const K=(()=>{
     if(patch.status==='draft'){const tr=el.closest('[data-row]'),b=tr&&tr.querySelector('[data-k="tok"]');tRowStyle(el,r);b&&(b.outerHTML=tOkBtn(r));await tImgStatus()}
     tSum();
   }
+  // ---- Local tender parser (plain code, no AI): OCR text of ONE tender -> the fields of the "Newspaper tenders" table ----
+  const tFoldAr=s=>s.replace(/[ً-ٰٟـ]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه');
+  const T_MONTHS=(()=>{const m={};[['يناير','كانون الثاني'],['فبراير','شباط'],['مارس','اذار'],['ابريل','نيسان'],['مايو','ايار'],['يونيو','يونيه','حزيران'],['يوليو','يوليه','تموز'],['اغسطس','اب'],['سبتمبر','ايلول'],['اكتوبر','تشرين الاول'],['نوفمبر','تشرين الثاني'],['ديسمبر','كانون الاول']].forEach((names,i)=>names.forEach(n=>m[tFoldAr(n)]=i+1));return m})();
+  const tIso=(y,m,d)=>{const t=new Date(Date.UTC(y,m-1,d));return t.getUTCFullYear()===y&&t.getUTCMonth()===m-1&&t.getUTCDate()===d?`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`:null};
+  const tYear=n=>n<100?2000+n:n;
+  // printed date -> {date:'YYYY-MM-DD'|null, flags:[]}. publish ('YYYY-MM-DD') is used only when the printed date has no year.
+  function tLocalDate(v,publish){
+    const s=tDigits(v),flags=[];if(!s.trim())return{date:null,flags};
+    let m=s.match(/(\d{4})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{1,2})/);
+    if(m){const d=tIso(+m[1],+m[2],+m[3]);if(d)return{date:d,flags}}
+    m=s.match(/(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*(\d{2,4})/);
+    if(m){let d=tIso(tYear(+m[3]),+m[2],+m[1]);
+      if(!d&&+m[2]<=31&&+m[1]<=12){d=tIso(tYear(+m[3]),+m[1],+m[2]);if(d)flags.push('date-swapped')}
+      if(d)return{date:d,flags}}
+    const tok=tFoldAr(s).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+    for(let i=0;i<tok.length;i++){
+      let mon=T_MONTHS[tok[i]+' '+(tok[i+1]??'')],len=2;if(!mon){mon=T_MONTHS[tok[i]];len=1}if(!mon)continue;
+      const num=t=>t&&/^\d+$/.test(t)?+t:null;
+      const day=[num(tok[i-1]),num(tok[i+len])].find(n=>n!==null&&n>=1&&n<=31)??null;if(day===null)continue;
+      let y=[num(tok[i+len]),num(tok[i+len+1])].find(n=>n!==null&&n>=100)??null;
+      if(y===null){const p=publish&&/^\d{4}-\d{2}-\d{2}$/.test(publish)?publish:null;if(!p)return{date:null,flags:['no-year']};
+        y=+p.slice(0,4);let d=tIso(y,mon,day);if(d&&d<new Date(Date.parse(p)-30*864e5).toISOString().slice(0,10))d=tIso(y+1,mon,day);
+        return{date:d,flags:['year-guessed']}}
+      const d=tIso(y,mon,day);if(d)return{date:d,flags}}
+    return{date:null,flags};
+  }
+  // "الساعة 12 ظهرا" / "10:30 صباحا" / "1:00 م" / "13:00" -> "HH:MM" or null
+  function tLocalTime(v){
+    const s=tDigits(v),re=/(\d{1,2})\s*(?::\s*(\d{2}))?\s*(?:(ص|صباحا|صباحاً|الصباح|AM|am)|(م|مساء|مساءً|ظهرا|ظهراً|عصرا|عصراً|الظهر|PM|pm))?(?!\d)/g;
+    for(const m of s.matchAll(re)){
+      const before=s.slice(Math.max(0,(m.index??0)-8),m.index??0),am=!!m[3],pm=!!m[4],hasMin=!!m[2];
+      if(!hasMin&&!am&&!pm&&!/ساعه|ساعة/.test(tFoldAr(before)))continue;
+      let h=+m[1];const mi=m[2]?+m[2]:0;if(h>23||mi>59)continue;
+      // a date like 18/11 must not be read as a time: skip numbers glued to / or -
+      const prev=s[(m.index??0)-1],next=s[(m.index??0)+m[0].length];if(!hasMin&&!am&&!pm&&(/[\/\-.]/.test(prev||'')||/[\/\-.]/.test(next||'')))continue;
+      if(pm&&h<12)h+=12;if(am&&h===12)h=0;
+      return `${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}`}
+    return null;
+  }
+
+  // ---- the splitter ----
+  // Anything inside ( ) is kept as part of the field it sits in and is never searched for markers
+  // (e.g. "(جلسة الاستفسارات يوم 4/11/2026)" is a condition of the subject, not the session).
+  const R_KIND=/(?:مناقصه|مناقصة|ممارسه|ممارسة|مزايده|مزايدة|مزاد|مناقصات|طرح\s+عام|اتفاق\s+مباشر|امر\s+مباشر|عطاء)\s*(?:عامه|عامة|محدوده|محدودة|محليه|محلية|عالميه|عالمية|موحده|موحدة|بالمظاريف|بالمظاريف\s+المغلقه)?/;
+  const R_PRICE=/(?:ثمن|سعر|قيمه|قيمة|مقابل)\s*(?:ال)?(?:كراس[هة]|كراسات|شروط|ملف|عطاء|مستندات)(?:\s*(?:ال)?(?:شروط|مواصفات))?|كراس[هة]\s*(?:ال)?(?:شروط|مواصفات)|كراسات\s*الشروط/;
+  const R_BOND=/(?:ال)?تامين\s*(?:ال)?(?:مؤقت|ابتدائي|اولي|ابتدايي)?|(?:ضمان|خطاب\s*ضمان)\s*(?:ابتدائي|مؤقت)/;
+  const R_SESS=/(?:موعد|ميعاد|تاريخ)\s*(?:ال)?(?:جلسه|فتح|تقديم|غلق|اغلاق|استلام)|جلسه\s*(?:فتح|ال)?(?:مظاريف|عطاءات|اظرف)?|فتح\s*(?:ال)?(?:مظاريف|عطاءات|اظرف)|اخر\s*موعد|اخر\s*ميعاد|يوم\s*(?:السبت|الاحد|الاثنين|الاثنين|الثلاثاء|الاربعاء|الخميس|الجمعه|الجمعة)/;
+  const R_END=/(?:\s|^)(?:وستفتح|وسيفتح|وسيتم|وسوف|ويتم|وتفتح|ويفتح|وتقدم\s+العطاءات)|(?:ملاحظه|ملحوظه|للاستعلام|للاستفسار|ويمكن|على\s+الراغبين|علي\s+الراغبين|وللشركه\s+الحق|وللهيئه\s+الحق|وللجهه\s+الحق|الهيئه\s+غير\s+ملزمه|ويحق)/;
+
+  function tLocalParse(rawText,publish){
+    const flags=[];
+    const text=tDigits(String(rawText||'')).replace(/[\u200e\u200f\u202a-\u202e]/g,'').replace(/\r/g,'').replace(/\n{2,}/g,'\n').trim();
+    const flat=text.replace(/\s*\n\s*/g,' ').replace(/[ \t]{2,}/g,' ').trim();
+    // masked: same length, ( ... ) replaced by a filler so markers inside brackets are ignored; folded letters keep the length
+    const fold=s=>s.replace(/[ً-ٰٟـ]/g,'\u0001').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/ه(?=[\s\d]|$)/g,'ه');
+    let masked=fold(flat).replace(/[(（\[][^)）\]]*[)）\]]/g,m=>'\u0002'.repeat(m.length));
+    // marker search works on a version where diacritics/tatweel are neutral but length is unchanged
+    const mk=s=>s.replace(/\u0001/g,'');
+    const find=(re,from=0)=>{const g=new RegExp(re.source,'g');g.lastIndex=from;const out=[];let m;while((m=g.exec(masked))){out.push({i:m.index,e:m.index+m[0].length});if(m[0].length===0)g.lastIndex++}return out};
+    const first=(re,from=0)=>find(re,from)[0]||null;
+
+    // 1) entity | subject split
+    const kind=first(R_KIND);let eEnd,sStart;
+    if(kind){
+      const pre=masked.slice(0,kind.i);
+      const t=/(?:\s|^)(?:تعلن|يعلن|تطرح|يطرح|تعلن\s+عن|تعلن\s+عن\s+طرح|تعلن\s+عن\s+اجراء|تعلن\s+عن\s+عمل)(?:\s+عن)?(?:\s+طرح|\s+اجراء)?\s*$/.exec(pre);
+      eEnd=t?t.index:kind.i;sStart=kind.i;
+    }else{ // no "مناقصة/ممارسة" word: take the first line as the entity
+      const nl=text.indexOf('\n');eEnd=nl>0?flat.indexOf(text.slice(0,nl).trim())+text.slice(0,nl).trim().length:Math.min(flat.length,60);sStart=eEnd;flags.push('no-kind');
+    }
+    // 2) the markers after the subject start
+    const price=first(R_PRICE,sStart),bond=first(R_BOND,sStart);
+    let sess=null;for(const c of find(R_SESS,sStart)){ // "جلسة الاستفسارات" is not the session
+      if(/^جلسه\s*(?:ال)?استفسارات/.test(masked.slice(c.i,c.i+25)))continue;sess=c;break}
+    const stops=[price,bond,sess].filter(Boolean).sort((a,b)=>a.i-b.i);
+    const end=first(R_END,sStart);
+    const sEnd=Math.min(...[stops[0]?stops[0].i:flat.length,end?end.i:flat.length]);
+    const clean=s=>s.replace(/^[\s:،,\-–.]+|[\s:،,\-–.]+$/g,'').replace(/\s+و(?:س|ست|سي|سيت)?$/,'').replace(/^و(?=\s)/,'').trim();
+    const slice=(a,b)=>clean(flat.slice(a,b));
+    const entity=slice(0,eEnd),subject=slice(sStart,sEnd);
+
+    // 3) value after a marker: up to the next marker of ANOTHER field (or the end sentence), capped
+    const after=(mkr,cap)=>{if(!mkr)return'';const nxt=[price,bond,sess,end].filter(x=>x&&x.i>=mkr.e).map(x=>x.i);
+      let e=Math.min(flat.length,mkr.e+cap,...nxt);return clean(flat.slice(mkr.e,e).replace(/^\s*(?:هو|هي|بمبلغ|بسعر|مبلغ|ثمنها|وقدره|:|=)\s*/,''))};
+    const bookletRaw=after(price,140),bondRaw=after(bond,160);
+    // 4) session: the text after the session marker; if there is none, the first full date outside brackets
+    let sessText=sess?flat.slice(sess.i,Math.min(flat.length,sess.e+90,...[price,bond,end].filter(x=>x&&x.i>sess.e).map(x=>x.i))):'';
+    let d=tLocalDate(sessText,publish);
+    if(!d.date&&!sess){const m=/\d{1,2}\s*[\/\-.]\s*\d{1,2}\s*[\/\-.]\s*\d{2,4}/.exec(masked.slice(sStart));if(m){sessText=flat.slice(sStart+m.index,sStart+m.index+60);d=tLocalDate(sessText,publish)}}
+    flags.push(...d.flags);
+    let time=d.date?tLocalTime(sessText.replace(/\d{1,4}\s*[\/\-.]\s*\d{1,2}\s*[\/\-.]\s*\d{1,4}/,' ')):null;
+    if(!entity)flags.push('no-entity');if(!subject)flags.push('no-subject');
+    if(sess&&!d.date)flags.push('date?');if(d.date&&!time)flags.push('no-time');
+    if(!price)flags.push('no-price-label');
+    return{entity,subject,booklet_price_raw:bookletRaw||null,bid_bond:bondRaw||null,session_date:d.date,session_time:time,
+      session_date_raw:sessText?clean(sessText):null,flags:[...new Set(flags)]};
+  }
+  // Builds the draft row from the saved text with the local parser (no Gemini, no edge function) and saves it.
+  async function tRowFromText(x,text){
+    const p=tLocalParse(text,x.publish_date),flags=[...p.flags];
+    let raw=p.booklet_price_raw&&!T_NOT.test(p.booklet_price_raw)?tDigits(p.booklet_price_raw):null;
+    const free=!!raw&&/مجان/.test(raw),price=raw?(free?0:tPrice(raw)):null;
+    if(raw&&price===null&&!free)flags.push('price?');if(free)flags.push('free-booklet');
+    const row={image_id:x.id,position:1,status:'draft',entity:p.entity,subject:p.subject,booklet_price:price,booklet_price_raw:raw,
+      session_date:p.session_date,session_time:p.session_date?p.session_time:null,session_date_raw:p.session_date_raw,
+      bid_bond:p.bid_bond&&!T_NOT.test(p.bid_bond)?tDigits(p.bid_bond):null,link:null,
+      source_paper:x.source_paper,page:x.page,publish_date:x.publish_date,raw_text:text,flags:[...new Set(flags)].join(',')||null};
+    const del=await sb.from('tenders').delete().eq('image_id',x.id).eq('status','draft');if(del.error)throw new Error('Could not clear the old draft: '+del.error.message);
+    const ins=await sb.from('tenders').insert(row);if(ins.error)throw new Error('Could not save the row (did you run supabase-step5-parse.sql and supabase-step8-tender-table.sql?): '+ins.error.message);
+    const up=await sb.from('tender_images').update({status:'parsed',updated_at:new Date().toISOString()}).eq('id',x.id);if(up.error)throw up.error;
+    x.status='parsed';return{flagged:!!row.flags};
+  }
   async function tParseRun(x){
-    toast('Turning the text into the tender row... up to 40 seconds');
-    const r=await tFn({image_id:x.id},'parse-tenders');
-    TR=x.id;x.status='parsed';await loadReview();await tEnsurePaths(trows);
+    const r=await tRowFromText(x,String(x.ocr_text||''));
+    TR=x.id;await loadReview();await tEnsurePaths(trows);
     if(trErr)throw new Error('The rows were saved but the page cannot read them: '+trMsg+' (run supabase-step7-grants.sql in the SQL Editor, then press Refresh).');
-    if(!trows.length)throw new Error(`The function says it saved ${r.saved??r.count} rows, but the page sees none. Run supabase-step7-grants.sql in the SQL Editor, then press Refresh.`);
+    if(!trows.length)throw new Error('The row was saved, but the page sees none. Run supabase-step7-grants.sql in the SQL Editor, then press Refresh.');
     tCnt[x.id]={n:trows.length,ok:trows.filter(q=>q.status==='approved').length};closeM();paintTenders();
     toast(`Tender row created${r.flagged?' (some cells need a closer look)':''}. Please check it against the image.`);
+  }
+  // Batch: every image that has saved text. Approved tenders are never touched; images that already have a draft are re-read only if the admin agrees.
+  async function tParseAll(btn){
+    const imgs=[];for(let from=0;;from+=500){const q=await sb.from('tender_images').select('*').not('ocr_text','is',null).order('created_at',{ascending:false}).range(from,from+499);
+      if(q.error)throw q.error;imgs.push(...(q.data||[]));if((q.data||[]).length<500)break}
+    const withText=imgs.filter(x=>String(x.ocr_text||'').trim().length>=20),cnt={};
+    for(let i=0;i<withText.length;i+=100){const q=await sb.from('tenders').select('image_id,status').in('image_id',withText.slice(i,i+100).map(x=>x.id));
+      if(q.error)throw q.error;(q.data||[]).forEach(r=>{const c=cnt[r.image_id]||(cnt[r.image_id]={n:0,ok:0});c.n++;if(r.status==='approved')c.ok++})}
+    const fresh=withText.filter(x=>!cnt[x.id]),drafts=withText.filter(x=>cnt[x.id]&&!cnt[x.id].ok),approved=withText.length-fresh.length-drafts.length;
+    if(!fresh.length&&!drafts.length)return toast(withText.length?'Nothing to do: every image with text already has an approved tender.':'No image has saved text yet. Read the text first.',false);
+    let list=[];
+    if(fresh.length){if(!confirm(`Turn the text of ${fresh.length} image${fresh.length===1?'':'s'} into tender rows?${approved?`\n\n(${approved} already approved: left untouched.)`:''}`))return;list=fresh.slice()}
+    if(drafts.length&&confirm(`Also read again ${drafts.length} image${drafts.length===1?'':'s'} that already ${drafts.length===1?'has':'have'} a draft row?\n\nThose drafts, including any fixes you made, will be replaced.`))list.push(...drafts);
+    if(!list.length)return;
+    const label=btn.innerHTML;btn.disabled=true;let ok=0,flagged=0,failed=[];
+    for(let i=0;i<list.length;i++){btn.textContent=`Reading ${i+1} of ${list.length}...`;
+      try{const r=await tRowFromText(list[i],String(list[i].ocr_text).trim());ok++;if(r.flagged)flagged++}
+      catch(e){failed.push(e.message)}
+      if(i%10===9)await new Promise(r=>setTimeout(r));}
+    btn.disabled=false;btn.innerHTML=label;
+    await loadTenderImages();paintTenders();
+    toast(`${ok} tender row${ok===1?'':'s'} created${flagged?`, ${flagged} need a closer look`:''}${failed.length?`, ${failed.length} failed: ${failed[0]}`:''}.`,!failed.length);
   }
   Object.assign(ACT,{
     async tparse(t){const x=tById(t.dataset.id),ta=$('t-text');if(!x)return;const text=ta.value.trim();
@@ -1439,6 +1573,7 @@ const K=(()=>{
       try{if(text!==(x.ocr_text||'')){const patch={ocr_text:text,updated_at:new Date().toISOString()};const u=await sb.from('tender_images').update(patch).eq('id',x.id);if(u.error)throw u.error;Object.assign(x,patch)}
         await tParseRun(x)}
       catch(e){tMsg(esc(e.message),true)}finally{tBusy(false)}},
+    async tparseall(t){await tParseAll(t)},
     async trev(t){TR=t.dataset.id;await loadReview();paintTenders()},
     async tback(){TR=null;await home()},
     ttext:t=>ACT.tread(t),
