@@ -47,6 +47,38 @@ if(fs.existsSync('app-data.ar.json')){
     }
   }
 }
+if(d.theme&&d.theme.brand!==undefined){
+  const hex=/^#[0-9a-f]{6}$/i,b=d.theme.brand;
+  if(!Array.isArray(b)||b.length!==7)errs.push('theme.brand: must be a list of exactly 7 colors');
+  else b.forEach((c,i)=>{if(!hex.test((c||{}).hex||''))errs.push(`theme.brand[${i}].hex: must look like #1b2433`)});
+}
+if(d.theme&&d.theme.fonts){
+  for(const [k,f] of Object.entries(d.theme.fonts)){
+    if(!['h1','h2','h3','body'].includes(k))errs.push(`theme.fonts.${k}: must be h1, h2, h3 or body`);
+    if(f&&f.family&&!/^[\w \-\u0600-\u06FF]+$/.test(f.family))errs.push(`theme.fonts.${k}.family: unusual characters`);
+  }
+}
+for(const [i,c] of ((d.theme&&d.theme.customFonts)||[]).entries()){
+  if(!c.name)errs.push(`theme.customFonts[${i}]: name missing`);
+  const f=String(c.file||'').replace(/^\.\//,'');
+  if(!/\.(woff2?|ttf|otf)$/i.test(f))errs.push(`theme.customFonts[${i}]: file must be .woff2, .woff, .ttf or .otf`);
+  else if(!fs.existsSync(path.join('.',f)))errs.push(`theme.customFonts[${i}]: ${f} does not exist`);
+}
+if(d.contact!==undefined){
+  const c=d.contact||{};
+  if(c.whatsapp&&!/^\d{8,15}$/.test(String(c.whatsapp)))errs.push('contact.whatsapp: digits only with the country code, 8 to 15 digits (example 201006552255)');
+  if(c.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email))errs.push('contact.email: not a valid email address');
+  if(!Array.isArray(c.phones||[]))errs.push('contact.phones: must be a list');
+  else (c.phones||[]).forEach((p,i)=>{if(!/^\+?[\d\s().-]{5,}$/.test((p||{}).number||''))errs.push(`contact.phones[${i}].number: not a phone number`)});
+  for(const k of ['mapLat','mapLng'])if(c[k]!==undefined&&c[k]!==''&&!isFinite(parseFloat(c[k])))errs.push(`contact.${k}: must be a number`);
+}
+if(d.theme&&d.theme.sections){
+  for(const [k,s] of Object.entries(d.theme.sections)){
+    if(s.hidden!==undefined&&typeof s.hidden!=='boolean')errs.push(`theme.sections.${k}.hidden: must be true or false`);
+    for(const w of ['widthTablet','widthDesktop'])if(s[w]!==undefined&&s[w]!==''&&!(parseFloat(s[w])>=40&&parseFloat(s[w])<=100))errs.push(`theme.sections.${k}.${w}: must be between 40 and 100`);
+  }
+}
+if(d.brand&&d.brand.image&&!/^(https?:|data:|\.?\/)/.test(d.brand.image)&&!fs.existsSync(path.join('assets',d.brand.image)))errs.push(`brand.image: assets/${d.brand.image} does not exist`);
 for(const [k,v] of Object.entries(d.social||{}))if(v&&!/^https:\/\//.test(v))errs.push(`social.${k}: must start with https://`);
 if(errs.length){console.error(errs.join('\n'));process.exit(1)}
 console.log('app-data.json OK');
