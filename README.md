@@ -130,3 +130,13 @@ Client sign-in is no longer in the bar: clients open `my-stuff.html` directly, w
 3. In **Read text**, check the Arabic, then press **Turn into rows**. Gemini splits the text into tenders (text only). Arabic digits, prices and dates are then normalized by code, not by the model.
 4. The review table opens: fix any cell (it saves when you leave it). Amber cells = date or price could not be read (hover to see what was printed). The file icon shows the original text of that tender. Press the circle to approve a row, or **Approve all**. A row needs entity and subject to be approved.
 5. When every row of an image is approved, the page offers to delete the picture to save storage. The text and the tenders stay.
+
+## Tenders page for users and the notification update (step 11)
+Run `supabase-step11-tender-notifications.sql` once in the Supabase SQL Editor (safe to run again), after the earlier steps (the sector, keyword and grant steps that `admin.html` mentions, 6 to 10, must already be in place). Then upload the new and changed files: `tenders.html`, `auth.js`, `footer.js`, `lang.js`, `styles.css`, `admin.html`.
+- **`tenders.html`** (signed-in users): shows only **Approved** tenders whose sectors are **Confirmed**, and only in sectors the user is subscribed to today. The check is made inside the database, not in the page. Admins see every sector (a handy preview).
+  - Tenders published in the last 7 days come first, on a sand background with a gold edge; the button **More tenders** reveals older ones (30 at a time). Everything is newest first.
+  - Filters: search, publishing entity, sector, and a date range on either the publishing date or the session date.
+  - **View** opens the tender picture, only when that picture holds just this one tender.
+  - Where the date comes from: the tender's publishing date (the newspaper date), or the day it became visible when that is empty.
+- **Send tender notification update** (admin, Tender images, top right): press it after you approve tenders and confirm their sectors. The button shows how many tenders became visible since the last update. Each user then sees a card ("N new tenders in your sectors", a number on the new Tenders item in the bottom bar) the next time they open any page, counting only tenders added since their last visit. Closing the card, or opening Tenders, marks it as seen. A user's own count only includes their sectors.
+- A tender counts as "added" at the moment it is approved with confirmed sectors (`tenders.released_at`, filled by the database).

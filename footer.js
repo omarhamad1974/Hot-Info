@@ -26,6 +26,7 @@
   bar.addEventListener('click',e=>{
     const b=e.target.closest('[data-go]');if(!b)return;const k=b.dataset.go,el=document.getElementById(k);
     if(k==='my-files'){location.href='my-stuff.html';return}
+    if(k==='tenders'){location.href='tenders.html';return}
     if(k==='about'){/about\.html/.test(location.pathname)?page.scrollTo({top:0,behavior:'smooth'}):location.href='about.html';return}
     if(k==='top')document.getElementById('app-top')?page.scrollTo({top:0,behavior:'smooth'}):location.href='index.html';
     else el&&el.offsetParent!==null?el.scrollIntoView({behavior:'smooth'}):location.href='index.html#'+k;

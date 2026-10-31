@@ -54,6 +54,36 @@
     back.classList.add('open');setTimeout(()=>{const i=form.querySelector('input');i&&i.focus({preventScroll:true})},50);
   }
 
+  // Tender notification: a "Tenders" item in the bottom bar for signed-in people, and a small bell card
+  // ("N new tenders in your sectors") when the admin has sent an update. The page tenders.html shows it itself.
+  const TL=(k,v,d)=>window.KLang?KLang.t(k,v):d;
+  const onTenders=/tenders\.html/.test(location.pathname)||/admin\.html/.test(location.pathname);
+  let tnEl=null,tnN=0;
+  const tnClear=()=>{if(tnEl){tnEl.remove();tnEl=null}tnN=0;tnBar()};
+  function tnBar(){
+    const nav=document.querySelector('#khip-bar nav');if(!nav)return;
+    let b=nav.querySelector('[data-go="tenders"]');
+    if(user&&!b){b=document.createElement('button');b.type='button';b.dataset.go='tenders';b.innerHTML='<i class="ph-light ph-gavel"></i>'+TL('bar_tenders',null,'Tenders');nav.appendChild(b)}
+    else if(!user&&b)b.remove();
+    if(b){const d=b.querySelector('.tn-dot');if(d)d.remove();if(tnN>0){const s=document.createElement('span');s.className='tn-dot';s.textContent=tnN>99?'99+':tnN;b.appendChild(s)}}
+  }
+  async function tenderNotice(){
+    tnClear();tnBar();
+    if(!user||!sb||onTenders)return;
+    try{
+      const {data,error}=await sb.rpc('tender_notice');
+      if(error||!data||!(data.count>0))return;
+      tnN=data.count;tnBar();
+      tnEl=document.createElement('div');tnEl.className='tn-toast';tnEl.setAttribute('role','status');
+      tnEl.innerHTML='<i class="ph-light ph-bell-ringing"></i><p></p><a href="tenders.html"></a><button type="button" aria-label="Close"><i class="ph-light ph-x"></i></button>';
+      tnEl.querySelector('p').textContent=data.count===1?TL('tn_new1',null,'1 new tender in your sectors'):TL('tn_new',{x:data.count},data.count+' new tenders in your sectors');
+      tnEl.querySelector('a').textContent=TL('tn_view',null,'View tenders');
+      // Closing the card counts as "seen": the next update counts from now
+      tnEl.querySelector('button').onclick=()=>{sb.rpc('tender_mark_seen').then(()=>{},()=>{});tnClear()};
+      document.body.appendChild(tnEl);
+    }catch(e){/* tenders are not set up yet: stay silent */}
+  }
+
   const ready=(async()=>{
     paint();
     try{
@@ -61,10 +91,11 @@
       C=window.KHIP_SUPABASE;
       if(!C||/YOUR-/.test(C.url||'')){console.warn('KHIP: add your Supabase URL and anon key to supabase-config.js');return}
       sb=window.supabase.createClient(C.url,C.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'khip-auth',storage:store}});
-      const {data}=await sb.auth.getSession();user=data.session?data.session.user:null;paint();
-      sb.auth.onAuthStateChange((ev,s)=>{user=s?s.user:null;paint();subs.forEach(f=>f(user));
+      const {data}=await sb.auth.getSession();user=data.session?data.session.user:null;paint();tenderNotice();
+      let lastUid=user&&user.id;sb.auth.onAuthStateChange((ev,s)=>{user=s?s.user:null;paint();subs.forEach(f=>f(user));if((user&&user.id)!==lastUid){lastUid=user&&user.id;tenderNotice()}
         if(ev==='PASSWORD_RECOVERY'||(ev==='SIGNED_IN'&&invite&&!shown)){shown=true;open('newpw')}});
     }catch(e){console.warn('KHIP auth:',e)}
   })();
+  window.KHIPTenderNotice={clear:tnClear};
   window.KHIPAuth={ready,open:()=>open('login'),user:()=>user,client:()=>sb,config:()=>C,onChange:f=>subs.push(f)};
 })();

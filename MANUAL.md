@@ -230,3 +230,6 @@ To remove an admin: `delete from public.admins where lower(email) = lower('colle
 | `auth.js`, `footer.js`, `rich.js`, `styles.css`, `tailwind-config.js` | Shared scripts and styles |
 | `scripts/validate.js`, `.github/workflows/validate.yml` | Automatic content check |
 | `assets/` | Images |
+
+## Tenders page and notification update (step 11)
+See README, "Tenders page for users and the notification update". Order of work for each batch: upload the images, read and review the rows, approve them, classify and **confirm the sectors**, then press **Send tender notification update** (Tender images tab).

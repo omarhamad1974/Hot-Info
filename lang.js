@@ -11,7 +11,7 @@ window.KLang=(function(){
   const DICT={
     en:{
       brand:'Intellectual Properties',nav_about:'About',nav_jur:'Jurisdictions',nav_services:'IP Services',nav_news:'News',nav_files:'My files',
-      bar_home:'Home',bar_services:'IP Services',bar_news:'News',bar_jur:'Jurisdiction',bar_about:'About',bar_files:'My files',
+      bar_home:'Home',bar_services:'IP Services',bar_news:'News',bar_jur:'Jurisdiction',bar_about:'About',bar_files:'My files',bar_tenders:'Tenders',tn_new:'{x} new tenders in your sectors',tn_new1:'1 new tender in your sectors',tn_view:'View tenders',
       more:'More',jur_title:'Jurisdictions',svc_title:'IP Services',news_title:'Latest news',testi_title:'Client endorsements',
       load_err:"We couldn't load the latest content.",try_again:'Try again',close:'Close',
       no_country:'No matching country. Message us and we will check for you.',ip_guidelines:'IP guidelines available upon inquiry.',
@@ -26,7 +26,7 @@ window.KLang=(function(){
     },
     ar:{
       brand:'للملكية الفكرية',nav_about:'من نحن',nav_jur:'الاختصاصات القضائية',nav_services:'خدمات الملكية الفكرية',nav_news:'الأخبار',nav_files:'ملفاتي',
-      bar_home:'الرئيسية',bar_services:'الخدمات',bar_news:'الأخبار',bar_jur:'الدول',bar_about:'من نحن',bar_files:'ملفاتي',
+      bar_home:'الرئيسية',bar_services:'الخدمات',bar_news:'الأخبار',bar_jur:'الدول',bar_about:'من نحن',bar_files:'ملفاتي',bar_tenders:'المناقصات',tn_new:'{x} مناقصات جديدة في قطاعاتك',tn_new1:'مناقصة جديدة في قطاعاتك',tn_view:'عرض المناقصات',
       more:'المزيد',jur_title:'الاختصاصات القضائية',svc_title:'خدمات الملكية الفكرية',news_title:'آخر الأخبار',testi_title:'آراء العملاء',
       load_err:'تعذر تحميل أحدث المحتوى.',try_again:'حاول مرة أخرى',close:'إغلاق',
       no_country:'لا توجد دولة مطابقة. راسلنا وسنتحقق لك.',ip_guidelines:'إرشادات الملكية الفكرية متاحة عند الاستفسار.',

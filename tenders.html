@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tenders | KHIP Intellectual Properties</title>
+<meta name="robots" content="noindex"><meta name="description" content="Tenders in the sectors you subscribe to.">
+<meta name="theme-color" content="#1d4ed8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="tailwind-config.js"></script>
+<script src="theme.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Tenders published in the last 7 days: sand background and a gold edge */
+  .t-card{background:#fff;border:1px solid rgba(231,229,228,.9);border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .t-card.fresh{background:rgb(var(--c-sand-rgb) / .3);border-color:rgb(var(--c-gold-rgb) / .55);border-inline-start:4px solid rgb(var(--c-gold-rgb))}
+  .t-card.past .t-when{color:#78716c}
+  .t-sub{white-space:pre-line;line-height:1.9}
+  .t-fact dt{font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:#78716c}
+  .t-fact dd{margin:.125rem 0 0;font-weight:400;color:rgb(var(--c-ink-rgb))}
+  .t-in{width:100%;border:1px solid #d6d3d1;background:#fff;border-radius:.75rem;padding:.55rem .8rem;font:inherit;font-size:.875rem;color:rgb(var(--c-ink-rgb))}
+  .t-lab{display:block;font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:#78716c;margin-bottom:.25rem}
+  .t-pill{display:inline-block;font-size:.6875rem;border-radius:999px;padding:.15rem .6rem}
+  .t-more{border:1px solid rgb(var(--c-ink-rgb));border-radius:999px;padding:.7rem 2rem;font-size:.875rem;background:#fff;color:rgb(var(--c-ink-rgb));cursor:pointer;transition:background .2s,color .2s}
+  .t-more:hover:not(:disabled){background:rgb(var(--c-ink-rgb));color:#fff}.t-more:disabled{opacity:.6;cursor:wait}
+  #notice{animation:tn .5s cubic-bezier(.16,1,.3,1)}@keyframes tn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+  @media(prefers-reduced-motion:reduce){#notice{animation:none}}
+</style>
+</head>
+<body class="font-sans font-light antialiased">
+<header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
+  <div class="wrap py-3 flex items-center justify-between">
+    <a href="index.html" class="font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><span class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span class="font-medium brand-ink">Intellectual Properties</span></a>
+    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
+      <a href="index.html" class="hover:text-brand-600 transition">Home</a><a href="patents.html" class="hover:text-brand-600 transition">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition">Translation</a><a href="about.html" class="hover:text-brand-600 transition">About</a>
+    <a href="my-stuff.html" class="hover:text-brand-600 transition">My files</a><a href="tenders.html" class="text-brand-700 font-normal transition" aria-current="page">Tenders</a></nav>
+    <a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a>
+  </div>
+</header>
+<main>
+<section class="band"><div class="wrap">
+  <div class="fu"><h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-medium text-title leading-[1.05]">Tenders</h1><span class="rule mt-5"></span>
+  <p id="who" class="text-base md:text-lg max-w-xl">Tenders in the sectors you subscribe to, newest first.</p></div>
+
+  <div id="notice" class="hidden mt-6 card !transform-none p-4 sm:p-5 flex items-center gap-4 border-l-4" style="border-left-color:rgb(var(--c-gold-rgb));background:rgb(var(--c-sand-rgb) / .3)" role="status"></div>
+
+  <form id="filters" class="hidden mt-8 card !transform-none p-4 sm:p-5" autocomplete="off" aria-label="Filter tenders">
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+      <label class="lg:col-span-2"><span class="t-lab">Search</span><input id="f-q" type="search" class="t-in" placeholder="Entity or subject" dir="auto"></label>
+      <label class="lg:col-span-2"><span class="t-lab">Publishing entity</span><input id="f-entity" list="entities" class="t-in" placeholder="Type to find an entity" dir="auto"><datalist id="entities"></datalist></label>
+      <label class="lg:col-span-2"><span class="t-lab">Sector</span><select id="f-sector" class="t-in"><option value="">All my sectors</option></select></label>
+      <label><span class="t-lab">Date</span><select id="f-by" class="t-in"><option value="publish">Publishing date</option><option value="session">Session date</option></select></label>
+      <label><span class="t-lab">From</span><input id="f-from" type="date" class="t-in"></label>
+      <label><span class="t-lab">To</span><input id="f-to" type="date" class="t-in"></label>
+      <div class="sm:col-span-2 lg:col-span-3 flex items-end justify-end gap-3"><span id="f-count" class="text-sm text-stone-500 mr-auto" aria-live="polite"></span><button type="button" id="f-clear" class="text-sm border border-stone-300 hover:border-stone-500 text-ink px-5 py-2 rounded-full transition hidden">Clear filters</button></div>
+    </div>
+  </form>
+
+  <div id="list" class="mt-6" aria-live="polite"></div>
+</div></section>
+</main>
+<script src="footer.js"></script>
+<script src="auth.js"></script>
+<script>
+const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.08});
+document.querySelectorAll('.fu').forEach(e=>io.observe(e));
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const day=d=>d?new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}):'';
+const cairoToday=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
+const daysAgo=d=>Math.round((Date.parse(cairoToday())-Date.parse(d))/864e5);
+const ago=d=>{const n=daysAgo(d);return n<=0?'today':n===1?'yesterday':n+' days ago'};
+const money=r=>{const raw=r.booklet_price_raw,n=r.booklet_price;if(typeof raw==='string'&&raw.trim())return raw.trim();return n==null?'':Number(n).toLocaleString('en-US',{maximumFractionDigits:2})};
+const PAGE=30,RECENT_PAGE=100;
+let sb=null,sectorName={},since=null,token=0;
+// R = what is on screen. recent/older: rows loaded and the total the database reports for the current filters.
+let R={recent:{rows:[],total:0},older:{rows:[],total:0,open:false}};
+
+const readF=()=>({q:$('f-q').value.trim(),entity:$('f-entity').value.trim(),sector:$('f-sector').value,by:$('f-by').value,from:$('f-from').value||null,to:$('f-to').value||null});
+const active=f=>!!(f.q||f.entity||f.sector||f.from||f.to);
+const params=(scope,f,offset,limit)=>({p_scope:scope,p_from:f.from,p_to:f.to,p_date_by:f.by,p_entity:f.entity||null,p_sector:f.sector||null,p_q:f.q||null,p_limit:limit,p_offset:offset});
+async function fetchTenders(scope,f,offset,limit){
+  const {data,error}=await sb.rpc('my_tenders',params(scope,f,offset,limit));
+  if(error)throw error;return data||{total:0,rows:[]};
+}
+
+function note(icon,t,sub,btn){
+  $('filters').classList.add('hidden');$('notice').classList.add('hidden');
+  $('list').innerHTML=`<div class="card !transform-none p-10 text-center max-w-xl"><i class="ph-light ${icon} text-5xl text-stone-400"></i><p class="mt-3 font-display text-2xl font-semibold text-title">${t}</p>${sub?`<p class="mt-1 text-sm text-stone-500">${sub}</p>`:''}${btn?'<button id="go-login" class="auth-btn mt-5" style="margin:1.25rem auto 0"><i class="ph-light ph-user"></i><span style="display:inline">Login</span></button>':''}</div>`;
+  if(btn)$('go-login').onclick=()=>KHIPAuth.open();
+}
+const skeleton=()=>{$('list').innerHTML='<div class="grid gap-4">'+'<div class="t-card p-6 animate-pulse h-40"><div class="h-5 w-1/2 rounded bg-stone-200"></div><div class="h-4 w-5/6 rounded bg-stone-100 mt-4"></div><div class="h-4 w-2/3 rounded bg-stone-100 mt-3"></div></div>'.repeat(3)+'</div>'};
+
+function card(r,fresh){
+  const isNew=since&&r.released_at&&Date.parse(r.released_at)>Date.parse(since);
+  const sess=r.session_date?day(r.session_date)+(r.session_time?' · '+esc(String(r.session_time).slice(0,5)):''):'';
+  const passed=r.session_date&&r.session_date<cairoToday();
+  const link=/^https?:\/\//i.test(r.link||'')?r.link:'';
+  const chips=(r.sector_ids||[]).map(id=>`<span class="t-pill bg-brand-50 text-brand-700">${esc(sectorName[id]||id)}</span>`).join(' ');
+  const fact=(k,v,ar)=>v?`<div><dt>${k}</dt><dd${ar?' dir="rtl" lang="ar" class="text-right sm:text-left"':''}>${v}</dd></div>`:'';
+  return `<article class="t-card ${fresh?'fresh':''} ${passed?'past':''} p-5 sm:p-6">
+    <div class="flex flex-wrap items-center gap-2 mb-3">
+      ${fresh?'<span class="t-pill bg-ink text-white">Last 7 days</span>':''}${isNew?'<span class="t-pill bg-brand-600 text-white">New</span>':''}
+      <span class="t-when text-xs text-stone-500">Published ${day(r.publish_date)}${r.publish_date?' · '+ago(r.publish_date):''}${r.source_paper?' · '+esc(r.source_paper)+(r.page?', p. '+esc(r.page):''):''}</span>
+      <span class="ml-auto flex flex-wrap gap-1.5">${chips}</span></div>
+    <h3 dir="rtl" lang="ar" class="font-display text-2xl font-semibold text-title leading-snug text-right">${esc(r.entity||'—')}</h3>
+    <p dir="rtl" lang="ar" class="t-sub mt-2 text-[15px] text-ink text-right">${esc(r.subject||'—')}</p>
+    <dl class="t-fact mt-4 pt-4 border-t border-stone-200/80 grid gap-x-6 gap-y-3 grid-cols-2 md:grid-cols-4">
+      ${fact('Session',sess?esc(sess)+(passed?' <span class="t-pill bg-stone-200 text-stone-700">passed</span>':''):'')}
+      ${fact('Booklet price',esc(money(r)),true)}
+      ${fact('Bid bond',esc(r.bid_bond||''),true)}
+      <div class="flex items-end justify-end gap-2 col-span-2 md:col-span-1">${r.has_image?`<button data-view="${esc(r.id)}" class="text-sm border border-stone-300 hover:border-stone-500 bg-white text-ink px-4 py-2 rounded-full transition whitespace-nowrap"><i class="ph-light ph-eye"></i> View</button>`:''}${link?`<a href="${esc(link)}" target="_blank" rel="noopener noreferrer" class="text-sm bg-ink hover:bg-stone-800 text-white px-4 py-2 rounded-full transition whitespace-nowrap"><i class="ph-light ph-arrow-square-out"></i> Source</a>`:''}</div>
+    </dl></article>`;
+}
+
+function paint(){
+  const f=readF(),rc=R.recent,ol=R.older,filtering=active(f);
+  $('f-clear').classList.toggle('hidden',!filtering);
+  const total=rc.total+(ol.open?ol.total:0);
+  let h='';
+  h+=`<h2 class="text-xs uppercase tracking-wider text-stone-500 mb-3">Published in the last 7 days <span class="normal-case tracking-normal">(${rc.total})</span></h2>`;
+  if(rc.rows.length)h+=`<div class="grid gap-4">${rc.rows.map(r=>card(r,true)).join('')}</div>`;
+  else h+=`<p class="text-sm text-stone-500 bg-white/70 border border-stone-200 rounded-xl px-4 py-3">${filtering?'No tenders from the last 7 days match your filters.':'No tenders were published in the last 7 days.'}</p>`;
+  if(rc.rows.length<rc.total)h+=`<div class="text-center mt-5"><button class="t-more" data-more="recent">Show more recent tenders (${rc.total-rc.rows.length} left)</button></div>`;
+  if(!ol.open)h+=`<div class="text-center mt-8"><button class="t-more" data-more="older"><i class="ph-light ph-clock-counter-clockwise"></i> More tenders</button><p class="text-xs text-stone-500 mt-2">Shows tenders published more than 7 days ago</p></div>`;
+  else{
+    h+=`<h2 class="text-xs uppercase tracking-wider text-stone-500 mt-10 mb-3">Earlier tenders <span class="normal-case tracking-normal">(${ol.total})</span></h2>`;
+    h+=ol.rows.length?`<div class="grid gap-4">${ol.rows.map(r=>card(r,false)).join('')}</div>`:`<p class="text-sm text-stone-500 bg-white/70 border border-stone-200 rounded-xl px-4 py-3">${filtering?'No earlier tenders match your filters.':'There are no earlier tenders yet.'}</p>`;
+    if(ol.rows.length<ol.total)h+=`<div class="text-center mt-6"><button class="t-more" data-more="older">More tenders (${ol.total-ol.rows.length} left)</button></div>`;
+  }
+  $('list').innerHTML=h;
+  $('f-count').textContent=ol.open||!rc.total&&!rc.rows.length?`${total} tender${total===1?'':'s'}`:`${rc.total} recent tender${rc.total===1?'':'s'}`;
+}
+
+async function load(){
+  const my=++token,f=readF();skeleton();
+  try{
+    const rc=await fetchTenders('recent',f,0,RECENT_PAGE);if(my!==token)return;
+    R={recent:{rows:rc.rows,total:rc.total},older:{rows:[],total:0,open:false}};
+    // Nothing new in the last 7 days but the person is searching: go straight to older tenders
+    if(!rc.total&&active(f)){const ol=await fetchTenders('older',f,0,PAGE);if(my!==token)return;R.older={rows:ol.rows,total:ol.total,open:true}}
+    paint();
+  }catch(e){if(my===token)note('ph-warning-circle','We could not load the tenders',/my_tenders|function/i.test(e.message||'')?'The tenders page is not set up yet. Please try again later.':'Please refresh the page and try again.')}
+}
+async function more(which,btn){
+  const f=readF(),my=token;btn.disabled=true;const t=btn.innerHTML;btn.textContent='Loading...';
+  try{
+    const part=R[which],d=await fetchTenders(which,f,which==='older'&&!part.open?0:part.rows.length,which==='recent'?RECENT_PAGE:PAGE);if(my!==token)return;
+    part.rows=part.rows.concat(d.rows);part.total=d.total;if(which==='older')part.open=true;paint();
+  }catch(e){btn.disabled=false;btn.innerHTML=t;alert('Sorry, more tenders could not be loaded.')}
+}
+
+async function view(id,btn){
+  const w=window.open('','_blank');if(!w)return alert('Please allow pop-ups for this site to view the tender, or try again.');
+  w.document.write('<p style="font-family:sans-serif;padding:2rem">Opening the tender...</p>');btn.disabled=true;
+  try{
+    // The database hands out the file path only for tenders the person may read; the storage policy checks it again.
+    const {data:p,error}=await sb.rpc('my_tender_image',{p_tender:id});if(error||!p)throw error||new Error('none');
+    const {data,error:e2}=await sb.storage.from('tender-images').createSignedUrl(p,300);if(e2)throw e2;
+    w.location.href=data.signedUrl;
+  }catch(e){w.close();alert('Sorry, this tender could not be opened.')}
+  btn.disabled=false;
+}
+
+async function setup(){
+  const A=KHIPAuth;
+  if(!A.client())return note('ph-plug','Sign-in is not set up yet','Please try again later.');
+  if(!A.user()){$('who').textContent='Sign in to see the tenders in your sectors.';return note('ph-lock-simple','Please sign in','Tenders are private to subscribers.',true)}
+  sb=A.client();skeleton();
+  const [fl,nt]=await Promise.all([sb.rpc('my_tender_filters'),sb.rpc('tender_notice')]);
+  if(fl.error)return note('ph-warning-circle','The tenders page is not set up yet','Please try again later.');
+  const sectors=fl.data.sectors||[];sectorName=Object.fromEntries(sectors.map(s=>[s.id,s.name]));
+  if(!sectors.length)return note('ph-stack','No active subscriptions yet','Once you are subscribed to a sector, its tenders appear here. Get in touch with us to subscribe.');
+  $('who').textContent=sectors.length===1?`Tenders in ${sectors[0].name}, newest first.`:`Tenders in your ${sectors.length} sectors, newest first.`;
+  $('f-sector').innerHTML='<option value="">All my sectors</option>'+sectors.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+  $('f-sector').parentElement.classList.toggle('hidden',sectors.length<2);
+  $('entities').innerHTML=(fl.data.entities||[]).map(e=>`<option value="${esc(e)}">`).join('');
+  $('filters').classList.remove('hidden');
+  // The notice: shown here too, then marked as seen so the next visit counts from now
+  const n=nt.data||{};since=n.since||null;
+  if(n.count>0){$('notice').classList.remove('hidden');$('notice').classList.add('flex');
+    $('notice').innerHTML=`<span class="w-12 h-12 rounded-full bg-white/80 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ph-bell-ringing text-2xl"></i></span><p class="text-ink"><b class="font-medium">${n.count} new tender${n.count===1?'':'s'}</b> in your sectors since your last visit${n.since?` (${new Date(n.since).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})})`:''}. They are marked <span class="t-pill bg-brand-600 text-white">New</span> below.</p>`}
+  else{$('notice').classList.add('hidden');$('notice').classList.remove('flex')}
+  sb.rpc('tender_mark_seen').then(()=>{window.KHIPTenderNotice&&KHIPTenderNotice.clear()});
+  load();
+}
+
+let dt=null;
+$('filters').addEventListener('submit',e=>e.preventDefault());
+$('filters').addEventListener('input',e=>{if(e.target.id==='f-q'||e.target.id==='f-entity'){clearTimeout(dt);dt=setTimeout(load,350)}});
+$('filters').addEventListener('change',e=>{if(e.target.id!=='f-q'&&e.target.id!=='f-entity'){
+  if(e.target.id==='f-by'&&!$('f-from').value&&!$('f-to').value)return;load()}});
+$('f-clear').onclick=()=>{$('f-q').value=$('f-entity').value=$('f-from').value=$('f-to').value='';$('f-sector').value='';$('f-by').value='publish';load()};
+document.addEventListener('click',e=>{
+  const m=e.target.closest('[data-more]'),v=e.target.closest('[data-view]');
+  if(m)more(m.dataset.more,m);else if(v)view(v.dataset.view,v);
+});
+KHIPAuth.onChange(()=>{token++;setup()});
+KHIPAuth.ready.then(setup);
+</script>
+</body>
+</html>

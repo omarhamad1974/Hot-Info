@@ -1150,6 +1150,7 @@ const K=(()=>{
     const paths=timgs.map(x=>x.image_path).filter(p=>p&&!tUrl[p]);
     if(paths.length){const {data}=await sb.storage.from(TB).createSignedUrls(paths,3600);(data||[]).forEach(x=>{if(x.signedUrl&&x.path)tUrl[x.path]=x.signedUrl})}
     await loadSectorData();
+    await tBcLoad();
     if(TR)await loadReview();
   }
   function paintTenders(){
@@ -1601,7 +1602,20 @@ const K=(()=>{
     +((r.sector_ids||[]).length&&!r.sectors_confirmed?` <button data-k="tsconf" data-id="${esc(r.id)}" class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700" aria-label="Confirm sectors" title="Confirm these sectors"><i class="fas fa-check text-[10px]"></i></button>`:'');
   const tSectCell=r=>`<td class="border border-gray-300 px-1.5 py-1 min-w-[10rem]"><div class="flex flex-wrap gap-1 items-center">${tChips(r)} ${tSectBtns(r)}</div></td>`;
   const tFind=id=>trows.find(x=>x.id===id)||tSV.find(x=>x.id===id);
-  const tNav=()=>`<div class="flex gap-1.5">${[['images','Images','fa-camera'],['sector','By sector','fa-layer-group']].map(([k,l,i])=>`<button data-k="tmode" data-v="${k}" class="text-xs font-bold px-4 py-2 rounded-xl ${k===tView?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>`;
+  // ---- Tender notification update: tells subscribed users how many new tenders were added in their sectors ----
+  let tBc={last:null,pending:null,err:false};
+  const tWhen=iso=>new Date(iso).toLocaleString('en-GB',{timeZone:'Africa/Cairo',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  async function tBcLoad(){ // last update sent + tenders that became visible to users since then
+    const l=await sb.from('tender_broadcasts').select('sent_at').order('sent_at',{ascending:false}).limit(1);
+    if(l.error){tBc={last:null,pending:null,err:true};return}
+    const last=l.data&&l.data[0]?l.data[0].sent_at:null;
+    let q=sb.from('tenders').select('id',{count:'exact',head:true}).eq('status','approved').eq('sectors_confirmed',true).not('released_at','is',null);
+    if(last)q=q.gt('released_at',last);
+    const c=await q;tBc={last,pending:c.error?null:(c.count||0),err:!!c.error};
+  }
+  const tNav=()=>`<div class="flex flex-wrap items-center gap-2"><div class="flex gap-1.5">${[['images','Images','fa-camera'],['sector','By sector','fa-layer-group']].map(([k,l,i])=>`<button data-k="tmode" data-v="${k}" class="text-xs font-bold px-4 py-2 rounded-xl ${k===tView?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>
+    <div class="ml-auto flex flex-wrap items-center gap-2 justify-end"><span class="text-[11px] text-gray-500 text-right">${tBc.err?'Notifications are not set up yet':`${tBc.last?'Last update sent '+esc(tWhen(tBc.last)):'No update sent yet'}${tBc.pending!=null?` &middot; <b>${tBc.pending}</b> new tender${tBc.pending===1?'':'s'} since`:''}`}</span>
+    <button data-k="tnotify" class="${btn1}" title="Shows users a notification with the number of new tenders in their sectors"><i class="fas fa-bell"></i> Send tender notification update</button></div></div>`;
   function tDefaults(){
     if(TS.from)return;const d=new Date(today()+'T00:00:00Z'),y=d.getUTCFullYear(),m=d.getUTCMonth();
     const iso=x=>x.toISOString().slice(0,10);TS.from=iso(new Date(Date.UTC(y,m,1)));TS.to=iso(new Date(Date.UTC(y,m+2,0)));
@@ -1778,6 +1792,16 @@ const K=(()=>{
       const ids=[...document.querySelectorAll('#k-modal-box input[name="tsec"]:checked')].map(i=>i.value);
       const patch={sector_ids:ids,sectors_confirmed:ids.length>0,updated_at:new Date().toISOString()};
       const u=await sb.from('tenders').update(patch).eq('id',r.id);if(u.error)throw u.error;Object.assign(r,patch);closeM();paintTenders();toast('Saved')},
+    async tnotify(t){
+      await tBcLoad();
+      if(tBc.err){paintTenders();throw new Error('Run supabase-step11-tender-notifications.sql in the Supabase SQL Editor first, then press Refresh.')}
+      const n=tBc.pending||0,since=tBc.last?tWhen(tBc.last):'the beginning';
+      const msg=n?`Send the tender notification update?\n\n${n} tender${n===1?'':'s'} became visible to users since ${since} (approved with confirmed sectors).\n\nEach subscribed user will be told how many of them are in their own sectors, the next time they open the site.`
+                  :`No tender has been approved with confirmed sectors since ${since}.\n\nSend an update anyway? Users will see nothing unless new tenders exist in their sectors.`;
+      if(!confirm(msg))return;
+      t.disabled=true;
+      const r=await sb.from('tender_broadcasts').insert({note:null});t.disabled=false;if(r.error)throw r.error;
+      await tBcLoad();paintTenders();toast('Notification update sent')},
     tkw(){TKF='';tKwModal()},
     async tkwopen(t){TKF=(t&&t.dataset.s)||'';await loadSectorData();tKwModal()},
     tkwdone(){closeM();tView==='sector'&&paintSectorView()},
