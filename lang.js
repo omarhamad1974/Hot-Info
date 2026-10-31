@@ -20,7 +20,7 @@ window.KLang=(function(){
       wa_jur:'IP filings and legal procedures in {x}',general:'General',msg_wa:'Message KHIP on WhatsApp',send:'Send',
       switch_to:'العربية',flag_aria:'{x} flag',testimonial_n:'Testimonial {x}',news_n:'News {x}',
       nav_scope:'Our Regional Scope',nav_value:'Value',nav_adv:'Advantages',nav_team:'Team',nav_contact:'Contact',
-      follow_li:'Follow us on LinkedIn',phone:'Phone',email:'Email',open_maps:'Open in Google Maps',filing_guidelines:'Filing guidelines',
+      follow_li:'Follow us on LinkedIn',address:'Address',phone:'Phone',email:'Email',open_maps:'Open in Google Maps',filing_guidelines:'Filing guidelines',
       wa_us:'WhatsApp us',team_prev:'Previous team members',team_next:'Next team members',
       prompts:["Hello KHIP, I'd like to register a trademark in Egypt","How long does a patent filing take in the UAE?","Can you translate my patent into Arabic?","What documents do I need for a PCT national phase entry?"]
     },
@@ -35,7 +35,7 @@ window.KLang=(function(){
       wa_jur:'إجراءات تسجيل الملكية الفكرية والإجراءات القانونية في {x}',general:'عام',msg_wa:'راسل KHIP عبر واتساب',send:'إرسال',
       switch_to:'English',flag_aria:'علم {x}',testimonial_n:'الرأي {x}',news_n:'الخبر {x}',
       nav_scope:'نطاقنا الإقليمي',nav_value:'القيمة',nav_adv:'المزايا',nav_team:'الفريق',nav_contact:'اتصل بنا',
-      follow_li:'تابعنا على لينكدإن',phone:'الهاتف',email:'البريد الإلكتروني',open_maps:'افتح في خرائط جوجل',filing_guidelines:'إرشادات التسجيل',
+      follow_li:'تابعنا على لينكدإن',address:'العنوان',phone:'الهاتف',email:'البريد الإلكتروني',open_maps:'افتح في خرائط جوجل',filing_guidelines:'إرشادات التسجيل',
       wa_us:'راسلنا عبر واتساب',team_prev:'أعضاء الفريق السابقون',team_next:'أعضاء الفريق التاليون',
       prompts:['مرحباً KHIP، أود تسجيل علامة تجارية في مصر','كم يستغرق تقديم طلب براءة اختراع في الإمارات؟','هل يمكنكم ترجمة براءة الاختراع الخاصة بي إلى العربية؟','ما المستندات المطلوبة لدخول المرحلة الوطنية لمعاهدة PCT؟']
     }

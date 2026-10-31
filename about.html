@@ -14,22 +14,24 @@
 <script src="tailwind-config.js"></script>
 <script src="lang.js"></script>
 <script src="theme.js"></script>
+<script src="brand.js"></script>
+<script src="contact.js"></script>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body class="font-sans font-light antialiased">
 <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
   <div class="wrap py-3 flex items-center justify-between">
-    <a href="index.html" class="font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><span class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
+    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="KHIP" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
     <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
       <a href="index.html" class="hover:text-brand-600 transition" data-i18n="bar_home">Home</a><a href="#map" class="hover:text-brand-600 transition" data-i18n="nav_scope">Our Regional Scope</a><a href="#value" class="hover:text-brand-600 transition" data-i18n="nav_value">Value</a><a href="#advantages" class="hover:text-brand-600 transition" data-i18n="nav_adv">Advantages</a><a href="#team" class="hover:text-brand-600 transition" data-i18n="nav_team">Team</a><a href="#contact" class="hover:text-brand-600 transition" data-i18n="nav_contact">Contact</a>
     <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a></nav>
-    <div class="flex items-center gap-2"><div id="lang-switch"></div><a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a></div>
+    <div class="flex items-center gap-2"><div id="lang-switch"></div><span data-social class="flex gap-2"><a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a></span></div>
   </div>
 </header>
 
 <main>
   <section id="about" data-sec="about-intro" class="band"><div class="wrap grid lg:grid-cols-[1.2fr_1fr] gap-10 lg:gap-14 items-center">
-    <div class="fu"><img src="assets/khip-logo.jpg" width="800" height="822" alt="Khaled Hamada Intellectual Property" class="about-logo w-24 md:w-28 h-auto mb-5" decoding="async"><h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-medium text-title leading-[1.05]" data-t="about_title">About <span class="khip">KHIP</span></h1><span class="rule mt-5"></span>
+    <div class="fu"><img data-brand-logo src="assets/khip-logo.jpg" width="800" height="822" alt="Khaled Hamada Intellectual Property" class="about-logo w-24 md:w-28 h-auto mb-5" decoding="async"><h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-medium text-title leading-[1.05]" data-t="about_title">About <span class="khip">KHIP</span></h1><span class="rule mt-5"></span>
       <p data-t="about_p1" class="text-base md:text-lg leading-relaxed max-w-xl">KHIP is an Intellectual Property law firm with fully operational offices and a network of associates and representatives throughout the Middle East. The firm is one of the finest firms practicing intellectual property and the only firm with a truly comprehensive intellectual property practice. Founded in 2004, the firm represents various clients from individual inventors to multinational companies.</p>
       <p data-t="about_p2" class="text-base md:text-lg leading-relaxed max-w-xl mt-4">We serve great innovators, helping to protect countless ideas, nurture discoveries, and bring new concepts to markets. The firm prosecuted and litigated many patents, serving corporations creating the cutting-edge technologies of the day. Khaled Hamada, the firm's founder, was for many years the acknowledged leader of the patent services of the entire country and continues to remain until a time when patents are more important than they had ever been.</p></div>
     <div class="fu grid grid-cols-3 gap-3 text-center" style="--d:.15s">
@@ -93,16 +95,16 @@
           <h2 class="font-display text-3xl md:text-4xl font-medium text-title leading-tight" data-i18n="nav_contact">Contact</h2>
           <p data-t="contact_text" class="mt-3 text-base leading-relaxed">Offices in Egypt, the UAE and Saudi Arabia. Call, write or follow us; we reply quickly.</p>
           <div class="mt-6 flex justify-center lg:justify-start">
-            <a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-ink hover:bg-brand-600 text-white text-sm px-7 py-2.5 rounded-full transition"><i class="ph-light ph-linkedin-logo text-xl"></i> <span data-i18n="follow_li">Follow us on LinkedIn</span></a>
+            <a data-follow href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-ink hover:bg-brand-600 text-white text-sm px-7 py-2.5 rounded-full transition"><i class="ph-light ph-linkedin-logo text-xl"></i> <span data-i18n="follow_li">Follow us on LinkedIn</span></a>
           </div>
         </div>
         <div class="p-6 md:p-10 bg-stone-50 border-t lg:border-t-0 lg:border-s border-stone-200 grid gap-3 content-center">
-          <a href="tel:+201000374700" class="ct-tile"><span class="ct-ico"><i class="ph-light ph-phone"></i></span><span><span class="block text-xs uppercase tracking-widest text-stone-500" data-i18n="phone">Phone</span><span class="block text-base text-ink">+2010 003 74 700</span></span></a>
+          <div data-contact-tiles class="grid gap-3"><a href="tel:+201000374700" class="ct-tile"><span class="ct-ico"><i class="ph-light ph-phone"></i></span><span><span class="block text-xs uppercase tracking-widest text-stone-500" data-i18n="phone">Phone</span><span class="block text-base text-ink">+2010 003 74 700</span></span></a>
           <a href="tel:+201069033777" class="ct-tile"><span class="ct-ico"><i class="ph-light ph-phone"></i></span><span><span class="block text-xs uppercase tracking-widest text-stone-500" data-i18n="phone">Phone</span><span class="block text-base text-ink">+2010 690 33 777</span></span></a>
-          <a href="mailto:info@khipme.com" class="ct-tile"><span class="ct-ico"><i class="ph-light ph-envelope-simple"></i></span><span><span class="block text-xs uppercase tracking-widest text-stone-500" data-i18n="email">Email</span><span class="block text-base text-ink">info@khipme.com</span></span></a>
-          <div class="rounded-2xl overflow-hidden border border-stone-200 bg-white">
-            <iframe title="KHIP office location on Google Maps" src="https://www.google.com/maps?q=30.027992248535156,31.48760223388672&z=17&hl=en&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen class="block w-full h-44 border-0"></iframe>
-            <a href="https://www.google.com/maps?q=30.027992248535156,31.48760223388672&z=17&hl=en" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 text-sm py-2.5 text-ink hover:text-brand-600 transition"><i class="ph-light ph-map-pin text-lg"></i> <span data-i18n="open_maps">Open in Google Maps</span></a>
+          <a href="mailto:info@khipme.com" class="ct-tile"><span class="ct-ico"><i class="ph-light ph-envelope-simple"></i></span><span><span class="block text-xs uppercase tracking-widest text-stone-500" data-i18n="email">Email</span><span class="block text-base text-ink">info@khipme.com</span></span></a></div>
+          <div data-contact-map class="rounded-2xl overflow-hidden border border-stone-200 bg-white">
+            <iframe data-map-embed title="KHIP office location on Google Maps" src="https://www.google.com/maps?q=30.027992248535156,31.48760223388672&z=17&hl=en&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen class="block w-full h-44 border-0"></iframe>
+            <a data-map-link href="https://www.google.com/maps?q=30.027992248535156,31.48760223388672&z=17&hl=en" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center gap-2 text-sm py-2.5 text-ink hover:text-brand-600 transition"><i class="ph-light ph-map-pin text-lg"></i> <span data-i18n="open_maps">Open in Google Maps</span></a>
           </div>
         </div>
       </div>

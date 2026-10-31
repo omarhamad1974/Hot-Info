@@ -3,8 +3,34 @@
   "about": "KHIP delivers IP and legal solutions across the Middle East.",
   "aboutMainText": "KHIP (Khaled Hamada Intellectual Property) protects inventions and brands across the Middle East, with patent, trademark and translation services under one roof.",
   "social": {
-    "linkedin": "https://www.linkedin.com/company/khip",
-    "youtube": "https://www.youtube.com/@khip"
+    "linkedin": "https://www.linkedin.com/company/khip/",
+    "youtube": "",
+    "facebook": "",
+    "instagram": "",
+    "x": "",
+    "tiktok": "",
+    "telegram": ""
+  },
+  "contact": {
+    "whatsapp": "201006552255",
+    "phones": [
+      {
+        "label": "",
+        "number": "+2010 003 74 700"
+      },
+      {
+        "label": "",
+        "number": "+2010 690 33 777"
+      }
+    ],
+    "email": "info@khipme.com",
+    "address": "",
+    "mapLat": "30.027992248535156",
+    "mapLng": "31.48760223388672"
+  },
+  "brand": {
+    "image": "khip-logo.jpg",
+    "tagline": "Intellectual Properties"
   },
   "carousel": [
     {

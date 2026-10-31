@@ -6,7 +6,7 @@
   --c-ink-rgb:27 36 51;--c-gold-rgb:168 132 79;
   --c-accent-rgb:29 78 216;--c-accent-dark-rgb:30 64 175;--c-accent-soft-rgb:239 246 255;
   --c-sand-rgb:217 200 164;--c-page-rgb:247 246 243;--c-surface-rgb:255 255 255;--c-text-rgb:58 64 81;
-  --sec-wn:.6667;
+  --sec-wn:.6667;--sec-wt:.6667;--sec-wd:.6667;
 }
 
 /* ---------- Base ---------- */
@@ -38,12 +38,12 @@ header .wrap{width:100%;max-width:76rem}
 .slider>*{scroll-snap-align:start;flex-shrink:0}
 @media(min-width:768px){
   /* tablet and desktop: sections are 2/3 of the previous width (change "Section width" in admin, tab Colors) */
-  .wrap{width:min(calc(var(--sec-wn) * 100%),calc(var(--sec-wn) * 76rem));max-width:none;padding-left:1.5rem;padding-right:1.5rem}
+  .wrap{width:min(calc(var(--sec-wt) * 100%),calc(var(--sec-wt) * 76rem));max-width:none;padding-left:1.5rem;padding-right:1.5rem}
   header .wrap{width:100%;max-width:76rem;padding-left:2.5rem;padding-right:2.5rem}
   .band{padding-top:5rem;padding-bottom:5rem}
   .h2{font-size:2.6rem}
 }
-@media(min-width:1024px){header .wrap{padding-left:4rem;padding-right:4rem}}
+@media(min-width:1024px){.wrap{width:min(calc(var(--sec-wd) * 100%),calc(var(--sec-wd) * 76rem))}header .wrap{padding-left:4rem;padding-right:4rem}}
 
 /* ---------- News: one wide, centred card at a time on mobile, cross-fading ---------- */
 @media(max-width:767px){
@@ -207,3 +207,9 @@ html[dir=rtl] .ct-tile{text-align:start}
 html[dir=rtl] #m-body,html[dir=rtl] .band{text-align:start}
 html[dir=rtl] .map-go{direction:rtl}
 html[dir=rtl] #mena-map,html[dir=rtl] #map-wrap svg{direction:ltr}
+
+/* header logo (set in admin.html > General > Logo). The white of the picture melts into the header. */
+.brand-logo{display:block;height:clamp(2.1rem,7.5vw,2.9rem);width:auto;flex:none;margin-inline-end:.55rem;mix-blend-mode:multiply}
+
+/* a section hidden from the admin page (Sections tab) */
+[data-off]{display:none!important}

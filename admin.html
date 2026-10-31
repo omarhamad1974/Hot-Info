@@ -150,7 +150,7 @@ const SC={
  testimonials:{label:'Testimonials',icon:'fa-quote-right',one:'testimonial',title:'name',req:['name','text'],f:[['name','Client name'],['role','Role and company (eg, CEO, Acme)'],['text','Testimonial','plain']]},
  employees:{label:'Team',icon:'fa-users',one:'team member',title:'name',req:['name','position'],f:[['name','Name'],['position','Position'],['image','Photo (square; resized and cropped to fit automatically)','img']]},
 };
-const GEN=[['aboutMainText','About text (home page)','area'],['about','Short tagline'],['social.linkedin','LinkedIn URL'],['social.youtube','YouTube URL'],['chatPrompts','Suggestions typed into the WhatsApp box (one per line)','lines'],['newsCategories','News categories / labels (one per line)','lines']];
+const GEN=[['aboutMainText','About text (home page)','area'],['about','Short tagline'],['brand.image','Logo: used in the header, the home page and the About page (upload a PNG with a transparent background for the best result)','img'],['brand.tagline','Header text next to the logo (leave empty for the built-in "Intellectual Properties")'],['chatPrompts','Suggestions typed into the WhatsApp box (one per line)','lines'],['newsCategories','News categories / labels (one per line)','lines']];
 const DEFCATS=['General','KHIP News','Intellectual Property','Patents','Trademarks','Translation'];
 let S={},D=null,sha='',tab='general',dirty=false,openItem=null,q='',ASSETS=[],lang='en',DEN=null,DAR=null,shaAR='';
 
@@ -186,7 +186,7 @@ async function connect(creds){
 }
 
 function tabs(){
-  const all=[['general','General','fa-house'],...(lang==='ar'?[['pagetext','Page text','fa-file-alt'],['ui','Interface text','fa-language']]:[['colors','Colors','fa-palette'],['backgrounds','Backgrounds','fa-fill-drip']]),...Object.entries(SC).map(([k,v])=>[k,v.label,v.icon])];
+  const all=[['general','General','fa-house'],...(lang==='ar'?[['pagetext','Page text','fa-file-alt'],['ui','Interface text','fa-language']]:[['brand','Brand','fa-gem'],['contact','Contact','fa-address-book'],['colors','Colors','fa-palette'],['backgrounds','Sections','fa-table-cells-large']]),...Object.entries(SC).map(([k,v])=>[k,v.label,v.icon])];
   $('tabs').innerHTML=all.map(([k,l,i])=>`<button data-act="tab" data-k="${k}" class="flex-shrink-0 text-xs font-bold px-3 py-2 rounded-xl ${k===tab?'bg-brand-600 text-white':'bg-gray-100 hover:bg-gray-200'}"><i class="fas ${i}"></i> ${l}${SC[k]?` (${(D[k]||[]).length})`:''}</button>`).join('');
 }
 const tb=(k,p,title,inner,cls='')=>`<button type="button" onmousedown="event.preventDefault()" data-act="fmt" data-k="${k}" data-t="${p}" title="${title}" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 ${cls}">${inner}</button>`;
@@ -207,6 +207,8 @@ function view(){
   if(tab==='general'){if(lang==='ar')return viewGenAr();m.innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">${langCard()}${GEN.map(f=>fld('',f)).join('')}</div>`;return}
   if(tab==='ui')return viewUi();
   if(tab==='pagetext')return viewPT();
+  if(tab==='brand')return viewBrand();
+  if(tab==='contact')return viewContact();
   if(tab==='colors')return viewColors();
   if(tab==='backgrounds')return viewBg();
   const s=SC[tab],arr=D[tab]=D[tab]||[];
@@ -240,12 +242,22 @@ const bgOpen=new Set();
 function theme(){
   const t=D.theme=D.theme||{};t.colors=t.colors||{};t.custom=t.custom||[];t.sections=t.sections||{};
   if(t.sectionWidth==null||t.sectionWidth==='')t.sectionWidth=67;
+  if(t.sectionWidthTablet==null||t.sectionWidthTablet==='')t.sectionWidthTablet=t.sectionWidth;
   for(const k in TH.DEFAULTS)if(!TH.HEX.test(t.colors[k]||''))t.colors[k]=TH.DEFAULTS[k];
   return t;
 }
-function cleanTheme(){ // before saving: drop backgrounds that are set back to "Default"
+function cleanTheme(){ // before saving: drop backgrounds that are set back to "Default", and empty font choices
+  if(D.theme&&D.theme.fonts){for(const k of Object.keys(D.theme.fonts)){const f=D.theme.fonts[k]||{};if(!f.family&&!f.color)delete D.theme.fonts[k]}if(!Object.keys(D.theme.fonts).length)delete D.theme.fonts}
+  if(D.theme&&Array.isArray(D.theme.customFonts)&&!D.theme.customFonts.length)delete D.theme.customFonts;
   if(!D.theme||!D.theme.sections)return;
-  for(const k of Object.keys(D.theme.sections)){const m=(D.theme.sections[k]||{}).mode;if(m!=='color'&&m!=='image')delete D.theme.sections[k]}
+  for(const k of Object.keys(D.theme.sections)){
+    const x=D.theme.sections[k]||{},m=x.mode,keep={};
+    if(m==='color'||m==='image')Object.assign(keep,x);
+    if(x.hidden===true)keep.hidden=true;else delete keep.hidden;
+    for(const w of ['widthTablet','widthDesktop']){if(x[w]!==undefined&&x[w]!==''&&x[w]!==null)keep[w]=x[w];else delete keep[w]}
+    if(m!=='color'&&m!=='image')for(const f of ['mode','color','image','overlay','tone'])delete keep[f];
+    if(Object.keys(keep).length)D.theme.sections[k]=keep;else delete D.theme.sections[k];
+  }
 }
 const normHex=v=>{v=String(v||'').trim();if(/^#?[0-9a-f]{3}$/i.test(v)){v=v.replace('#','');v='#'+v.split('').map(c=>c+c).join('')}else if(/^#?[0-9a-f]{6}$/i.test(v))v='#'+v.replace('#','');else return '';return v.toLowerCase()};
 function viewColors(){
@@ -264,11 +276,6 @@ function viewColors(){
   <div class="bg-white p-4 rounded-2xl border border-gray-200">
     <div class="flex items-center justify-between gap-2"><div><h2 class="font-extrabold text-lg">Your own colors</h2><p class="text-xs text-gray-600">Add colors to the palette. You can pick them as a section background (Backgrounds tab).</p></div><button data-act="cc-add" class="text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] font-bold px-3.5 py-2 rounded-xl flex-shrink-0"><i class="fas fa-plus"></i> Add color</button></div>
     <div class="mt-2">${t.custom.length?t.custom.map(cust).join(''):'<p class="text-xs text-gray-500 py-3">No extra colors yet.</p>'}</div>
-  </div>
-  <div class="bg-white p-4 rounded-2xl border border-gray-200">
-    <h2 class="font-extrabold text-lg">Section width</h2>
-    <p class="text-xs text-gray-600">How wide the page sections are on tablet and desktop, as a share of the screen (67% is about two thirds). Phones always use the full width.</p>
-    <div class="flex items-center gap-3 mt-3"><input type="range" min="50" max="100" step="1" data-p="theme.sectionWidth" data-out="sw-out" value="${esc(t.sectionWidth)}" aria-label="Section width" class="flex-1"><span id="sw-out" class="text-sm font-bold w-12 text-right">${esc(t.sectionWidth)}%</span></div>
   </div>`;
 }
 const BGMODES=[['default','Default (no change)'],['color','Color'],['image','Photo (covers the section)']];
@@ -276,7 +283,8 @@ const TONES=[['auto','Automatic'],['dark','Dark text'],['light','Light text']];
 function palOptions(t,sel){
   const roles=TH.ROLES.map(([k,n])=>`<option value="role:${k}" ${sel==='role:'+k?'selected':''}>${esc(n)} (${t.colors[k]})</option>`).join('');
   const cust=t.custom.map(c=>`<option value="custom:${esc(c.id)}" ${sel==='custom:'+c.id?'selected':''}>${esc(c.name||'Color')} (${esc(c.hex)})</option>`).join('');
-  return `<optgroup label="Site colors">${roles}</optgroup>${cust?`<optgroup label="Your colors">${cust}</optgroup>`:''}<option value="__custom" ${TH.HEX.test(sel)?'selected':''}>Other color...</option>`;
+  const br=brandTheme().brand.map((b,i)=>`<option value="brand:${i+1}" ${sel==='brand:'+(i+1)?'selected':''}>${esc(b.name)} (${b.hex})</option>`).join('');
+  return `<optgroup label="Brand palette">${br}</optgroup><optgroup label="Site colors">${roles}</optgroup>${cust?`<optgroup label="Your colors">${cust}</optgroup>`:''}<option value="__custom" ${TH.HEX.test(sel)?'selected':''}>Other color...</option>`;
 }
 function bgStyle(t,s){
   if(s.mode==='color'){const c=TH.resolve(s.color,t);return c?`background:${c}`:''}
@@ -285,11 +293,15 @@ function bgStyle(t,s){
 }
 function viewBg(){
   const t=theme();
-  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200"><h2 class="font-extrabold text-lg">Section backgrounds</h2><p class="text-xs text-gray-600 mt-1">Give any section a background color from your palette, or a photo that covers the whole section. Leave it on Default to keep the normal look. On dark colors and darkened photos the text turns light by itself.</p></div>`
+  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200"><h2 class="font-extrabold text-lg">Sections</h2><p class="text-xs text-gray-600 mt-1">For every section of the website you can hide it, set its width on tablet and desktop, and give it a background color (from your brand palette) or a photo. Open a section below to change it. Phones always use the full width.</p></div>
+  <div class="bg-white p-4 rounded-2xl border border-gray-200"><h2 class="font-extrabold text-lg">Width of all sections</h2><p class="text-xs text-gray-600">The normal width of the page sections, as a share of the screen (67% is about two thirds). A section can override it below.</p>
+    <label class="block text-xs font-bold mt-3">Tablet: <span id="swt-out">${esc(t.sectionWidthTablet)}%</span><input type="range" min="50" max="100" step="1" data-p="theme.sectionWidthTablet" data-out="swt-out" value="${esc(t.sectionWidthTablet)}" aria-label="Section width on tablet" class="w-full mt-1"></label>
+    <label class="block text-xs font-bold mt-3">Desktop: <span id="sw-out">${esc(t.sectionWidth)}%</span><input type="range" min="50" max="100" step="1" data-p="theme.sectionWidth" data-out="sw-out" value="${esc(t.sectionWidth)}" aria-label="Section width on desktop" class="w-full mt-1"></label>
+  </div>`
   +TH.SECTIONS.map(([key,label])=>{
     const s=t.sections[key]||{},mode=s.mode==='color'||s.mode==='image'?s.mode:'default',pre=bgStyle(t,s);
     const base=`theme.sections.${key}.`;
-    let body=`<label class="block text-xs font-bold">Background<select data-p="${base}mode" data-rr="1" data-sec="${key}" class="${inp} mt-1">${BGMODES.map(([v,n])=>`<option value="${v}" ${v===mode?'selected':''}>${n}</option>`).join('')}</select></label>`;
+    let body=secExtra(key,s)+`<label class="block text-xs font-bold">Background<select data-p="${base}mode" data-rr="1" data-sec="${key}" class="${inp} mt-1">${BGMODES.map(([v,n])=>`<option value="${v}" ${v===mode?'selected':''}>${n}</option>`).join('')}</select></label>`;
     if(mode==='color'){
       const sel=s.color||'role:accentSoft';
       body+=`<div class="flex items-end gap-2"><label class="block text-xs font-bold flex-1">Color<select data-bgsel="${key}" class="${inp} mt-1">${palOptions(t,sel)}</select></label>${TH.HEX.test(sel)?`<input type="color" data-p="${base}color" value="${esc(sel)}" aria-label="Custom color" class="w-11 h-11 p-0 border border-gray-300 rounded-lg bg-white cursor-pointer flex-shrink-0">`:''}</div>`;
@@ -300,9 +312,126 @@ function viewBg(){
     }
     if(mode!=='default')body+=`<label class="block text-xs font-bold">Text color on this section<select data-p="${base}tone" class="${inp} mt-1">${TONES.map(([v,n])=>`<option value="${v}" ${(s.tone||'auto')===v?'selected':''}>${n}</option>`).join('')}</select></label>`
       +`<div class="h-12 rounded-xl border border-gray-200" style="${pre}" role="img" aria-label="Preview of the background"></div>`;
-    const badge=mode==='default'?'Default':mode==='color'?'Color':'Photo';
-    return `<details data-bg="${key}" ${bgOpen.has(key)?'open':''} class="bg-white rounded-2xl border border-gray-200 shadow-sm"><summary class="flex items-center gap-2 p-3 cursor-pointer"><i class="fas fa-chevron-right chev text-[10px] text-gray-400"></i><span class="flex-1 min-w-0 font-bold text-sm truncate">${esc(label)}</span><span class="text-[11px] font-bold px-2 py-1 rounded-lg ${mode==='default'?'bg-gray-100 text-gray-500':'bg-brand-50 text-brand-700'}">${badge}</span></summary><div class="p-4 pt-2 space-y-3 border-t">${body}</div></details>`;
+    const badge=(s.hidden?'Hidden':'')+(s.hidden&&mode!=='default'?' · ':'')+(mode==='default'?(s.hidden?'':'Default'):mode==='color'?'Color':'Photo');
+    return `<details data-bg="${key}" ${bgOpen.has(key)?'open':''} class="bg-white rounded-2xl border border-gray-200 shadow-sm"><summary class="flex items-center gap-2 p-3 cursor-pointer"><i class="fas fa-chevron-right chev text-[10px] text-gray-400"></i><span class="flex-1 min-w-0 font-bold text-sm truncate">${esc(label)}</span><span class="text-[11px] font-bold px-2 py-1 rounded-lg ${s.hidden?'bg-red-50 text-red-700':mode==='default'?'bg-gray-100 text-gray-500':'bg-brand-50 text-brand-700'}">${badge||'Default'}</span></summary><div class="p-4 pt-2 space-y-3 border-t">${body}</div></details>`;
   }).join('');
+}
+/* ---------- Brand: logo + name, 7-color palette, fonts (saved in app-data.json > brand / theme.brand / theme.fonts / theme.customFonts) ---------- */
+const hexRgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const rgbHex=a=>'#'+a.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
+const mixHex=(a,b,w)=>{const x=hexRgb(a),y=hexRgb(b);return rgbHex(x.map((v,i)=>v*(1-w)+y[i]*w))};
+const BRAND_USE=['Titles and the main brand color','Icons, links, buttons on hover','Thin lines and quote marks','Dark panels and the bottom bar','Sand buttons (WhatsApp, inquiries)','Page background','Paragraph text'];
+function brandTheme(){
+  const t=theme();
+  t.brand=TH.brandPal(t);                       // always 7 colors, with the default values filled in
+  t.fonts=t.fonts||{};t.customFonts=Array.isArray(t.customFonts)?t.customFonts:[];
+  return t;
+}
+function adminFonts(t){
+  if(!$('adm-gf')){const l=document.createElement('link');l.id='adm-gf';l.rel='stylesheet';
+    l.href='https://fonts.googleapis.com/css2?'+TH.FONTS.filter(f=>f[1]==='g').map(f=>'family='+f[0].replace(/ /g,'+')+':wght@400;700').join('&')+'&display=swap';document.head.appendChild(l)}
+  let st=$('adm-cf');if(!st){st=document.createElement('style');st.id='adm-cf';document.head.appendChild(st)}
+  st.textContent=t.customFonts.filter(c=>c.file).map(c=>`@font-face{font-family:"${TH.cssName(c.name)}";src:url("${imgSrc(c.file)}");font-display:swap}`).join('');
+}
+function fontOptions(t,sel){
+  const g=(label,list)=>`<optgroup label="${label}">${list.map(f=>`<option value="${esc(f[0])}" ${sel===f[0]?'selected':''}>${esc(f[0])}</option>`).join('')}</optgroup>`;
+  const cust=t.customFonts.filter(c=>c.name&&c.file);
+  return `<option value="" ${!sel?'selected':''}>Site default (no change)</option>`
+   +g('Standard fonts',TH.FONTS.filter(f=>f[1]==='g'&&!f[3]))+g('Arabic-friendly fonts',TH.FONTS.filter(f=>f[3]&&f[1]==='g'))+g('Fonts on every device',TH.FONTS.filter(f=>f[1]==='s'))
+   +(cust.length?`<optgroup label="Your fonts">${cust.map(c=>`<option value="${esc(c.name)}" ${sel===c.name?'selected':''}>${esc(c.name)}</option>`).join('')}</optgroup>`:'');
+}
+function fontStack(t,name){const c=t.customFonts.find(x=>x.name===name);if(c)return `"${TH.cssName(name)}",sans-serif`;const f=TH.FONTS.find(x=>x[0]===name);return f?`"${f[0]}",${f[2]}`:'inherit'}
+function colorSel(t,path,sel,withDefault){
+  const brand=t.brand.map((b,i)=>`<option value="brand:${i+1}" ${sel==='brand:'+(i+1)?'selected':''}>${esc(b.name)} (${b.hex})</option>`).join('');
+  const hex=TH.HEX.test(sel||'');
+  return `<div class="flex items-center gap-2"><select data-colsel="${path}" aria-label="Color" class="${inp} flex-1 min-w-0">${withDefault?`<option value="" ${!sel?'selected':''}>Default color</option>`:''}<optgroup label="Brand palette">${brand}</optgroup><option value="__custom" ${hex?'selected':''}>Other color...</option></select>${hex?`<input type="color" data-p="${path}" value="${esc(sel)}" aria-label="Custom color" class="w-11 h-11 p-0 border border-gray-300 rounded-lg bg-white cursor-pointer flex-shrink-0">`:''}</div>`;
+}
+function viewBrand(){
+  const t=brandTheme();adminFonts(t);
+  const pal=(b,i)=>`<div class="flex items-center gap-2 py-2 border-b border-gray-100 last:border-0"><span class="w-5 text-[11px] font-bold text-gray-400">${i+1}</span><input type="color" data-p="theme.brand.${i}.hex" value="${b.hex}" aria-label="${esc(b.name)} color" class="w-11 h-11 p-0 border border-gray-300 rounded-lg bg-white cursor-pointer flex-shrink-0"><div class="min-w-0 flex-1"><input data-p="theme.brand.${i}.name" value="${esc(b.name)}" aria-label="Name of color ${i+1}" class="${inp} font-bold"><p class="text-[11px] text-gray-500 mt-0.5">${esc(BRAND_USE[i])}</p></div><input data-hex="theme.brand.${i}.hex" value="${b.hex}" maxlength="7" aria-label="${esc(b.name)} hex code" class="${hexc}"></div>`;
+  const row=([k,label])=>{
+    const o=t.fonts[k]||{},fam=o.family||'';
+    const txt=k==='h1'?'Protecting your ideas — حماية أفكارك':k==='h2'?'Our services — خدماتنا':k==='h3'?'Trademark registration — تسجيل العلامات':'We help you protect and enforce your intellectual property. — نساعدك على حماية ملكيتك الفكرية.';
+    const col=k==='body'?(t.colors.text||''):(o.color||'');
+    const size=k==='h1'?'1.9rem':k==='h2'?'1.5rem':k==='h3'?'1.15rem':'.95rem';
+    return `<div class="py-3 border-b border-gray-100 last:border-0 space-y-2"><p class="text-sm font-bold">${esc(label)}</p>
+      <div class="grid sm:grid-cols-2 gap-2"><label class="block text-[11px] font-bold text-gray-600">Font<select data-fnt="${k}" class="${inp} mt-1">${fontOptions(t,fam)}</select></label>
+      <div class="block text-[11px] font-bold text-gray-600">${k==='body'?'Body text color':'Color'}<div class="mt-1">${k==='body'?colorSel(t,'theme.colors.text',col,false):colorSel(t,`theme.fonts.${k}.color`,col,true)}</div></div></div>
+      <div class="rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 overflow-hidden" style="font-family:${fam?fontStack(t,fam):'inherit'};font-size:${size};line-height:1.35;color:${TH.resolve(col,t)||'#1f2937'}">${esc(txt)}</div></div>`;
+  };
+  const cf=(c,i)=>`<div class="flex items-center gap-2 py-2 border-b border-gray-100 last:border-0"><input data-p="theme.customFonts.${i}.name" value="${esc(c.name)}" aria-label="Font name" class="${inp} flex-1 min-w-0"><label class="text-[11px] font-bold text-gray-600 flex items-center gap-1 flex-shrink-0"><input type="checkbox" data-chk="theme.customFonts.${i}.ar" ${c.ar?'checked':''}> has Arabic</label><button data-act="font-del" data-i="${i}" aria-label="Remove font" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex-shrink-0"><i class="fas fa-trash text-xs"></i></button></div>`;
+  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><div><h2 class="font-extrabold text-lg">Logo and name</h2><p class="text-xs text-gray-600 mt-1">Upload the logo once. It is used in three places: tiny in the header (next to the vertical line and the name), on the home page and on the About page.</p></div>
+    ${fld('',['brand.image','Logo (a PNG with a transparent background looks best)','img'])}${fld('',['brand.tagline','Name after the vertical line in the header (leave empty for "Intellectual Properties")'])}
+    <p class="text-[11px] text-gray-500">The Arabic version of this name is in the General tab (switch to عربي first).</p></div>
+  <div class="bg-white p-4 rounded-2xl border border-gray-200"><div class="flex items-start justify-between gap-2"><div><h2 class="font-extrabold text-lg">Brand palette</h2><p class="text-xs text-gray-600 mt-1">Your 7 brand colors. Every color picker in this page lists them first (section backgrounds, heading colors...). The starting values are the colors the site has always used.</p></div></div>
+    <div class="mt-2">${t.brand.map(pal).join('')}</div>
+    <div class="flex flex-wrap gap-2 pt-3"><button data-act="brand-apply" class="text-xs bg-brand-600 hover:bg-brand-700 text-white font-bold px-3 py-2 rounded-xl"><i class="fas fa-wand-magic-sparkles"></i> Use this palette for the whole site</button><button data-act="brand-reset" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-rotate-left"></i> Back to the default palette</button></div>
+    <p class="text-[11px] text-gray-500 mt-2">"Use this palette for the whole site" copies colors 1 to 7 into the Colors tab (titles, accent, gold, dark, sand, page, body text) and works out the lighter and darker blues for you. Other colors can still be adjusted there.</p></div>
+  <div class="bg-white px-4 py-2 rounded-2xl border border-gray-200"><div class="py-2"><h2 class="font-extrabold text-lg">Fonts and text colors</h2><p class="text-xs text-gray-600 mt-1">Choose a font and a color for each level. "Site default" keeps the current look. A font without Arabic letters is only used for English; Arabic keeps its own font.</p></div>${[['h1','Heading 1 (H1): page titles'],['h2','Heading 2 (H2): section titles'],['h3','Heading 3 (H3): card and small titles'],['body','Body text: paragraphs and menus']].map(row).join('')}</div>
+  <div class="bg-white p-4 rounded-2xl border border-gray-200"><div class="flex items-center justify-between gap-2"><div><h2 class="font-extrabold text-lg">Your own fonts</h2><p class="text-xs text-gray-600 mt-1">Upload a font file (.woff2, .woff, .ttf or .otf, up to 3 MB). It then appears in the font lists above under "Your fonts". Only use fonts you have the licence for.</p></div><label class="text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] font-bold px-3.5 py-2 rounded-xl cursor-pointer flex-shrink-0"><i class="fas fa-upload"></i> Upload font<input type="file" accept=".woff2,.woff,.ttf,.otf" data-upfont="1" class="hidden"></label></div>
+    <div class="mt-2">${t.customFonts.length?t.customFonts.map(cf).join(''):'<p class="text-xs text-gray-500 py-3">No fonts of your own yet.</p>'}</div></div>`;
+}
+async function uploadFont(file){
+  const ext=(file.name.split('.').pop()||'').toLowerCase();
+  if(!['woff2','woff','ttf','otf'].includes(ext))return toast('Use a .woff2, .woff, .ttf or .otf font file.',false);
+  if(file.size>3e6)return toast('The font is over 3 MB. Please use a smaller (woff2) file.',false);
+  toast('Uploading font...');
+  const base=file.name.replace(/\.\w+$/,''),path='assets/fonts/'+Date.now().toString(36)+'-'+file.name.replace(/[^\w.\-]/g,'-');
+  try{
+    await api(path,{method:'PUT',body:{message:'Upload font via admin page',content:b64(new Uint8Array(await file.arrayBuffer())),branch:S.b}});
+    const t=brandTheme();t.customFonts.push({name:TH.cssName(base.replace(/[-_]+/g,' '))||'My font',file:'./'+path,ar:false});
+    mark();view();toast('Font uploaded. Pick it from the lists above.');
+  }catch(e){toast(e.message,false)}
+}
+function brandChange(e){
+  const el=e.target;if(!D)return false;
+  if(el.dataset.fnt){const t=brandTheme(),o=t.fonts[el.dataset.fnt]=t.fonts[el.dataset.fnt]||{};o.family=el.value;mark();view();return true}
+  if(el.dataset.colsel){
+    const t=brandTheme(),p=el.dataset.colsel;let v=el.value;
+    if(v==='__custom')v=TH.resolve(get(D,p),t)||'#333333';
+    else if(p==='theme.colors.text'&&v)v=TH.resolve(v,t)||t.colors.text;     // body color is stored as a plain color
+    set(D,p,v);mark();view();return true}
+  if(el.dataset.chk){set(D,el.dataset.chk,el.checked);mark();if(el.dataset.view)view();return true}
+  if(el.dataset.wa){el.value=el.value.replace(/\D/g,'');set(D,'contact.whatsapp',el.value);mark();return true}
+  if(el.dataset.upfont&&el.files&&el.files[0]){uploadFont(el.files[0]);el.value='';return true}
+  return false;
+}
+function brandAct(a,t){
+  if(a==='brand-apply'){
+    const th=brandTheme(),b=th.brand.map(x=>x.hex);
+    if(!confirm('Copy the 7 brand colors into the site colors (Colors tab)? The Colors tab values are replaced.'))return true;
+    Object.assign(th.colors,{title:b[0],accent:b[1],accentDark:mixHex(b[1],'#000000',.15),accentSoft:mixHex(b[1],'#ffffff',.94),gold:b[2],ink:b[3],sand:b[4],page:b[5],text:b[6]});
+    mark();view();toast('The site colors now follow your brand palette. Press Save to GitHub.');return true}
+  if(a==='ph-add'){contactData().phones.push({label:'',number:''});mark();view();return true}
+  if(a==='ph-del'){contactData().phones.splice(+t.dataset.i,1);mark();view();return true}
+  if(a==='brand-reset'){if(confirm('Put the 7 brand colors back to the default values?')){brandTheme().brand=TH.BRAND_DEFAULTS.map(x=>({...x}));mark();view()}return true}
+  if(a==='font-del'){const th=brandTheme(),c=th.customFonts[+t.dataset.i];
+    if(c&&confirm(`Remove the font "${c.name}" from the list? (The file stays in your assets folder.)`)){
+      for(const k in th.fonts)if(th.fonts[k]&&th.fonts[k].family===c.name)th.fonts[k].family='';
+      th.customFonts.splice(+t.dataset.i,1);mark();view()}return true}
+  return false;
+}
+
+/* ---------- Sections: hide + width; Contact tab ---------- */
+const WOPTS=sel=>`<option value="" ${!sel?'selected':''}>Same as the whole site</option>`+[50,55,60,65,70,75,80,85,90,95,100].map(v=>`<option value="${v}" ${String(sel)===String(v)?'selected':''}>${v}%</option>`).join('');
+function secExtra(key,s){
+  const base=`theme.sections.${key}.`;
+  return `<label class="flex items-center gap-2 text-sm font-bold"><input type="checkbox" data-chk="${base}hidden" data-view="1" ${s.hidden?'checked':''}> Hide this section on the website</label>`
+   +(TH.NOWIDTH.includes(key)?'':`<div class="grid grid-cols-2 gap-2"><label class="block text-[11px] font-bold text-gray-600">Width on tablet<select data-p="${base}widthTablet" class="${inp} mt-1">${WOPTS(s.widthTablet)}</select></label><label class="block text-[11px] font-bold text-gray-600">Width on desktop<select data-p="${base}widthDesktop" class="${inp} mt-1">${WOPTS(s.widthDesktop)}</select></label></div>`);
+}
+const SOCIALS=[['linkedin','LinkedIn'],['youtube','YouTube'],['facebook','Facebook'],['instagram','Instagram'],['x','X (Twitter)'],['tiktok','TikTok'],['telegram','Telegram']];
+function contactData(){const c=D.contact=D.contact||{};if(!Array.isArray(c.phones))c.phones=[];D.social=D.social||{};return c}
+function viewContact(){
+  const c=contactData();
+  const ph=(p,i)=>`<div class="flex items-center gap-2 py-1.5"><input data-p="contact.phones.${i}.label" value="${esc(p.label||'')}" placeholder="Label (optional)" aria-label="Phone label ${i+1}" class="${inp} w-1/3 min-w-0"><input data-p="contact.phones.${i}.number" value="${esc(p.number||'')}" placeholder="+20 100 000 0000" inputmode="tel" aria-label="Phone number ${i+1}" class="${inp} flex-1 min-w-0"><button data-act="ph-del" data-i="${i}" aria-label="Remove phone" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex-shrink-0"><i class="fas fa-trash text-xs"></i></button></div>`;
+  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><div><h2 class="font-extrabold text-lg">WhatsApp</h2><p class="text-xs text-gray-600 mt-1">The business number that the WhatsApp box at the bottom of every page and the "WhatsApp us" buttons open.</p></div>
+    <label class="block text-xs font-bold">WhatsApp business number, digits only with the country code (example: 201006552255)<input data-p="contact.whatsapp" data-wa="1" inputmode="numeric" value="${esc(c.whatsapp||'')}" class="${inp} mt-1"></label></div>
+  <div class="bg-white p-4 rounded-2xl border border-gray-200"><div class="flex items-center justify-between gap-2"><div><h2 class="font-extrabold text-lg">Contact details</h2><p class="text-xs text-gray-600 mt-1">Shown on the About page and in the contact box of the service pages. The first phone is the one used on the service pages.</p></div><button data-act="ph-add" class="text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] font-bold px-3.5 py-2 rounded-xl flex-shrink-0"><i class="fas fa-plus"></i> Add phone</button></div>
+    <div class="mt-2">${c.phones.length?c.phones.map(ph).join(''):'<p class="text-xs text-gray-500 py-2">No phone numbers yet.</p>'}</div>
+    <div class="space-y-3 mt-3">${fld('',['contact.email','Email'])}${fld('',['contact.address','Address (shown on the About page; leave empty to hide)'])}</div>
+    <p class="text-xs font-bold mt-4">Map on the About page</p><p class="text-[11px] text-gray-500">Open your place in Google Maps, right-click the pin and click the two numbers to copy them. Leave both empty to hide the map.</p>
+    <div class="grid grid-cols-2 gap-2 mt-1">${fld('',['contact.mapLat','Latitude (example 30.0279)'])}${fld('',['contact.mapLng','Longitude (example 31.4876)'])}</div></div>
+  <div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><div><h2 class="font-extrabold text-lg">Social media</h2><p class="text-xs text-gray-600 mt-1">Full web addresses starting with https://. The icons appear in the header of every page. Leave a box empty to hide that icon.</p></div>${SOCIALS.map(([k,n])=>fld('',['social.'+k,n+' address'])).join('')}</div>`;
 }
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.bg){d.open?bgOpen.add(d.dataset.bg):bgOpen.delete(d.dataset.bg)}},true);
 
@@ -372,6 +501,8 @@ function compact(ar){ // only what has been written is saved
   const o={},has=v=>String(v||'').trim()!=='';
   for(const k of ['aboutMainText','about'])if(has(ar[k]))o[k]=ar[k];
   if((ar.chatPrompts||[]).length)o.chatPrompts=ar.chatPrompts;
+  if(has((ar.brand||{}).tagline))o.brand={tagline:ar.brand.tagline};
+  if(has((ar.contact||{}).address))o.contact={address:ar.contact.address};
   if((ar.newsCategories||[]).some(has))o.newsCategories=ar.newsCategories;
   const ui=Object.fromEntries(Object.entries(ar.ui||{}).filter(([,v])=>has(v)));if(Object.keys(ui).length)o.ui=ui;
   const pt={};for(const [stem,v] of Object.entries(ar.pageText||{})){const r=Object.fromEntries(Object.entries(v||{}).filter(([,x])=>has(x)));if(Object.keys(r).length)pt[stem]=r}
@@ -410,8 +541,8 @@ async function saveAr(){
 }
 const langCard=()=>`<div class="rounded-xl bg-brand-50 border border-brand-100 p-3"><label class="block text-xs font-bold">Site languages<select data-p="languages" class="${inp} mt-1">${[['en','English only'],['ar','Arabic only (right-to-left)'],['both','English and Arabic (visitors choose with a button in the header)']].map(([v,t])=>`<option value="${v}" ${(D.languages||'en')===v?'selected':''}>${t}</option>`).join('')}</select></label><p class="text-[11px] text-gray-600 mt-1.5">Use the <b>EN | عربي</b> switch at the top of this page to write the Arabic content. It has the same items as the English content; anything left empty shows the English text on the Arabic site. Save the English settings here to apply the language choice.</p></div>`;
 function viewGenAr(){
-  const f=GEN.filter(x=>['aboutMainText','about','chatPrompts'].includes(x[0])),cats=DEN.newsCategories||[];
-  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">${f.map(x=>fld('',x)).join('')}${cats.length?`<div><span class="text-xs font-bold text-gray-700">News categories (same order as the English list)</span>${cats.map((c,i)=>`<label class="block mt-1.5"><span class="block text-[11px] text-gray-500" dir="ltr">${esc(c)}</span><input data-p="newsCategories.${i}" dir="rtl" value="${esc((D.newsCategories||[])[i]||'')}" class="${inp}"></label>`).join('')}</div>`:''}</div>`;
+  const f=GEN.filter(x=>['aboutMainText','about','chatPrompts','brand.tagline'].includes(x[0])),cats=DEN.newsCategories||[];
+  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">${f.map(x=>fld('',x)).join('')}${fld('',['contact.address','Address (Arabic; shown on the About page)'])}${cats.length?`<div><span class="text-xs font-bold text-gray-700">News categories (same order as the English list)</span>${cats.map((c,i)=>`<label class="block mt-1.5"><span class="block text-[11px] text-gray-500" dir="ltr">${esc(c)}</span><input data-p="newsCategories.${i}" dir="rtl" value="${esc((D.newsCategories||[])[i]||'')}" class="${inp}"></label>`).join('')}</div>`:''}</div>`;
 }
 function viewUi(){
   $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><p class="text-xs text-gray-600">The short words the site uses (menu, buttons, headings). The grey Arabic is a starting suggestion; type your own to replace it, or leave a box empty to keep it. <b>{x}</b> is replaced automatically by a name.</p>${UIK.map(k=>`<label class="block"><span class="block text-[11px] text-gray-500" dir="ltr">${esc(KLang.DICT.en[k])}</span><input data-p="ui.${k}" dir="rtl" value="${esc((D.ui||{})[k]||'')}" placeholder="${esc(KLang.DICT.ar[k])}" class="${inp}"></label>`).join('')}</div>`;
@@ -483,6 +614,7 @@ document.addEventListener('input',e=>{
   if(/\.(title|country|name)$/.test(p)){const sm=e.target.closest('details')?.querySelector('summary span');if(sm)sm.textContent=e.target.value||'Untitled'}
 });
 document.addEventListener('change',e=>{
+  if(brandChange(e))return;
   const bs=e.target.dataset.bgsel;
   if(bs&&D){const s=theme().sections[bs]=theme().sections[bs]||{};
     if(e.target.value==='__custom'){s.color=TH.resolve(s.color,D.theme)||'#cccccc'}else s.color=e.target.value;
@@ -496,6 +628,7 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('[data-act]');if(!t)return;
   const a=t.dataset.act,i=+t.dataset.i,arr=D&&D[tab];
   if(t.closest('summary'))e.preventDefault();
+  if(brandAct(a,t))return;
   if(a==='tab'){tab=t.dataset.k;openItem=null;q='';tabs();view()}
   else if(a==='add'){const s=SC[tab];const o={id:String(Math.max(0,...arr.map(x=>+x.id||0))+1)};s.f.forEach(([k])=>o[k]='');if(tab==='news')o.category=(D.newsCategories||[]).filter(Boolean)[0]||'General';arr.push(o);openItem=`${tab}.${arr.length-1}`;q='';mark();tabs();view();document.querySelector('details[open] input')?.focus()}
   else if(a==='dup'){const c=JSON.parse(JSON.stringify(arr[i]));c.id=String(Math.max(0,...arr.map(x=>+x.id||0))+1);const k=SC[tab].title;c[k]=(c[k]||'')+' (copy)';arr.splice(i+1,0,c);openItem=`${tab}.${i+1}`;mark();tabs();view()}
@@ -1246,6 +1379,7 @@ const K=(()=>{
           <button data-k="tocr" data-p="ocrspace" data-id="${esc(x.id)}" class="${btn1}"><i class="fas fa-wand-magic-sparkles"></i> Read with OCR.space</button>
           <button data-k="tocr" data-p="groq" data-id="${esc(x.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-robot"></i> Read with Groq AI</button>
           <button data-k="tocr" data-p="gemini" data-id="${esc(x.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap">Read with Gemini</button>
+          <button data-k="tstatus" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-stethoscope"></i> Check setup</button>
           <label class="text-[11px] font-bold">OCR.space engine <select id="t-eng" class="border border-gray-300 rounded-lg text-xs p-1"><option value="1">1 (default)</option><option value="2">2</option></select></label>
         </div>
         <div class="flex flex-wrap items-center gap-2 text-[11px] font-bold bg-gray-50 border border-gray-200 rounded-lg p-2 mb-2">
@@ -1266,7 +1400,8 @@ const K=(()=>{
       try{const body={action:'read',image_id:x.id,provider:p,engine:$('t-eng').value},bl=await tStripBlobs(x);
         if(bl){tMsg(`Cutting the image into ${bl.length} columns and reading them right to left with ${tPName(p)}... up to ${bl.length*20} seconds.`);body.strips=await Promise.all(bl.map(tB64))}
         const r=await tFn(body);
-        ta.value=r.text;tCount();x.ocr_text=r.text;x.ocr_provider=p;x.status=r.status||x.status;
+        if(!r||typeof r.text!=='string'||!r.text.trim())throw new Error('The reader answered but sent back no text. The ocr-tender function on Supabase is probably an old version. Press "Check setup", then deploy the latest ocr-tender.');
+        const ta2=$('t-text')||ta;ta2.value=r.text;tCount();x.ocr_text=r.text;x.ocr_provider=p;x.status=r.status||x.status;
         if(tUse)tUse[p]=(tUse[p]||0)+1;
         tMsg(`Done and saved (${r.text.length.toLocaleString()} characters). Check the Arabic against the image, fix mistakes, then press Save text.`)}
       catch(e){tMsg(esc(e.message)+(e.blocked&&p==='ocrspace'?` <button data-k="tbrowser" data-id="${esc(x.id)}" class="underline font-bold text-brand-700">Try from this browser</button>`:''),true)}
@@ -1293,7 +1428,14 @@ const K=(()=>{
       const patch={ocr_text:text||null,updated_at:new Date().toISOString()};if(text&&x.status==='uploaded')patch.status='text_read';
       const r=await sb.from('tender_images').update(patch).eq('id',x.id);if(r.error)throw r.error;
       Object.assign(x,patch);toast('Text saved');tMsg('Saved.')},
-    tdone(){closeM();paintTenders()}
+    tdone(){closeM();paintTenders()},
+    async tstatus(){tBusy(true);tMsg('Checking the two functions on Supabase...');
+      const yes=v=>v?'<b class="text-emerald-700">set</b>':'<b class="text-red-700">MISSING</b>',out=[];
+      for(const f of ['ocr-tender','parse-tenders']){
+        try{const r=await tFn({action:'status'},f);
+          out.push(`<b>${f}</b>: deployed (${esc(r.version||'?')}). Keys: ${Object.entries(r.secrets||{}).map(([k,v])=>esc(k)+' '+yes(v)).join(', ')}${r.order?'. AI order: '+esc(r.order.join(' then ')||'none'):''}`)}
+        catch(e){out.push(`<b>${f}</b>: <span class="text-red-700">${/Unknown action|Bad image id/.test(e.message)?'an OLD version is deployed. Deploy the latest one.':esc(e.message)}</span>`)}}
+      tMsg(out.join('<br>'));tBusy(false)},
   });
 
 

@@ -140,3 +140,7 @@ Run `supabase-step11-tender-notifications.sql` once in the Supabase SQL Editor (
   - Where the date comes from: the tender's publishing date (the newspaper date), or the day it became visible when that is empty.
 - **Send tender notification update** (admin, Tender images, top right): press it after you approve tenders and confirm their sectors. The button shows how many tenders became visible since the last update. Each user then sees a card ("N new tenders in your sectors", a number on the new Tenders item in the bottom bar) the next time they open any page, counting only tenders added since their last visit. Closing the card, or opening Tenders, marks it as seen. A user's own count only includes their sectors.
 - A tender counts as "added" at the moment it is approved with confirmed sectors (`tenders.released_at`, filled by the database).
+
+
+## Update 2026-10-31
+See `FIX-STEPS.md`. The AI is now Groq (free) first, Gemini only as a backup. Secrets: `GROQ_API_KEY`, optional `GROQ_MODEL`, `GROQ_VISION_MODEL`, `GEMINI_API_KEY`.
