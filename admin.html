@@ -32,10 +32,13 @@ details[open]>summary .chev{transform:rotate(90deg)}
       <!-- hidden for now: HOT Info Issues
       <button data-pane="issues" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-table"></i> HOT Info Issues</button>
       -->
-      <button data-pane="tenders" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-camera"></i> Tender images</button>
+      <button data-pane="tenders" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-camera"></i> Tender images<span id="bd-tenders" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Images waiting for you"></span></button>
+      <button data-pane="directory" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-address-book"></i> Directory<span id="bd-directory" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Entries waiting for approval"></span></button>
     </nav>
+    <button data-k="gsearch" class="text-xs font-bold px-2.5 py-1.5 rounded-lg text-gray-300 hover:bg-white/10 whitespace-nowrap" title="Search everything (Ctrl+K)" aria-label="Search everything"><i class="fas fa-magnifying-glass"></i><span class="hidden sm:inline"> Search</span></button>
     <a href="index.html" target="_blank" rel="noopener" class="hidden sm:block text-[11px] text-gray-300 hover:text-white whitespace-nowrap"><i class="fas fa-arrow-up-right-from-square"></i> View site</a>
   </div>
+  <p id="pane-hint" class="max-w-3xl mx-auto px-4 pb-1.5 text-[11px] text-gray-400 truncate"></p>
 </div>
 
 <!-- ============ WEBSITE CONTENT (GitHub) ============ -->
@@ -138,6 +141,7 @@ function showPane(p){
   pane=p;history.replaceState(null,'','#'+p);
   $('pane-content').classList.toggle('hidden',p!=='content');$('pane-clients').classList.toggle('hidden',p==='content');
   document.querySelectorAll('.pane-btn').forEach(b=>{const on=b.dataset.pane===p;b.className='pane-btn text-xs font-bold px-3 py-1.5 rounded-lg '+(on?'bg-white text-gray-900':'text-gray-300 hover:bg-white/10')});
+  const hi=$('pane-hint');if(hi)hi.textContent=({content:'Edit the website text, photos, news, team and languages.',clients:'Manage users, their subscriptions to sectors, and the files in each sector.',leads:'People who may become subscribers.',issues:'The HOT Info issues table.',tenders:'Upload newspaper images, read them, check the tenders and tell users about new ones.',directory:'Companies, institutions and freelancers shown in the public Directory: approve, edit, import.'})[p]||'';
   if(p!=='content')K.go(p);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pane]');if(b)showPane(b.dataset.pane)});
@@ -814,6 +818,35 @@ const K=(()=>{
     else if(data.session)await enter(data.session.user);
   }
 
+  // ---- Admin improvement 11: one search box for users, tenders, tender images and the directory ----
+  let gsSeq=0,gsT=null;
+  async function gsRun(raw){
+    const box=$('gs-res');if(!box)return;const q=raw.trim(),my=++gsSeq;
+    if(q.length<2){box.innerHTML='<p class="text-xs text-gray-500">Type at least 2 letters. Searches users, tenders, tender images (newspaper name) and the directory.</p>';return}
+    box.innerHTML='<p class="text-xs text-gray-500">Searching...</p>';
+    const like='%'+q.replace(/[%,()*\\]/g,' ').trim()+'%',lq=q.toLowerCase();
+    const safe=async f=>{try{return await f}catch(_){return {data:[]}}};
+    const [t,d,im]=await Promise.all([
+      safe(sb.from('tenders').select('id,image_id,entity,subject,session_date,status').or(`entity.ilike.${like},subject.ilike.${like}`).order('publish_date',{ascending:false}).limit(8)),
+      safe(sb.from('directory_entries').select('id,name,name_ar,city,status').or(`name.ilike.${like},name_ar.ilike.${like},city.ilike.${like},email.ilike.${like},whatsapp.ilike.${like}`).limit(8)),
+      safe(sb.from('tender_images').select('id,source_paper,page,publish_date,status').ilike('source_paper',like).order('publish_date',{ascending:false}).limit(6))]);
+    if(my!==gsSeq||!$('gs-res'))return;
+    const us=(clients||[]).map(c=>({c,p:profiles[c.id]||{}})).filter(({c,p})=>[p.full_name,c.email,p.email,p.mobile,p.company].some(v=>String(v||'').toLowerCase().includes(lq))).slice(0,8);
+    const sec=(title,icon,list,row)=>list.length?`<p class="text-[11px] font-bold text-gray-500 mt-3 mb-1"><i class="fas ${icon}"></i> ${title} (${list.length})</p><div class="space-y-1">${list.map(row).join('')}</div>`:'';
+    const b=(kind,id,v,html)=>`<button data-k="gsgo" data-kind="${kind}" data-id="${esc(id||'')}" data-v="${esc(v||'')}" class="w-full text-left bg-white hover:bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs">${html}</button>`;
+    const out=sec('Users','fa-users',us,({c,p})=>b('user',c.id,p.full_name||c.email,`<b>${esc(p.full_name||'(no name)')}</b> <span class="text-gray-500">${esc([c.email||p.email,p.mobile,p.company].filter(Boolean).join(' · '))}</span>`))
+      +sec('Tenders','fa-gavel',t.data||[],r=>b('tender',r.image_id,'',`<span dir="rtl" lang="ar" class="block font-bold leading-6">${esc(r.entity||'-')}</span><span dir="rtl" lang="ar" class="block text-gray-700 leading-5">${esc((r.subject||'').slice(0,120))}</span><span class="text-gray-500">${r.session_date?fd(r.session_date):'no session date'} · ${r.status==='approved'?'approved':'draft'}</span>`))
+      +sec('Tender images','fa-camera',im.data||[],r=>b('tender',r.id,'',`<b>${esc(r.source_paper||'No source')}</b>${r.page?' · p. '+esc(r.page):''} <span class="text-gray-500">${r.publish_date?fd(r.publish_date):''}</span>`))
+      +sec('Directory','fa-address-book',d.data||[],r=>b('dir',r.id,r.name,`<b>${esc(r.name)}</b>${r.name_ar?' <span dir="rtl">'+esc(r.name_ar)+'</span>':''} <span class="text-gray-500">${esc(r.city||'')} · ${esc(r.status)}</span>`));
+    $('gs-res').innerHTML=out||'<p class="text-xs text-gray-500">Nothing found.</p>';
+  }
+  async function badges(){ // red counters on the top bar: what is waiting for the admin
+    try{const ci=st=>sb.from('tender_images').select('id',{count:'exact',head:true}).eq('status',st);
+      const [a,b,c,d]=await Promise.all([ci('uploaded'),ci('text_read'),ci('parsed'),sb.from('directory_entries').select('id',{count:'exact',head:true}).eq('status','pending')]);
+      const set=(id,n)=>{const e=$(id);if(!e)return;e.textContent=n>99?'99+':n;e.classList.toggle('hidden',!(n>0))};
+      set('bd-tenders',(a.error||b.error||c.error)?0:(a.count||0)+(b.count||0)+(c.count||0));set('bd-directory',d.error?0:(d.count||0))}catch(_){}
+  }
+  window.kBadges=badges;
   async function enter(user){
     const {data,error}=await sb.rpc('is_admin');
     if(error||data!==true){
@@ -821,8 +854,8 @@ const K=(()=>{
       await sb.auth.signOut();return;
     }
     me=user;err('');
-    $('k-login').classList.add('hidden');$('k-app').classList.remove('hidden');$('k-who').textContent='Signed in as '+user.email+' \u00b7 page version 27-Oct-c';
-    cur=null;path=[];home();
+    $('k-login').classList.add('hidden');$('k-app').classList.remove('hidden');$('k-who').textContent='Signed in as '+user.email+' \u00b7 page version 01-Nov-k';
+    cur=null;path=[];home();badges();
   }
 
   // ---- sign in / reset ----
@@ -905,14 +938,14 @@ const K=(()=>{
   const label=r=>((profiles[r.id]||{}).full_name||r.email);
   const badge=r=>!r.account?pill('bg-gray-100 text-gray-600','Folder only')
     :r.confirmed?pill('bg-emerald-50 text-emerald-700','Account active'):pill('bg-amber-100 text-amber-800','Invite pending');
-  const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues',tenders:'Tender images'};
+  const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues',tenders:'Tender images',directory:'Directory'};
   const setW=w=>{main().className=w==='wide'?'p-3 space-y-3':w==='mid'?'max-w-6xl mx-auto p-4 space-y-3':'max-w-3xl mx-auto p-4 space-y-3'};
   async function home(){
     cur=null;path=[];$('k-title').textContent=TITLES[tabK]||'Admin';main().innerHTML=LOADING;
-    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await loadTenderImages();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
+    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await loadTenderImages();else if(tabK==='directory')await loadDirectory();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
     paintHome();
   }
-  const paintHome=()=>{setW(tabK==='issues'?'wide':(tabK==='leads'||tabK==='tenders')?'mid':'narrow');tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
+  const paintHome=()=>{setW(tabK==='issues'?'wide':(tabK==='leads'||tabK==='tenders'||tabK==='directory')?'mid':'narrow');tabK==='directory'?paintDirectory():tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
   function go(p){ // called by the top bar: leads | clients | issues | tenders
     tabK=p==='clients'?(['overview','clients','sectors'].includes(tabK)?tabK:'overview'):p;
     if(!started||!sb)start();else if(me)home();
@@ -997,7 +1030,7 @@ const K=(()=>{
   }
   // ---- pop-up dialogs ----
   const modal=h=>{$('k-modal-box').innerHTML=h;$('k-modal').classList.remove('hidden');const i=$('k-modal-box').querySelector('input:not([readonly]),select');i&&i.focus()};
-  const closeM=()=>{$('k-modal').classList.add('hidden');$('k-modal-box').classList.remove('!max-w-3xl')};
+  const closeM=()=>{$('k-modal').classList.add('hidden');$('k-modal-box').classList.remove('!max-w-3xl','!max-w-2xl')};
   const fl='block text-xs font-bold',mt=`${inp} mt-1`;
   const userFields=(p,editing)=>`<label class="${fl}">Email<input name="email" type="email" required ${editing?'readonly':''} value="${esc(p.email||'')}" autocomplete="off" class="${mt} ${editing?'bg-gray-100':''}"></label>
     <label class="${fl}">Name<input name="full_name" maxlength="80" value="${esc(p.full_name||'')}" class="${mt}"></label>
@@ -1376,20 +1409,310 @@ const K=(()=>{
       const d=await sb.from('issues').delete().eq('issue_no',r.issue_no);if(d.error)throw d.error;
       issues=issues.filter(x=>x!==r);toast('Issue deleted');paintIssueRows()}
   };
+  // ======================= DIRECTORY (phase 14b): companies, institutions, freelancers =======================
+  // Table directory_entries (one sector each, status pending / approved / rejected) and directory_sectors.
+  // Pictures go to the PUBLIC bucket directory-images (shrunk here to fit 1 MB). Visitors see APPROVED entries only.
+  const DB='directory-images',DTYPES=[['company','Company'],['institution','Institution'],['freelancer','Freelancer']];
+  let dEntries=[],dSectors=[],dErr=false,dSubm={},dSubErr=false,dF={q:'',status:'all',sector:'',type:''},DCAP=100;
+  const dTypeName=v=>(DTYPES.find(x=>x[0]===v)||[0,v])[1];
+  const dSecName=id=>{const s=dSectors.find(x=>x.id===id);return s?s.name:id};
+  const dImg=p=>p?sb.storage.from(DB).getPublicUrl(p).data.publicUrl:'';
+  const dStatPill=s=>s==='approved'?pill('bg-emerald-100 text-emerald-800','Approved'):s==='rejected'?pill('bg-red-100 text-red-800','Rejected'):pill('bg-amber-100 text-amber-800','Pending approval');
+  const dOfferOn=e=>!!(e.offer_title||e.offer_text)&&(!e.offer_ends||e.offer_ends>=today());
+  async function loadDirectory(){
+    const [a,b,c]=await Promise.all([fetchAll('directory_entries','*',[['created_at',false],['id',true]]),sb.from('directory_sectors').select('*').order('sort_order').order('name'),sb.from('directory_submitters').select('*')]);
+    dErr=!!(a.error||b.error);dEntries=a.error?[]:a.data;dSectors=b.error?[]:(b.data||[]);
+    if(window.kBadges)setTimeout(kBadges,0);
+    dSubm={};dSubErr=!!c.error;(c.error?[]:c.data||[]).forEach(x=>dSubm[x.entry_id]=x);
+  }
+  function paintDirectory(){
+    const opt=(v,t,cur)=>`<option value="${esc(v)}" ${v===cur?'selected':''}>${esc(t)}</option>`;
+    main().innerHTML=(dErr?warn('<b>The directory is not set up yet.</b> Run <code>supabase-step14-directory.sql</code> in the Supabase SQL Editor (it is safe to run again), then press Refresh.'):'')
+    +(!dErr&&dSubErr?warn('<b>Public submissions are not set up yet.</b> Run <code>supabase-step14f-submissions.sql</code> in the Supabase SQL Editor (it is safe to run again), then press Refresh. The public form is <code>submit-directory.html</code>.'):'')
+    +`<div class="flex flex-wrap items-center gap-2"><button data-k="dadd" class="${btn1}"><i class="fas fa-plus"></i> Add entry</button><button data-k="dsectors" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl"><i class="fas fa-layer-group"></i> Sectors</button>
+      <label class="${btn1} cursor-pointer"><i class="fas fa-file-excel"></i> Import from Excel<input id="d-file" type="file" accept=".xlsx,.xls,.csv" class="hidden"></label>
+      <button data-k="dtpl" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl" title="Excel file with the right columns"><i class="fas fa-download"></i> Template</button>
+      <button data-k="dexport" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl" title="Downloads the entries you see now (respects the status chips, search and filters)"><i class="fas fa-file-export"></i> Export to Excel</button></div>
+    <div id="d-chips" class="flex flex-wrap gap-1.5"></div>
+    <div class="flex flex-wrap gap-2"><input id="d-q" type="search" placeholder="Search name, city, phone or email" aria-label="Search the directory" value="${esc(dF.q)}" class="${inp} flex-1 min-w-[12rem]">
+      <select id="d-sec" aria-label="Filter by sector" class="${inp} !w-auto">${opt('','All sectors',dF.sector)}${dSectors.map(s=>opt(s.id,s.name,dF.sector)).join('')}</select>
+      <select id="d-type" aria-label="Filter by type" class="${inp} !w-auto">${opt('','All types',dF.type)}${DTYPES.map(([v,t])=>opt(v,t,dF.type)).join('')}</select></div>
+    <div id="d-rows"></div>`;
+    paintDirChips();paintDirRows();
+  }
+  function paintDirChips(){
+    const n=s=>dEntries.filter(e=>e.status===s).length,c=(s,l,cls)=>`<button data-k="dchip" data-s="${s}" class="text-[11px] font-bold px-3 py-1 rounded-full border ${dF.status===s?'bg-gray-900 text-white border-gray-900':cls}">${l}</button>`;
+    $('d-chips').innerHTML=c('all',`All ${dEntries.length}`,'bg-white border-gray-200')+c('pending',`Pending approval ${n('pending')}`,'bg-amber-50 border-amber-300 text-amber-900')+c('approved',`Approved ${n('approved')}`,'bg-emerald-50 border-emerald-300 text-emerald-900')+c('rejected',`Rejected ${n('rejected')}`,'bg-red-50 border-red-300 text-red-900');
+  }
+  function dFiltered(){
+    const q=dF.q.toLowerCase().trim(),rank={pending:0,approved:1,rejected:2};
+    return dEntries.filter(e=>(dF.status==='all'||e.status===dF.status)&&(!dF.sector||e.sector_id===dF.sector)&&(!dF.type||e.entry_type===dF.type)
+      &&(!q||[e.name,e.name_ar,e.city,e.address,e.email,e.whatsapp,(e.phones||[]).join(' ')].some(v=>String(v||'').toLowerCase().includes(q)))).sort((a,b)=>rank[a.status]-rank[b.status]);
+  }
+  function paintDirRows(){
+    const all=dFiltered();
+    const rows=all.slice(0,DCAP),ib='w-8 h-8 rounded-lg';
+    $('d-rows').innerHTML=!all.length?`<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">${dEntries.length?'No entries match.':'No entries yet. Press Add entry.'}</p>`
+    :`<p class="text-[11px] text-gray-500 mb-1">${all.length} entr${all.length===1?'y':'ies'}${all.length>DCAP?` (showing the first ${DCAP}: use search or the filters)`:''}</p><div class="space-y-2">`
+    +rows.map(e=>`<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+      <div class="w-14 h-14 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex-shrink-0 flex items-center justify-center">${e.image_path?`<img src="${esc(dImg(e.image_path))}" alt="" loading="lazy" class="w-full h-full object-cover">`:'<i class="fas fa-building text-gray-400"></i>'}</div>
+      <button data-k="dedit" data-id="${esc(e.id)}" class="flex-1 min-w-[10rem] text-left"><span class="block font-bold text-sm truncate">${esc(e.name)}</span>
+        <span class="block text-[11px] text-gray-500 truncate">${esc(dTypeName(e.entry_type))} &middot; ${esc(dSecName(e.sector_id))}${e.city?' &middot; '+esc(e.city):''}</span>
+        <span class="flex flex-wrap items-center gap-1.5 mt-1">${dStatPill(e.status)}${dSubm[e.id]?pill('bg-violet-100 text-violet-800','Self-submitted'):''}${dOfferOn(e)?pill('bg-blue-100 text-blue-800','Offer'):''}${e.whatsapp?pill('bg-green-100 text-green-800','WhatsApp'):''}</span>
+        ${dSubm[e.id]?`<span class="block text-[11px] text-violet-900 mt-1 break-words">Submitted by: ${esc([dSubm[e.id].contact_name,dSubm[e.id].contact_phone,dSubm[e.id].contact_email].filter(Boolean).join(' · ')||'no contact')}</span>`:''}</button>
+      <div class="flex items-center gap-1.5">
+        ${e.status!=='approved'?`<button data-k="dapprove" data-id="${esc(e.id)}" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-check"></i> Approve</button>`:''}
+        ${e.status==='pending'?`<button data-k="dreject" data-id="${esc(e.id)}" class="text-xs bg-red-50 text-red-700 hover:bg-red-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-xmark"></i> Reject</button>`:''}
+        ${e.status==='approved'?`<button data-k="dhide" data-id="${esc(e.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-lg" title="Hide from the public and send back to Pending"><i class="fas fa-eye-slash"></i> Unpublish</button>`:''}
+        <button data-k="dedit" data-id="${esc(e.id)}" class="${ib} bg-gray-100" aria-label="Edit entry" title="Edit"><i class="fas fa-pen text-xs"></i></button>
+        <button data-k="ddel" data-id="${esc(e.id)}" class="${ib} bg-red-50 text-red-600" aria-label="Delete entry" title="Delete"><i class="fas fa-trash text-xs"></i></button></div></div>`).join('')
+    +(all.length>DCAP?`<button data-k="dmore" class="${btn1}">Show more</button>`:'')+'</div>';
+  }
+
+  // ---- Excel / CSV import of directory entries (14e)
+  let dPending=[];
+  const dFold=s=>String(s||'').toLowerCase().replace(/[ً-ٰٟ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim();
+  // order matters: the first pattern that matches a header wins (Arabic name before name, WhatsApp before phone, offer parts before description)
+  const DCOLS=[['name_ar',/arabic|بالعربي|name[\s_-]*ar\b|الاسم.*عرب/i],['offer_title',/offer.*(title|short)|^offer$|عنوان العرض|^العرض$/i],['offer_text',/offer.*(detail|text|descr)|تفاصيل العرض/i],
+    ['offer_ends',/valid|until|expir|offer.*end|ينتهي|ساري|صالح/i],['name',/^(company[\s_-]*|entry[\s_-]*|business[\s_-]*|full[\s_-]*)?name$|^الاسم$|^اسم/i],['type',/^type$|entry[\s_-]*type|^النوع$|نوع/i],
+    ['sector',/sector|القطاع|النشاط/i],['city',/city|المدينة|المحافظة/i],['address',/address|العنوان/i],['whatsapp',/whats|واتس/i],['phones',/phone|tel|mobile|هاتف|الهاتف|التليفون|تليفون|الموبايل|الجوال/i],
+    ['email',/e-?mail|البريد|الايميل|الإيميل/i],['website_url',/web|site|الموقع/i],['social_url',/social|facebook|instagram|linkedin|فيس|تواصل/i],['description',/descr|about|نبذة|الوصف|وصف/i]];
+  const DTYPE_WORDS={company:['company','شركه','شركة','business'],institution:['institution','organization','organisation','authority','مؤسسه','هيئه','جهه','جمعيه'],freelancer:['freelancer','freelance','مستقل','فريلانسر']};
+  const dTypeOf=v=>{const t=dFold(v);if(!t)return 'company';for(const [k,ws] of Object.entries(DTYPE_WORDS))if(ws.some(w=>t===dFold(w)||t.startsWith(dFold(w))))return k;return null};
+  const dSectorOf=v=>{const t=dFold(v);if(!t)return null;return dSectors.find(s=>dFold(s.id)===t||dFold(s.name)===t||dFold(s.name_ar)===t)||null};
+  function dDate(v){
+    if(v===''||v==null)return {ok:true,v:null};
+    if(typeof v==='number'&&v>20000&&v<80000){return {ok:true,v:new Date(Math.round((v-25569)*864e5)).toISOString().slice(0,10)}}   // Excel date number
+    const s=String(v).trim().replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));let m=s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/),y,mo,d;
+    if(m){y=+m[1];mo=+m[2];d=+m[3]}else if((m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/))){d=+m[1];mo=+m[2];y=+m[3]}else return {ok:false};
+    const t=new Date(Date.UTC(y,mo-1,d));if(t.getUTCFullYear()!==y||t.getUTCMonth()!==mo-1||t.getUTCDate()!==d)return {ok:false};
+    return {ok:true,v:`${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`};
+  }
+  const dKey=(n,c)=>dFold(n)+'|'+dFold(c);
+  async function importDirFile(file){
+    try{
+      if(!dSectors.length)return toast('Add at least one directory sector first (Sectors button).',false);
+      await loadXlsx();
+      const wb=/\.csv$/i.test(file.name)?XLSX.read(await file.text(),{type:'string',raw:true}):XLSX.read(await file.arrayBuffer(),{type:'array'});
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''});
+      let h=-1,map={};
+      for(let i=0;i<Math.min(rows.length,10)&&h<0;i++){
+        const m={};rows[i].forEach((c,j)=>{const t=String(c).trim();if(!t)return;for(const [k,re] of DCOLS)if(!(k in m)&&re.test(t)){m[k]=j;break}});
+        if('name' in m){h=i;map=m}
+      }
+      if(h<0)throw new Error('Could not find the columns. The first row of the sheet should have headers such as Name, Type, Sector, City, Phones, WhatsApp. Press Template to get an example.');
+      const other=dSectors.find(s=>s.id==='other')||null;
+      const have=new Set(dEntries.map(e=>dKey(e.name,e.city))),haveWa=new Set(dEntries.map(e=>e.whatsapp).filter(Boolean)),seen=new Set(),seenWa=new Set();
+      const ok=[],bad=[];let dups=0,toOther=0,fixedWa=0,badMail=0,badUrl=0,badDate=0;
+      rows.slice(h+1).forEach((r,i)=>{
+        const line=h+i+2,g=k=>k in map?r[map[k]]:'';
+        const txt=k=>{const v=g(k);return (typeof v==='number'?String(v):String(v)).trim()};
+        if(!r.some(c=>String(c).trim()))return;
+        const name=txt('name');if(!name){bad.push(`Row ${line}: name missing`);return}
+        const type=dTypeOf(txt('type'));if(!type){bad.push(`Row ${line} (${name}): type "${txt('type')}" not recognised (use Company, Institution or Freelancer)`);return}
+        const secRaw=txt('sector');let sec=dSectorOf(secRaw);
+        if(!sec){if(other){sec=other;toOther++}else{bad.push(`Row ${line} (${name}): sector "${secRaw}" not found`);return}}
+        const city=txt('city');
+        const phones=String(g('phones')).split(/[\n,;/]+/).map(x=>x.trim()).filter(Boolean).map(x=>/^1[0125]\d{8}$/.test(x)?'0'+x:x).slice(0,6);
+        const wraw=g('whatsapp');let wa=typeof wraw==='number'?String(Math.round(wraw)):String(wraw).trim();
+        if(/^1[0125]\d{8}$/.test(wa)){wa='0'+wa;fixedWa++}
+        wa=waClean(wa);if(wa&&!/^[0-9]{8,15}$/.test(wa)){bad.push(`Row ${line} (${name}): WhatsApp number does not look right`);return}
+        const key=dKey(name,city);if(have.has(key)||seen.has(key)||(wa&&(haveWa.has(wa)||seenWa.has(wa)))){dups++;return}
+        seen.add(key);if(wa)seenWa.add(wa);
+        let email=txt('email');if(email&&!EMAILRE.test(email)){email='';badMail++}
+        let web=urlClean(txt('website_url')),soc=urlClean(txt('social_url'));
+        if(web&&!urlOk(web)){web='';badUrl++}if(soc&&!urlOk(soc)){soc='';badUrl++}
+        const dd=dDate(g('offer_ends'));if(!dd.ok)badDate++;
+        const offer_title=txt('offer_title').slice(0,80)||null,offer_text=txt('offer_text').slice(0,1500)||null;
+        ok.push({name:name.slice(0,120),name_ar:txt('name_ar').slice(0,120)||null,entry_type:type,sector_id:sec.id,city:city.slice(0,60)||null,address:txt('address').slice(0,250)||null,
+          phones,whatsapp:wa||null,email:email||null,website_url:web||null,social_url:soc||null,description:txt('description').slice(0,4000)||null,
+          offer_title,offer_text,offer_ends:(offer_title||offer_text)&&dd.ok?dd.v:null});
+      });
+      dPending=ok;
+      const withOffer=ok.filter(o=>o.offer_title||o.offer_text).length;
+      modal(`<h2 class="font-extrabold text-lg mb-1">Import directory entries</h2><p class="text-xs text-gray-500 mb-3 break-all">${esc(file.name)}</p>
+        <ul class="text-sm space-y-1 mb-3"><li class="${ok.length?'text-emerald-800':'text-gray-700'}"><b>${ok.length}</b> new entr${ok.length===1?'y':'ies'} will be added${withOffer?` (${withOffer} with a special offer)`:''}.</li>
+        ${dups?`<li class="text-gray-700">${dups} skipped: the same name and city, or the same WhatsApp number, is already in the directory or repeated in the file.</li>`:''}
+        ${bad.length?`<li class="text-red-700">${bad.length} skipped: see the list below.</li>`:''}
+        ${toOther?`<li class="text-gray-700">${toOther} ha${toOther===1?'s':'ve'} an unknown or empty sector and will go to "${esc(other.name)}".</li>`:''}
+        ${fixedWa?`<li class="text-gray-700">${fixedWa} WhatsApp number${fixedWa===1?'':'s'} had lost the leading 0 in Excel: it was added back.</li>`:''}
+        ${badMail?`<li class="text-gray-700">${badMail} email${badMail===1?'':'s'} did not look valid and ${badMail===1?'was':'were'} left empty.</li>`:''}
+        ${badUrl?`<li class="text-gray-700">${badUrl} website or social link${badUrl===1?'':'s'} did not look valid and ${badUrl===1?'was':'were'} left empty.</li>`:''}
+        ${badDate?`<li class="text-gray-700">${badDate} offer end date${badDate===1?'':'s'} could not be read: the offer was added without an end date.</li>`:''}</ul>
+        ${bad.length?`<details class="text-xs text-gray-600 mb-3"><summary class="cursor-pointer font-bold">Show the skipped rows</summary><p class="mt-1">${bad.slice(0,30).map(esc).join('<br>')}${bad.length>30?'<br>...':''}</p></details>`:''}
+        ${ok.length?`<div class="border border-gray-200 rounded-xl divide-y text-xs mb-3">${ok.slice(0,4).map(o=>`<div class="px-3 py-1.5"><b>${esc(o.name)}</b> &middot; ${esc(dTypeName(o.entry_type))} &middot; ${esc(dSecName(o.sector_id))}${o.city?' &middot; '+esc(o.city):''}</div>`).join('')}${ok.length>4?`<div class="px-3 py-1.5 text-gray-500">and ${ok.length-4} more</div>`:''}</div>
+        <label class="flex items-start gap-2 text-xs mb-3"><input id="d-pub" type="checkbox" class="mt-0.5"><span>Publish them right away (status Approved). Leave it unticked to review them first: they arrive as <b>Pending approval</b>. Pictures can be added later from each entry.</span></label>`:''}
+        <div class="flex justify-end gap-2"><button type="button" data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button>${ok.length?`<button data-k="dimport" class="${btn1}">Import ${ok.length}</button>`:''}</div>`);
+    }catch(x){toast(x.message,false)}
+  }
+  function dirDialog(id){
+    if(!dSectors.length)return toast('Add at least one directory sector first (Sectors button).',false);
+    const e=id?dEntries.find(x=>x.id===id):{entry_type:'company',status:'pending',sector_id:dF.sector||dSectors[0].id,phones:[]};if(!e)return;
+    const sel=(name,list,cur)=>`<select name="${name}" class="${mt}">${list.map(([v,t])=>`<option value="${esc(v)}" ${v===cur?'selected':''}>${esc(t)}</option>`).join('')}</select>`;
+    modal(`<h2 class="font-extrabold text-lg mb-3">${id?'Edit entry':'Add entry'}</h2><form data-k-form="dentry" data-id="${esc(id||'')}" class="space-y-3">
+      <div class="grid sm:grid-cols-2 gap-3">
+        <label class="${fl}">Name <span class="text-red-600">*</span><input name="name" required maxlength="120" value="${esc(e.name||'')}" class="${mt}"></label>
+        <label class="${fl}">Name in Arabic<input name="name_ar" dir="rtl" maxlength="120" value="${esc(e.name_ar||'')}" class="${mt}"></label>
+        <label class="${fl}">Type ${sel('entry_type',DTYPES,e.entry_type)}</label>
+        <label class="${fl}">Business sector ${sel('sector_id',dSectors.map(s=>[s.id,s.name]),e.sector_id)}</label>
+        <label class="${fl}">City<input name="city" maxlength="60" value="${esc(e.city||'')}" class="${mt}"></label>
+        <label class="${fl}">Address<input name="address" maxlength="250" value="${esc(e.address||'')}" class="${mt}"></label>
+        <label class="${fl}">Phone numbers<span class="font-normal text-gray-500"> (one per line)</span><textarea name="phones" rows="2" class="${mt}">${esc((e.phones||[]).join('\n'))}</textarea></label>
+        <label class="${fl}">WhatsApp number<span class="font-normal text-gray-500"> (with country code, e.g. 201001234567; 01001234567 also works)</span><input name="whatsapp" type="tel" maxlength="20" value="${esc(e.whatsapp||'')}" class="${mt}"></label>
+        <label class="${fl}">Email<input name="email" type="email" maxlength="120" value="${esc(e.email||'')}" class="${mt}"></label>
+        <label class="${fl}">Website<input name="website_url" maxlength="300" placeholder="https://" value="${esc(e.website_url||'')}" class="${mt}"></label>
+        <label class="${fl} sm:col-span-2">Social media page<span class="font-normal text-gray-500"> (Facebook, Instagram, LinkedIn...)</span><input name="social_url" maxlength="300" placeholder="https://" value="${esc(e.social_url||'')}" class="${mt}"></label></div>
+      <label class="${fl}">Description<span class="font-normal text-gray-500"> (shown on the entry page; supports **bold**, ## subtitle and - bullet)</span><textarea name="description" rows="4" maxlength="4000" class="${mt}">${esc(e.description||'')}</textarea></label>
+      <fieldset class="rounded-xl border border-blue-200 bg-blue-50/50 p-3 space-y-2"><legend class="text-xs font-bold px-1 text-blue-900"><i class="fas fa-tag"></i> Special offer (optional)</legend>
+        <label class="${fl}">Short title<span class="font-normal text-gray-500"> (badge on the card)</span><input name="offer_title" maxlength="80" value="${esc(e.offer_title||'')}" class="${mt}"></label>
+        <label class="${fl}">Offer details<textarea name="offer_text" rows="3" maxlength="1500" class="${mt}">${esc(e.offer_text||'')}</textarea></label>
+        <label class="${fl}">Valid until<span class="font-normal text-gray-500"> (empty = no end date)</span><input name="offer_ends" type="date" value="${esc(e.offer_ends||'')}" class="${mt} !w-auto"></label></fieldset>
+      <div class="${fl}">Picture<span class="font-normal text-gray-500"> (logo or photo; JPG, PNG or WebP; shrunk automatically)</span>
+        <div class="flex items-center gap-3 mt-1"><div class="w-16 h-16 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0"><img id="d-prev" alt="" class="w-full h-full object-cover ${e.image_path?'':'hidden'}" ${e.image_path?`src="${esc(dImg(e.image_path))}"`:''}><i class="fas fa-image text-gray-400 ${e.image_path?'hidden':''}" id="d-ph"></i></div>
+          <div class="space-y-1"><input id="d-img" name="image" type="file" accept="image/jpeg,image/png,image/webp" class="text-xs">${e.image_path?'<label class="flex items-center gap-1.5 text-xs font-normal"><input name="rmimg" type="checkbox"> Remove the current picture</label>':''}</div></div></div>
+      <label class="${fl}">Status<select name="status" class="${mt}">${[['pending','Pending approval'],['approved','Approved (shown to everyone)'],['rejected','Rejected (hidden)']].map(([v,t])=>`<option value="${v}" ${v===e.status?'selected':''}>${t}</option>`).join('')}</select></label>
+      <div class="flex justify-end gap-2 pt-1"><button type="button" data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button class="${btn1}">${id?'Save':'Add entry'}</button></div></form>`);
+    $('k-modal-box').classList.add('!max-w-3xl');
+  }
+  const waClean=v=>{let d=String(v||'').replace(/\D/g,'');if(!d)return '';if(d.startsWith('00'))d=d.slice(2);else if(d.length===11&&d.startsWith('0'))d='20'+d.slice(1);return d};
+  const urlClean=v=>{v=String(v||'').trim();if(!v)return '';return /^https?:\/\//i.test(v)?v:'https://'+v};
+  const urlOk=v=>{try{const u=new URL(v);return /^https?:$/.test(u.protocol)&&u.hostname.includes('.')}catch(_){return false}};
+  async function shrinkImage(file){ // always JPEG, longest side 1200 px, under 1 MB
+    if(!/^image\/(jpeg|png|webp)$/.test(file.type))throw new Error('Use a JPG, PNG or WebP picture.');
+    const bmp=await createImageBitmap(file);let s=Math.min(1,1200/Math.max(bmp.width,bmp.height)),q=.86;
+    for(let i=0;i<8;i++){
+      const c=document.createElement('canvas');c.width=Math.max(1,Math.round(bmp.width*s));c.height=Math.max(1,Math.round(bmp.height*s));
+      const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(bmp,0,0,c.width,c.height);
+      const b=await new Promise(ok=>c.toBlob(ok,'image/jpeg',q));
+      if(b&&b.size<=1000*1000)return b;
+      q=Math.max(.5,q-.1);s*=.85;
+    }
+    throw new Error('This picture is too large even after shrinking. Try a smaller one.');
+  }
+  async function saveDirForm(f){
+    const el=f.elements,id=f.dataset.id,b0=f.querySelector('button:not([type=button])');
+    const phones=el.phones.value.split(/[\n,;]+/).map(x=>x.trim()).filter(Boolean).slice(0,6);
+    const wa=waClean(el.whatsapp.value),web=urlClean(el.website_url.value),soc=urlClean(el.social_url.value),mail=el.email.value.trim();
+    const v={name:el.name.value.trim(),name_ar:el.name_ar.value.trim()||null,entry_type:el.entry_type.value,sector_id:el.sector_id.value,description:el.description.value.trim()||null,
+      address:el.address.value.trim()||null,city:el.city.value.trim()||null,phones,whatsapp:wa||null,email:mail||null,website_url:web||null,social_url:soc||null,
+      offer_title:el.offer_title.value.trim()||null,offer_text:el.offer_text.value.trim()||null,offer_ends:el.offer_ends.value||null,status:el.status.value};
+    if(!v.name)return toast('Name is required.',false);
+    if(wa&&!/^[0-9]{8,15}$/.test(wa))return toast('The WhatsApp number does not look right. Use digits with the country code, e.g. 201001234567.',false);
+    if(mail&&!EMAILRE.test(mail))return toast('That email address does not look right.',false);
+    if(web&&!urlOk(web))return toast('The website address does not look right.',false);
+    if(soc&&!urlOk(soc))return toast('The social media address does not look right.',false);
+    b0.disabled=true;let up=null;
+    try{
+      const old=id?dEntries.find(x=>x.id===id):null,eid=id||crypto.randomUUID(),file=el.image.files[0];
+      let image_path=old?old.image_path:null;
+      if(el.rmimg&&el.rmimg.checked)image_path=null;
+      if(file){
+        const blob=await shrinkImage(file),np=`${eid}/${Date.now()}.jpg`;
+        const u=await sb.storage.from(DB).upload(np,blob,{contentType:'image/jpeg'});if(u.error)throw u.error;
+        up=np;image_path=np;
+      }
+      const row={...v,image_path},r=id?await sb.from('directory_entries').update(row).eq('id',id):await sb.from('directory_entries').insert({id:eid,...row});
+      if(r.error){if(up)await sb.storage.from(DB).remove([up]);throw r.error}
+      if(old&&old.image_path&&old.image_path!==image_path)await sb.storage.from(DB).remove([old.image_path]);
+      closeM();toast(id?'Entry saved':'Entry added');await home();
+    }catch(x){toast(x.message,false)}finally{b0.disabled=false}
+  }
+  async function dSetStatus(id,st,msg){
+    const r=await sb.from('directory_entries').update({status:st}).eq('id',id).select().single();if(r.error)throw r.error;
+    const i=dEntries.findIndex(x=>x.id===id);if(i>=0)dEntries[i]=r.data;paintDirChips();paintDirRows();toast(msg);if(window.kBadges)kBadges();
+  }
+  function dSectorsDialog(){
+    modal(`<h2 class="font-extrabold text-lg mb-1">Directory sectors</h2><p class="text-xs text-gray-600 mb-3">These are the business sectors of the directory (separate from the tender sectors). Edit a name and click outside the box to save.</p>
+      <div class="space-y-2 max-h-[45vh] overflow-y-auto pr-1">${dSectors.map(s=>{const n=dEntries.filter(e=>e.sector_id===s.id).length;
+        return `<div class="flex items-center gap-2"><input data-dsec="name" data-id="${esc(s.id)}" value="${esc(s.name)}" maxlength="60" aria-label="English name" class="${inp}"><input data-dsec="name_ar" data-id="${esc(s.id)}" dir="rtl" value="${esc(s.name_ar||'')}" maxlength="60" placeholder="بالعربية" aria-label="Arabic name" class="${inp}">
+        <button data-k="dsecdel" data-id="${esc(s.id)}" class="w-9 h-9 flex-shrink-0 rounded-lg bg-red-50 text-red-600" aria-label="Delete sector" title="${n?n+' entries use it':'Delete'}"><i class="fas fa-trash text-xs"></i></button></div>`}).join('')}</div>
+      <form data-k-form="dsector" class="flex gap-2 pt-3 mt-3 border-t border-gray-100"><input name="name" required maxlength="60" placeholder="New sector (English)" class="${inp}"><input name="name_ar" dir="rtl" maxlength="60" placeholder="بالعربية" class="${inp}"><button class="flex-shrink-0 ${btn1}"><i class="fas fa-plus"></i> Add</button></form>
+      <div class="flex justify-end pt-3"><button data-k="dsecdone" class="${btn1}">Done</button></div>`);
+  }
+  async function saveDirSector(f){
+    const name=f.name.value.trim(),id=slug(name);
+    if(!id)return toast('Type the English name (letters or numbers).',false);
+    if(dSectors.some(x=>x.id===id))return toast('That sector already exists.',false);
+    const r=await sb.from('directory_sectors').insert({id,name,name_ar:f.name_ar.value.trim()||null,sort_order:500});if(r.error)return toast(r.error.message,false);
+    await loadDirectory();paintDirectory();dSectorsDialog();toast('Sector added');
+  }
+  Object.assign(ACT,{
+    async dexport(){const list=dFiltered();if(!list.length)return toast('Nothing to export: no entries match.',false);await loadXlsx();
+      const H=['Name','Name (Arabic)','Type','Sector','City','Address','Phones','WhatsApp','Email','Website','Social media page','Description','Offer title','Offer details','Offer valid until','Status','Submitted by','Added on'];
+      const tl=v=>(DTYPES.find(x=>x[0]===v)||[0,v||''])[1],sn=id=>{const x=dSectors.find(v=>v.id===id);return x?x.name:''};
+      const ws=XLSX.utils.aoa_to_sheet([H,...list.map(e=>{const m=dSubm[e.id];return [e.name||'',e.name_ar||'',tl(e.entry_type),sn(e.sector_id),e.city||'',e.address||'',(e.phones||[]).join('\n'),e.whatsapp||'',e.email||'',e.website_url||'',e.social_url||'',e.description||'',e.offer_title||'',e.offer_text||'',e.offer_ends||'',e.status||'',m?[m.contact_name,m.contact_phone,m.contact_email].filter(Boolean).join(' / '):'',String(e.created_at||'').slice(0,10)]})]);
+      ws['!cols']=H.map((h,i)=>({wch:[24,24,12,26,14,28,18,16,24,22,26,40,22,36,14,10,28,12][i]}));
+      const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Directory');XLSX.writeFile(wb,'directory-'+today()+'.xlsx');toast(list.length+' entr'+(list.length===1?'y':'ies')+' exported')},
+    async dtpl(){await loadXlsx();
+      const H=['Name','Name (Arabic)','Type','Sector','City','Address','Phones','WhatsApp','Email','Website','Social media page','Description','Offer title','Offer details','Offer valid until'];
+      const ws=XLSX.utils.aoa_to_sheet([H,
+        ['Example Contracting Co','شركة المثال للمقاولات','Company',(dSectors[0]||{}).name||'Construction & Contracting','Cairo','12 Example St, Nasr City','0221234567\n0222345678','01001234567','info@example.com','www.example.com','https://facebook.com/example','Short text about the company. **bold** and - bullets work.','10% off for subscribers','10% discount on the first project. Mention HOT Info.','2027-06-30'],
+        ['Dr Sara Ahmed','د. سارة أحمد','Freelancer',(dSectors[1]||{}).name||'Engineering & Consulting','Alexandria','','01112345678','01112345678','','','','','','','']]);
+      ws['!cols']=H.map((h,i)=>({wch:[24,24,12,28,14,30,18,16,24,22,28,40,22,40,16][i]}));
+      const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Directory');
+      const ss=XLSX.utils.aoa_to_sheet([['Sector (English)','Sector (Arabic)'],...dSectors.map(s=>[s.name,s.name_ar||''])].concat([[],['Type: Company, Institution or Freelancer'],['Offer valid until: a date, empty = no end date'],['Entries arrive as Pending approval (or Approved if you tick the box at import).']]));
+      ss['!cols']=[{wch:34},{wch:34}];XLSX.utils.book_append_sheet(wb,ss,'Sectors and notes');XLSX.writeFile(wb,'directory-template.xlsx')},
+    async dimport(t){t.disabled=true;t.textContent='Importing...';
+      try{const st=$('d-pub')&&$('d-pub').checked?'approved':'pending',list=dPending.map(o=>({...o,status:st}));
+        for(let i=0;i<list.length;i+=100){const r=await sb.from('directory_entries').insert(list.slice(i,i+100));if(r.error)throw r.error}
+        toast(`${list.length} entr${list.length===1?'y':'ies'} imported${st==='approved'?' and published':' (Pending approval)'}`);dPending=[];closeM();await home();
+      }catch(x){toast(x.message,false);t.disabled=false;t.textContent='Try again'}},
+    dadd:()=>dirDialog(''),
+    dedit:t=>dirDialog(t.dataset.id),
+    dchip:t=>{dF.status=t.dataset.s;DCAP=100;paintDirChips();paintDirRows()},
+    dmore:()=>{DCAP+=100;paintDirRows()},
+    dapprove:t=>dSetStatus(t.dataset.id,'approved','Approved: now visible to everyone'),
+    dreject:t=>dSetStatus(t.dataset.id,'rejected','Rejected'),
+    dhide:t=>dSetStatus(t.dataset.id,'pending','Unpublished: back to Pending approval'),
+    async ddel(t){const e=dEntries.find(x=>x.id===t.dataset.id);if(!e||!confirm(`Delete "${e.name}"?\n\nIts picture is deleted too. This cannot be undone.`))return;
+      const r=await sb.from('directory_entries').delete().eq('id',e.id);if(r.error)throw r.error;
+      if(e.image_path)await sb.storage.from(DB).remove([e.image_path]);
+      dEntries=dEntries.filter(x=>x!==e);toast('Entry deleted');paintDirChips();paintDirRows()},
+    dsectors:()=>dSectorsDialog(),
+    dsecdone:()=>{closeM();paintDirectory()},
+    async dsecdel(t){const s=dSectors.find(x=>x.id===t.dataset.id);if(!s)return;
+      const n=dEntries.filter(e=>e.sector_id===s.id).length;
+      if(n)throw new Error(`"${s.name}" is used by ${n} entr${n===1?'y':'ies'}. Move them to another sector first.`);
+      if(!confirm(`Delete the sector "${s.name}"?`))return;
+      const r=await sb.from('directory_sectors').delete().eq('id',s.id);if(r.error)throw r.error;
+      dSectors=dSectors.filter(x=>x!==s);dSectorsDialog()}
+  });
+  document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='d-q'){dF.q=t.value;DCAP=100;paintDirRows()}});
+  document.addEventListener('change',async e=>{const t=e.target;if(!t)return;
+    if(t.id==='d-sec'||t.id==='d-type'){dF[t.id==='d-sec'?'sector':'type']=t.value;DCAP=100;paintDirRows();return}
+    if(t.id==='d-img'){const f=t.files[0],p=$('d-prev');if(f&&p){p.src=URL.createObjectURL(f);p.classList.remove('hidden');const ph=$('d-ph');ph&&ph.classList.add('hidden')}return}
+    if(t.dataset&&t.dataset.dsec){const s=dSectors.find(x=>x.id===t.dataset.id);if(!s)return;const k=t.dataset.dsec,val=t.value.trim();
+      if(k==='name'&&!val){t.value=s.name;return toast('The English name cannot be empty.',false)}
+      const r=await sb.from('directory_sectors').update({[k]:val||null}).eq('id',s.id);
+      if(r.error){t.value=s[k]||'';return toast(r.error.message,false)}
+      s[k]=val||null;toast('Saved')}});
+
   // ======================= Tender images (Phase 2): upload =======================
   // Images are cropped offline and uploaded as they are (JPG, PNG or WebP, max 1 MB: the OCR.space free limit).
   // The private "tender-images" bucket stores them; source paper, page and publish date are entered once per image.
   const TB='tender-images',TMAXB=1024*1024,TTYPES={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
-  let timgs=[],timgErr=false,tUse=null,TR=null,trows=[],trErr=false,tCnt={},tUrl={},tMonth=0,TF={source:'',page:'',date:''},tPapers=[],tView='images',tRV='cards',tEnt=[],tEntErr=false,trMsg='',tSect=[],tKw=[],tKwErr=false,tSV=[],tSVErr=false,tOpen=new Set(['_none']),TS={by:'session_date',from:'',to:'',status:'all'};
+  let timgs=[],timgErr=false,tUse=null,tUseDay=null,TR=null,trows=[],trErr=false,tCnt={},tUrl={},tMonth=0,TF={source:'',page:'',date:''},tPapers=[],tView='images',tRV='cards',tStage='',tPipe=null,tRecentBy={},tWarnOnly=false,tEnt=[],tEntErr=false,trMsg='',tSect=[],tKw=[],tKwErr=false,tSV=[],tSVErr=false,tOpen=new Set(['_none']),TS={by:'session_date',from:'',to:'',status:'all'};
   const TST={uploaded:['bg-gray-100 text-gray-700','Uploaded'],text_read:['bg-blue-100 text-blue-800','Text read'],parsed:['bg-amber-100 text-amber-800','Needs review'],approved:['bg-emerald-100 text-emerald-800','Approved']};
   const tPName=p=>({ocrspace:'OCR.space',gemini:'Gemini',groq:'Groq AI'}[p]||'an earlier reading');
+  const tBump=p=>{[tUse,tUseDay].forEach(o=>{if(o)o[p]=(o[p]||0)+1})};
+  function tMeters(){ // usage of the free reading services and of the monthly image allowance
+    if(!tUse)return '';
+    const D=tUseDay||{},bar=(n,max,label,sub)=>{const pc=Math.min(100,Math.round(n/max*100)),c=pc>=90?'bg-red-500':pc>=70?'bg-amber-500':'bg-emerald-500';
+      return `<div class="bg-white border border-gray-200 rounded-2xl px-3 py-2"><p class="text-[11px] font-bold flex justify-between gap-2"><span>${label}</span><span>${n.toLocaleString()}${max?' / '+max.toLocaleString():''}</span></p>${max?`<div class="h-1.5 rounded-full bg-gray-100 mt-1 overflow-hidden"><div class="h-full ${c}" style="width:${pc}%"></div></div>`:''}<p class="text-[10px] text-gray-500 mt-1">${sub}</p></div>`};
+    return `<div class="grid grid-cols-2 sm:grid-cols-4 gap-2" role="group" aria-label="Usage this month">`
+      +bar(tUse.ocrspace||0,25000,'OCR.space (month)',`today ${D.ocrspace||0}`)
+      +bar(tUse.groq||0,0,'Groq AI (month)',`today ${D.groq||0} (a daily limit applies: if it is reached it says so and resets the next day)`)
+      +bar(tUse.gemini||0,0,'Gemini (month)',`today ${D.gemini||0}`)
+      +bar(tMonth||0,1000,'Images uploaded (month)','about 1,000 images a month')+`</div>`;
+  }
   async function loadTenderImages(){
     const m0=today().slice(0,8)+'01';
     const [r,c,u]=await Promise.all([
-      sb.from('tender_images').select('*').order('created_at',{ascending:false}).limit(60),
+      (()=>{let q=sb.from('tender_images').select('*').order('created_at',{ascending:false}).limit(60);return tStage?q.eq('status',tStage):q})(),
       sb.from('tender_images').select('id',{count:'exact',head:true}).gte('created_at',m0),
-      sb.from('ocr_log').select('provider').eq('ok',true).gte('created_at',m0)]);
+      sb.from('ocr_log').select('provider,created_at').eq('ok',true).gte('created_at',m0).limit(20000)]);
     tUse=u.error?null:(u.data||[]).reduce((a,l)=>(a[l.provider]=(a[l.provider]||0)+1,a),{ocrspace:0,gemini:0,groq:0});
+    const d0=new Date().toISOString().slice(0,10);tUseDay=u.error?null:(u.data||[]).filter(l=>String(l.created_at).slice(0,10)===d0).reduce((a,l)=>(a[l.provider]=(a[l.provider]||0)+1,a),{ocrspace:0,gemini:0,groq:0});
     timgErr=!!r.error;timgs=timgErr?[]:(r.data||[]);tMonth=c.count||0;
     tPapers=[...new Set(timgs.map(x=>x.source_paper).filter(Boolean))];
     tCnt={};if(timgs.length){const t=await sb.from('tenders').select('image_id,status').in('image_id',timgs.map(x=>x.id));
@@ -1398,13 +1721,37 @@ const K=(()=>{
     if(paths.length){const {data}=await sb.storage.from(TB).createSignedUrls(paths,3600);(data||[]).forEach(x=>{if(x.signedUrl&&x.path)tUrl[x.path]=x.signedUrl})}
     await loadSectorData();
     await tBcLoad();
+    await tPipeLoad();
+    if(TR&&!tById(TR)){const one=await sb.from('tender_images').select('*').eq('id',TR).maybeSingle();if(one.data){timgs.unshift(one.data);if(one.data.image_path&&!tUrl[one.data.image_path]){const {data}=await sb.storage.from(TB).createSignedUrls([one.data.image_path],3600);(data||[]).forEach(x=>{if(x.signedUrl&&x.path)tUrl[x.path]=x.signedUrl})}}}
     if(TR)await loadReview();
+  }
+
+  // ---- "What is waiting" strip: one counter per stage, each one clickable
+  async function tPipeLoad(){
+    const ci=st=>sb.from('tender_images').select('id',{count:'exact',head:true}).eq('status',st);
+    const [a,b,c,d]=await Promise.all([ci('uploaded'),ci('text_read'),ci('parsed'),sb.from('tenders').select('id',{count:'exact',head:true}).eq('status','approved').eq('sectors_confirmed',false)]);
+    tPipe=(a.error||b.error||c.error)?null:{a:a.count||0,b:b.count||0,c:c.count||0,d:d.error?null:(d.count||0)};
+    if(window.kBadges)kBadges();
+  }
+  function tPipeBar(){
+    if(!tPipe)return '';
+    const steps=[['uploaded','Waiting for text',tPipe.a,'fa-image','Images whose text has not been read yet','bg-sky-50 border-sky-300 text-sky-900'],
+      ['text_read','Text read, no rows',tPipe.b,'fa-language','Text is ready: turn it into rows','bg-blue-50 border-blue-300 text-blue-900'],
+      ['parsed','Rows to review',tPipe.c,'fa-table-list','Images with rows waiting for your approval','bg-amber-50 border-amber-300 text-amber-900'],
+      ['sectors','Sector to confirm',tPipe.d,'fa-tags','Approved tenders whose sector is not confirmed yet (all dates)','bg-violet-50 border-violet-300 text-violet-900'],
+      ['notify','Ready to notify',tBc&&tBc.pending!=null?tBc.pending:null,'fa-bell','Tenders visible to users since the last notification update','bg-emerald-50 border-emerald-300 text-emerald-900']];
+    return `<div class="grid grid-cols-2 sm:grid-cols-5 gap-2" role="group" aria-label="What is waiting">`+steps.map(([k,l,n,i,tip,cls],j)=>{
+      const on=n!=null&&n>0,act=(k===tStage&&tView==='images')||(k==='sectors'&&tView==='sector');
+      return `<button data-k="tpipe" data-s="${k}" title="${esc(tip)}" class="text-left rounded-2xl border px-3 py-2 transition ${on?cls:'bg-white border-gray-200 text-gray-400'} ${act?'ring-2 ring-gray-900':''}">
+        <span class="flex items-center gap-1.5 text-[11px] font-bold"><span class="w-4 h-4 rounded-full bg-black/10 text-[10px] flex items-center justify-center">${j+1}</span>${l}</span>
+        <span class="flex items-center gap-2 mt-0.5"><span class="text-2xl font-extrabold leading-none">${n==null?'-':n}</span>${n===0?'<i class="fas fa-circle-check text-emerald-500 text-sm" aria-label="All done"></i>':`<i class="fas ${i} text-sm opacity-60"></i>`}</span></button>`}).join('')+`</div>`
+      +((tPipe.a+tPipe.b)>0?`<div class="flex flex-wrap items-center gap-2 pt-1"><button data-k="tbatch" class="${btn1}"><i class="fas fa-bolt"></i> Read text + add all waiting tenders (${tPipe.a+tPipe.b})</button><span class="text-[11px] text-gray-500">Does steps 1 and 2 for every image that is waiting, one after the other. You check the new tenders afterwards.</span></div>`:'');
   }
   function paintTenders(){
     if(TR&&tById(TR))return paintReview();TR=null;
     if(tView==='sector')return paintSectorView();
     const lab='text-[11px] font-bold';
-    main().innerHTML=tNav()+(timgErr?warn('<b>Tender images is not set up yet.</b> Run <code>supabase-step3-tender-images.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
+    main().innerHTML=tNav()+tPipeBar()+tMeters()+(timgErr?warn('<b>Tender images is not set up yet.</b> Run <code>supabase-step3-tender-images.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
     +`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">
       <p class="text-xs font-bold">1. Newspaper details <span class="font-normal text-gray-500">(kept for the next image)</span></p>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -1424,8 +1771,9 @@ const K=(()=>{
       <input id="t-cam" type="file" accept="image/*" capture="environment" class="hidden">
       <p class="text-[11px] text-gray-500">JPG, PNG or WebP, up to 1 MB. After you pick or take a photo you can crop it, rotate it and make it easier to read. If you change nothing, it is uploaded exactly as it is. This month: <b>${tMonth}</b> of about 1,000 images.${tUse?` Text readings this month: OCR.space <b>${tUse.ocrspace}</b> of 25,000, Groq AI <b>${tUse.groq||0}</b>, Gemini <b>${tUse.gemini}</b>.`:''}</p>
     </div>`
-    +`<h2 class="font-extrabold text-lg pt-1">Uploaded images <span class="text-sm font-normal text-gray-500">(latest ${timgs.length})</span></h2>`
-    +(!timgErr&&!timgs.length?'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No images yet.</p>':'')
+    +(tStage?`<div class="flex flex-wrap items-center gap-2 pt-1"><h2 class="font-extrabold text-lg">${esc((TST[tStage]||[0,tStage])[1])} <span class="text-sm font-normal text-gray-500">(${timgs.length}${timgs.length>=60?'+':''} image${timgs.length===1?'':'s'})</span></h2><button data-k="tpipe" data-s="${esc(tStage)}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-xl"><i class="fas fa-xmark"></i> Show all images</button></div>`
+      :`<h2 class="font-extrabold text-lg pt-1">Uploaded images <span class="text-sm font-normal text-gray-500">(latest ${timgs.length})</span></h2>`)
+    +(!timgErr&&!timgs.length?`<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">${tStage?'Nothing here: this stage is done.':'No images yet.'}</p>`:'')
     +timgs.map(x=>{const st=TST[x.status]||TST.uploaded,u=x.image_path&&tUrl[x.image_path];
       return `<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex items-center gap-3">
         ${u?`<button data-k="tview" data-id="${esc(x.id)}" class="flex-shrink-0" aria-label="View image"><img src="${esc(u)}" alt="Tender image" class="w-14 h-14 object-cover rounded-lg border"></button>`:'<div class="w-14 h-14 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0"><i class="fas fa-image"></i></div>'}
@@ -1482,9 +1830,10 @@ const K=(()=>{
     if(data&&data.error){const e=new Error(data.error);e.blocked=!!data.blocked;e.debug=data.debug;throw e}
     return data;
   }
+  const tPending=async()=>{const r=await sb.from('tender_images').select('*').in('status',['uploaded','text_read']).not('image_path','is',null).order('created_at',{ascending:true}).limit(200);if(r.error)throw r.error;return r.data||[]};
   const tMsg=(h,bad)=>{const m=$('t-ocrmsg');if(m){m.className='text-[11px] '+(bad?'text-red-700 font-bold':'text-gray-600');m.innerHTML=h}};
   const tCount=()=>{const a=$('t-text'),c=$('t-chars');if(a&&c)c.textContent=a.value.length.toLocaleString()+' characters'};
-  const tBusy=on=>document.querySelectorAll('#k-modal-box [data-k^="tocr"],#k-modal-box [data-k="tbrowser"],#k-modal-box [data-k="tsavetext"],#k-modal-box [data-k="tparse"],#k-modal-box [data-k="tpreview"]').forEach(b=>b.disabled=on);
+  const tBusy=on=>document.querySelectorAll('#k-modal-box [data-k^="tocr"],#k-modal-box [data-k="tbrowser"],#k-modal-box [data-k="tsavetext"],#k-modal-box [data-k="tparse"],#k-modal-box [data-k="tpreview"],#k-modal-box [data-k="tone"]').forEach(b=>b.disabled=on);
   Object.assign(ACT,{
     tread(t){const x=tById(t.dataset.id);if(!x)return;const u=tUrl[x.image_path];
       modal(`<h2 class="font-extrabold text-lg mb-2">Read text <span class="text-sm font-normal text-gray-500">${esc(x.source_paper||'')}${x.page?` &middot; p. ${esc(x.page)}`:''}</span></h2>
@@ -1506,7 +1855,7 @@ const K=(()=>{
         <p id="t-chars" class="text-[11px] text-gray-500"></p>
         <label class="flex items-center gap-2 text-[11px] font-bold pt-1"><input type="checkbox" id="t-multi" class="w-4 h-4"> This image has several tenders (otherwise the whole text is ONE tender = one row)</label>
         <div id="t-prev" class="space-y-2 pt-2"></div>
-        <div class="flex justify-end gap-2 pt-3"><button data-k="tdone" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Close</button><button data-k="tsavetext" data-id="${esc(x.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl">Save text</button><button data-k="tpreview" data-id="${esc(x.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-eye"></i> Preview rows</button><button data-k="tparse" data-id="${esc(x.id)}" class="${btn1}"><i class="fas fa-table-list"></i> Turn into rows</button></div>`);
+        <div class="flex justify-end gap-2 pt-3"><button data-k="tdone" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Close</button><button data-k="tsavetext" data-id="${esc(x.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl">Save text</button><button data-k="tpreview" data-id="${esc(x.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-eye"></i> Preview rows</button><button data-k="tparse" data-id="${esc(x.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-table-list"></i> Add tender to tenders table</button><button data-k="tone" data-id="${esc(x.id)}" class="${btn1}" title="Reads the text (if there is none yet) and adds the tender to the tenders table, in one go"><i class="fas fa-bolt"></i> Read text + add tender</button></div>`);
       $('k-modal-box').classList.add('!max-w-3xl');tCount();$('t-text').oninput=tCount},
     async tocr(t){const x=tById(t.dataset.id),ta=$('t-text');if(!x)return;
       if(ta.value.trim()&&!confirm('Replace the text in the box with a new reading?'))return;
@@ -1516,7 +1865,7 @@ const K=(()=>{
         const r=await tFn(body);
         if(!r||typeof r.text!=='string'||!r.text.trim())throw new Error('The reader answered but sent back no text. The ocr-tender function on Supabase is probably an old version. Press "Check setup", then deploy the latest ocr-tender.');
         const ta2=$('t-text')||ta;ta2.value=r.text;tCount();x.ocr_text=r.text;x.ocr_provider=p;x.status=r.status||x.status;
-        if(tUse)tUse[p]=(tUse[p]||0)+1;
+        tBump(p);
         tMsg(`Done and saved (${r.text.length.toLocaleString()} characters). Check the Arabic against the image, fix mistakes, then press Save text.`)}
       catch(e){tMsg(esc(e.message)+(e.blocked&&p==='ocrspace'?` <button data-k="tbrowser" data-id="${esc(x.id)}" class="underline font-bold text-brand-700">Try from this browser</button>`:''),true)}
       finally{tBusy(false)}},
@@ -1535,7 +1884,7 @@ const K=(()=>{
         const patch={ocr_text:text,ocr_provider:'ocrspace',updated_at:new Date().toISOString()};if(['uploaded','text_read'].includes(x.status))patch.status='text_read';
         const u=await sb.from('tender_images').update(patch).eq('id',x.id);if(u.error)throw u.error;
         await sb.from('ocr_log').insert({image_id:x.id,provider:'ocrspace',via:'browser',ok:true,chars:text.length});
-        Object.assign(x,patch);$('t-text').value=text;tCount();if(tUse)tUse.ocrspace++;
+        Object.assign(x,patch);$('t-text').value=text;tCount();tBump('ocrspace');
         tMsg(`Done from this browser and saved (${text.length.toLocaleString()} characters).`)}
       catch(e){tMsg(esc(e.message),true)}finally{tBusy(false)}},
     async tsavetext(t){const x=tById(t.dataset.id);if(!x)return;const text=$('t-text').value.trim();
@@ -1672,9 +2021,50 @@ const K=(()=>{
   async function loadReview(){
     const r=await sb.from('tenders').select('*').eq('image_id',TR).order('position').order('created_at');
     trErr=!!r.error;trMsg=r.error?r.error.message:'';trows=trErr?[]:(r.data||[]);
+    tRecentBy={};
+    const since=new Date(Date.now()-30*864e5).toISOString();
+    const q=await sb.from('tenders').select('id,entity,subject,session_date,source_paper,page,publish_date').or(`image_id.is.null,image_id.neq.${TR}`).gte('created_at',since).not('session_date','is',null).order('created_at',{ascending:false}).limit(1500);
+    (q.error?[]:(q.data||[])).forEach(o=>(tRecentBy[o.session_date]=tRecentBy[o.session_date]||[]).push(o));
   }
-  const tSum=()=>{const e=$('t-sum');if(e){const ok=trows.filter(r=>r.status==='approved').length;e.textContent=`${trows.length} tender${trows.length===1?'':'s'}, ${ok} approved`}};
-  const tRowCls=r=>r.status==='approved'?'bg-emerald-50':'';
+
+  // ---- Warnings: red = must fix, amber = check it, grey = for your information
+  function tDupOf(r){
+    if(!r.session_date)return '';
+    const e=tFold(r.entity).slice(0,60),sj=tFold(r.subject).slice(0,120);if(!e||!sj)return '';
+    const same=o=>tSim(e,tFold(o.entity).slice(0,60))>=.85&&tSim(sj,tFold(o.subject).slice(0,120))>=.8;
+    const sib=trows.find(o=>o.id!==r.id&&o.session_date===r.session_date&&same(o));
+    if(sib)return `row ${sib.position||'?'} of this image`;
+    const o=(tRecentBy[r.session_date]||[]).find(same);
+    return o?`${o.source_paper||'an earlier tender'}${o.page?' p. '+o.page:''}${o.publish_date?' ('+fd(o.publish_date)+')':''}`:'';
+  }
+  function tWarns(r){
+    const w=[],ent=String(r.entity||'').trim(),sub=String(r.subject||'').trim(),raw=String(r.session_date_raw||'').trim();
+    if(!ent)w.push(['bad','No entity']);
+    if(!sub)w.push(['bad','No subject']);else if(sub.length<15)w.push(['warn','Subject is very short']);
+    if(!r.session_date)w.push(tGiven(raw)?['warn','Session date not read']:(raw?['info','Session date not stated']:['warn','No session date']));
+    else if(r.session_date<today())w.push(['warn','Session date already passed']);
+    if(r.flags&&/year-guessed/.test(r.flags))w.push(['warn','Year was guessed']);
+    if(r.flags&&/date-swapped/.test(r.flags))w.push(['warn','Day and month were swapped']);
+    if(!String(r.booklet_price_raw||'').trim()&&r.booklet_price==null)w.push(['warn','Booklet price is empty']);
+    else if(r.booklet_price==null&&tGiven(r.booklet_price_raw))w.push(['info','Price has no number']);
+    if(ent&&!tEntErr&&tEnt.length){const m=tEntMatch(ent);if(m&&m.kind==='near')w.push(['warn','Looks like a known entity']);else if(!m)w.push(['info','New entity'])}
+    const d=tDupOf(r);if(d)w.push(['warn','Possible duplicate of '+d]);
+    return w;
+  }
+  const tNeeds=r=>tWarns(r).some(x=>x[0]!=='info');
+  const tClean=r=>tValid(r)&&!tNeeds(r);
+  const tShow=r=>!tWarnOnly||!tValid(r)||tNeeds(r);
+  const TWC={bad:'bg-red-100 text-red-800',warn:'bg-amber-100 text-amber-900',info:'bg-gray-100 text-gray-600'};
+  const tWarnChips=r=>{const w=tWarns(r);return w.length?w.map(([t,l])=>`<span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${TWC[t]}">${t==='info'?'':'<i class="fas fa-triangle-exclamation"></i> '}${esc(l)}</span>`).join(' ')
+    :'<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800"><i class="fas fa-check"></i> Looks clean</span>'};
+  const tCleanN=()=>trows.filter(r=>r.status!=='approved'&&tClean(r)).length;
+  function tWarnAll(){
+    trows.forEach(r=>document.querySelectorAll(`[data-warn="${r.id}"]`).forEach(e=>{e.innerHTML=tWarnChips(r)}));
+    const b=$('t-cleanbtn');if(b)b.innerHTML=`<i class="fas fa-wand-magic-sparkles"></i> Approve clean (${tCleanN()})`;
+    const o=$('t-warnonly');if(o)o.className=`text-xs font-bold px-3 py-2 rounded-xl ${tWarnOnly?'bg-gray-900 text-white':'bg-gray-100 hover:bg-gray-200'}`;
+  }
+  const tSum=()=>{const e=$('t-sum');if(e){const ok=trows.filter(r=>r.status==='approved').length,w=trows.filter(r=>r.status!=='approved'&&tValid(r)&&tNeeds(r)).length;e.textContent=`${trows.length} tender${trows.length===1?'':'s'}, ${ok} approved`+(w?`, ${w} with warnings`:'')}tWarnAll()};
+  const tRowCls=r=>(r.status==='approved'?'bg-emerald-50':'')+(tShow(r)?'':' hidden');
   const tOkBtn=r=>`<button data-k="tok" data-id="${esc(r.id)}" class="w-9 h-9" aria-label="${r.status==='approved'?'Approved: press to undo':'Approve this row'}" title="${r.status==='approved'?'Approved. Press to undo':'Approve this row'}"><i class="fas ${r.status==='approved'?'fa-circle-check text-emerald-600':'fa-circle text-gray-300'} text-lg"></i></button>`;
   function paintReview(){
     const img=tById(TR),u=img&&tUrl[img.image_path],amber=(on)=>on?' !bg-amber-100':'';
@@ -1690,14 +2080,17 @@ const K=(()=>{
       <button data-k="tentman" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-building-columns"></i> Entities</button>
       <button data-k="tclassify" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-tags"></i> Classify</button>
       <button data-k="tadd" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-plus"></i> Add row</button>
+      <button data-k="twarnonly" id="t-warnonly" class="text-xs font-bold px-3 py-2 rounded-xl ${tWarnOnly?'bg-gray-900 text-white':'bg-gray-100 hover:bg-gray-200'}" title="Hide the rows that look clean"><i class="fas fa-triangle-exclamation"></i> Warnings only</button>
+      <button data-k="tapproveclean" id="t-cleanbtn" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-3 py-2 rounded-xl whitespace-nowrap" title="Approve only the rows that have no red or amber tag"><i class="fas fa-wand-magic-sparkles"></i> Approve clean (${tCleanN()})</button>
       <button data-k="tapproveall" class="${btn1}"><i class="fas fa-check-double"></i> Approve all</button></div>
-    <p class="text-[11px] text-gray-600">Check each row against the image and fix mistakes (the cells save when you leave them). <b class="bg-amber-100 px-1">Amber</b> = the date or price could not be read: hover to see what was printed. Press the circle to approve a row. <b>Sectors:</b> <span class="bg-amber-100 px-1">amber</span> = suggested by the keywords, <span class="bg-emerald-100 px-1">green</span> = confirmed by you.</p>`
+    <p class="text-[11px] text-gray-600">Check each row against the image and fix mistakes (the cells save when you leave them). <b class="bg-amber-100 px-1">Amber</b> = the date or price could not be read: hover to see what was printed. Press the circle to approve a row. <b>Tags:</b> <span class="bg-red-100 px-1">red</span> = must fix, <span class="bg-amber-100 px-1">amber</span> = check it, <span class="bg-gray-100 px-1">grey</span> = just so you know. <b>Approve clean</b> approves only rows with no red or amber tag. <b>Sectors:</b> <span class="bg-amber-100 px-1">amber</span> = suggested by the keywords, <span class="bg-emerald-100 px-1">green</span> = confirmed by you.</p>`
     +(trows.length&&tRV==='cards'?tCards(amber):trows.length?`<div class="bg-white border border-gray-300 rounded-xl overflow-auto" style="max-height:calc(100vh - 16rem)"><table class="border-collapse text-sm" style="min-width:100%"><thead><tr>
-      ${['','#','Entity','Subject','Sectors','Booklet price','Session date','Bid bond','Link',''].map((h,i)=>`<th class="sticky top-0 z-10 bg-gray-100 border border-gray-300 px-2 py-2 text-left text-xs font-bold whitespace-nowrap">${h}</th>`).join('')}</tr></thead><tbody>`
+      ${['','#','Check','Entity','Subject','Sectors','Booklet price','Session date','Bid bond','Link',''].map((h,i)=>`<th class="sticky top-0 z-10 bg-gray-100 border border-gray-300 px-2 py-2 text-left text-xs font-bold whitespace-nowrap">${h}</th>`).join('')}</tr></thead><tbody>`
       +trows.map(r=>{const raw=r.session_date_raw?` title="Printed: ${esc(r.session_date_raw)}"`:'',rp=r.booklet_price_raw?` title="Printed: ${esc(r.booklet_price_raw)}"`:'';
         return `<tr data-row="${esc(r.id)}" class="${tRowCls(r)} align-top">
         <td class="border border-gray-300 text-center">${tOkBtn(r)}</td>
         <td class="border border-gray-300 px-2 py-1.5 text-xs text-gray-500">${r.position||''}</td>
+        <td data-warn="${esc(r.id)}" class="border border-gray-300 px-1.5 py-1.5 min-w-[10rem] space-x-1 space-y-1">${tWarnChips(r)}</td>
         <td class="border border-gray-300 p-0 ${TW.entity}"><textarea data-tc="entity" data-id="${esc(r.id)}" dir="rtl" lang="ar" rows="1" class="${TC}${amber(!r.entity)}">${esc(r.entity)}</textarea><div data-entchip="${esc(r.id)}" class="px-2 pb-1">${tEntChip(r)}</div></td>
         <td class="border border-gray-300 p-0 ${TW.subject}"><textarea data-tc="subject" data-id="${esc(r.id)}" dir="rtl" lang="ar" rows="1" class="${TC}${amber(!r.subject)}">${esc(r.subject)}</textarea></td>
         ${tSectCell(r)}
@@ -1716,12 +2109,13 @@ const K=(()=>{
     const L='text-[11px] font-bold text-gray-600',F='w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600';
     return `<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">`+trows.map(r=>{
       const rawD=r.session_date_raw?` title="Printed: ${esc(r.session_date_raw)}"`:'',rawP=r.booklet_price_raw?` title="Printed: ${esc(r.booklet_price_raw)}"`:'';
-      return `<div data-row="${esc(r.id)}" data-card="1" class="rounded-2xl border border-gray-200 shadow-sm p-3 space-y-2.5 ${r.status==='approved'?'bg-emerald-50':'bg-white'}">
+      return `<div data-row="${esc(r.id)}" data-card="1" class="rounded-2xl border border-gray-200 shadow-sm p-3 space-y-2.5 ${r.status==='approved'?'bg-emerald-50':'bg-white'}${tShow(r)?'':' hidden'}">
         <div class="flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-gray-900 text-white text-xs font-bold flex items-center justify-center">${r.position||''}</span>
           <span class="flex-1 text-[11px] text-gray-500">${r.flags?'Check: '+esc(r.flags):''}</span>
           ${tOkBtn(r)}
           <button data-k="traw" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Show the original text" title="Original text"><i class="fas fa-file-lines text-xs"></i></button>
           <button data-k="trdel" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete this row" title="Delete"><i class="fas fa-trash text-xs"></i></button></div>
+        <div data-warn="${esc(r.id)}" class="flex flex-wrap gap-1">${tWarnChips(r)}</div>
         <label class="${L} block">Announcing entity and address (الجهة المعلنة)<textarea data-tc="entity" data-id="${esc(r.id)}" dir="rtl" lang="ar" rows="3" class="${F} font-bold${amber(!r.entity)}">${esc(r.entity)}</textarea></label>
         <div data-entchip="${esc(r.id)}">${tEntChip(r)}</div>
         <label class="${L} block">Subject (الموضوع)<textarea data-tc="subject" data-id="${esc(r.id)}" dir="rtl" lang="ar" rows="4" class="${F}${amber(!r.subject)}">${esc(r.subject)}</textarea></label>
@@ -1787,6 +2181,85 @@ const K=(()=>{
     }else{closeM();paintTenders();toast(`${r.count} tender${r.count===1?'':'s'} found${r.flagged?`, ${r.flagged} need a closer look`:''}. Please review every row.`)}
     return r;
   }
+  // ---- Admin improvement 2: ONE button = read the text + make the rows; the same for every waiting image ----
+  let tBat=null;
+  async function tOne(x,o,say){ // reads the text if there is none, then makes the rows. Returns what happened.
+    let had=(x.ocr_text||'').trim().length>=20,used=x.ocr_provider||'';
+    if(!had){
+      const go=async p=>{const body={action:'read',image_id:x.id,provider:p,engine:'1'},bl=await tStripBlobs(x);
+        if(bl)body.strips=await Promise.all(bl.map(tB64));
+        const r=await tFn(body);if(!r||typeof r.text!=='string'||r.text.trim().length<20)throw new Error('No readable text was found');return r};
+      let r;
+      try{say('reading the text with '+tPName(o.prov)+'...');r=await go(o.prov);used=o.prov}
+      catch(e){if(!o.fb||o.fb===o.prov)throw e;say(tPName(o.prov)+' failed ('+e.message+'); trying '+tPName(o.fb)+'...');r=await go(o.fb);used=o.fb}
+      x.ocr_text=r.text;x.ocr_provider=used;x.status=r.status||'text_read';
+    }
+    if(o.noparse)return {read:!had,provider:used};
+    say('adding the tender to the tenders table...');
+    const p=await tFn({image_id:x.id,multi:!!o.multi},'parse-tenders');x.status='parsed';
+    return {read:!had,provider:used,rows:p.saved??p.count,flagged:p.flagged||0};
+  }
+  const tBatLine=(i,ic,cls,t)=>{const e=document.querySelector(`[data-bl="${i}"]`);if(e)e.innerHTML=`<i class="fas ${ic} ${cls} w-4 text-center"></i> ${t}`};
+  Object.assign(ACT,{
+    async tone(t){const x=tById(t.dataset.id),ta=$('t-text');if(!x)return;
+      const typed=ta.value.trim();
+      if(typed.length>=20&&typed!==(x.ocr_text||'')){const patch={ocr_text:typed,updated_at:new Date().toISOString()};const u=await sb.from('tender_images').update(patch).eq('id',x.id);if(u.error)throw u.error;Object.assign(x,patch)}
+      const c=tCnt[x.id];if(c&&c.n-c.ok>0&&!confirm(`This image already has ${c.n-c.ok} draft row${c.n-c.ok===1?'':'s'}. They will be replaced (approved rows stay). Continue?`))return;
+      const multi=$('t-multi')&&$('t-multi').checked;tBusy(true);$('t-prev').innerHTML='';
+      try{const r=await tOne(x,{prov:'ocrspace',fb:'groq',noparse:true},m=>tMsg('Step 1 of 2: '+esc(m)));
+        const a=$('t-text');if(a){a.value=x.ocr_text||'';tCount()}
+        if(r.read)tBump(r.provider);
+        tMsg('Step 2 of 2: the AI is splitting the text into tenders and the rows are being saved... up to 40 seconds');
+        await tParseRun(x,true)}
+      catch(e){tMsg(esc(e.message),true);const pv=$('t-prev');if(pv)pv.innerHTML=tDbg(e.debug)}finally{tBusy(false)}},
+    async tbatch(){
+      main().style.opacity='.6';let list;
+      try{list=await tPending()}finally{main().style.opacity=''}
+      if(!list.length)return toast('Nothing is waiting.',false);
+      const need=list.filter(x=>(x.ocr_text||'').trim().length<20).length,sel='border border-gray-300 rounded-lg text-xs p-1';
+      modal(`<h2 class="font-extrabold text-lg mb-1">Read text + add tenders for all waiting images</h2>
+        <p class="text-sm text-gray-700">${list.length} image${list.length===1?'':'s'} waiting (${need} need the text read, ${list.length-need} already have text). Each one is read and added to the tenders table, one after the other. They are saved as <b>drafts</b>: nothing is published until you review and approve them.</p>
+        <div class="space-y-2 my-3 text-[11px] font-bold">
+          <label class="flex items-center gap-2">Read the text with <select id="tb-prov" class="${sel}"><option value="ocrspace">OCR.space</option><option value="groq">Groq AI</option><option value="gemini">Gemini</option></select></label>
+          <label class="flex items-center gap-2"><input type="checkbox" id="tb-fb" checked class="w-4 h-4"> If it fails, try another reader once</label>
+          <label class="flex items-center gap-2"><input type="checkbox" id="tb-multi" class="w-4 h-4"> These images have several tenders each (otherwise one image = one tender)</label>
+          <label class="flex items-center gap-2"><input type="checkbox" id="tb-old" checked class="w-4 h-4"> Oldest first (untick for newest first)</label>
+        </div>
+        <p class="text-[11px] text-gray-500">Keep this window open while it works (about 20 to 60 seconds per image). Press Stop at any time: finished images stay finished. A failed image is skipped and listed, and you can retry it later.</p>
+        <div id="tb-log" class="hidden mt-3 space-y-1 max-h-[38vh] overflow-auto text-xs border border-gray-200 rounded-lg p-2 bg-gray-50"></div>
+        <p id="tb-sum" class="text-xs font-bold mt-2"></p>
+        <div class="flex justify-end gap-2 pt-3"><button data-k="tbatchdone" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Close</button><button data-k="tbatchstop" id="tb-stop" class="hidden text-xs bg-red-50 text-red-700 hover:bg-red-100 font-bold px-4 py-2.5 rounded-xl"><i class="fas fa-stop"></i> Stop</button><button data-k="tbatchgo" id="tb-go" class="${btn1}"><i class="fas fa-bolt"></i> Start (${list.length})</button></div>`);
+      
+      tBat={list,stop:false}},
+    tbatchstop(){if(tBat)tBat.stop=true;const b=$('tb-stop');if(b){b.disabled=true;b.textContent='Stopping after this image...'}},
+    async tbatchdone(){if(tBat)tBat.stop=true;closeM();tBat=null;main().innerHTML=LOADING;await loadTenderImages();paintTenders()},
+    async tbatchgo(){
+      if(!tBat||tBat.run)return;const B=tBat;B.run=true;B.stop=false;
+      const prov=$('tb-prov').value,o={prov,fb:$('tb-fb').checked?(prov==='groq'?'ocrspace':'groq'):'',multi:$('tb-multi').checked},list=$('tb-old').checked?B.list:[...B.list].reverse();
+      $('tb-go').classList.add('hidden');$('tb-stop').classList.remove('hidden');
+      document.querySelectorAll('#k-modal-box input,#k-modal-box select').forEach(i=>i.disabled=true);
+      const L=$('tb-log');L.classList.remove('hidden');
+      L.innerHTML=list.map((x,i)=>`<p data-bl="${i}" class="flex items-start gap-1.5"><i class="fas fa-clock text-gray-400 w-4 text-center"></i> ${esc(x.source_paper||'No source')}${x.page?' &middot; p. '+esc(x.page):''}</p>`).join('');
+      let done=0,fail=0,rows=0,flag=0,i=0;
+      const sum=()=>{const e=$('tb-sum');if(e)e.textContent=`${done} done, ${fail} failed, ${list.length-done-fail} left. ${rows} tender${rows===1?'':'s'} added${flag?`, ${flag} need a closer look`:''}.`};
+      for(;i<list.length;i++){
+        if(B.stop||!$('tb-log')||$('k-modal').classList.contains('hidden'))break;
+        const x=list[i],lbl=`${esc(x.source_paper||'No source')}${x.page?' &middot; p. '+esc(x.page):''}`;
+        tBatLine(i,'fa-spinner fa-spin','text-brand-600',lbl+' ...');
+        try{const r=await tOne(x,o,m=>tBatLine(i,'fa-spinner fa-spin','text-brand-600',lbl+': '+esc(m)));
+          done++;rows+=+r.rows||0;flag+=r.flagged||0;
+          if(r.read)tBump(r.provider);
+          tBatLine(i,'fa-circle-check','text-emerald-600',`${lbl}: ${r.rows??'?'} tender${r.rows===1?'':'s'} added${r.read?' (read with '+tPName(r.provider)+')':' (text already there)'}${r.flagged?`, ${r.flagged} to check`:''}`)}
+        catch(e){fail++;tBatLine(i,'fa-circle-xmark','text-red-600',`${lbl}: <span class="text-red-700">${esc(e.message)}</span>`)}
+        sum();
+        if(i<list.length-1&&!B.stop)await new Promise(r=>setTimeout(r,800));
+      }
+      B.run=false;
+      const s=$('tb-sum');if(s){sum();s.insertAdjacentHTML('beforeend',B.stop||i<list.length?' Stopped.':' Finished.');
+        const sb2=$('tb-stop');if(sb2)sb2.classList.add('hidden');
+        const d=document.querySelector('[data-k="tbatchdone"]');if(d){d.className=btn1;d.innerHTML='<i class="fas fa-table-list"></i> Close and go to review'}}
+    }
+  });
   Object.assign(ACT,{
     async tparse(t){const x=tById(t.dataset.id),ta=$('t-text');if(!x)return;const text=ta.value.trim();
       if(text.length<20)return toast('Read the text first.',false);
@@ -1801,7 +2274,7 @@ const K=(()=>{
       tBusy(true);$('t-prev').innerHTML='';tMsg('Preview: saving the text, then asking the AI... nothing is saved as rows');
       try{if(text!==(x.ocr_text||'')){const patch={ocr_text:text,updated_at:new Date().toISOString()};const u=await sb.from('tender_images').update(patch).eq('id',x.id);if(u.error)throw u.error;Object.assign(x,patch)}
         const r=await tFn({image_id:x.id,dry_run:true,multi:$('t-multi')?$('t-multi').checked:false},'parse-tenders');
-        $('t-prev').innerHTML=`<div class="text-xs bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-2.5"><b><i class="fas fa-eye"></i> Preview only: nothing was saved.</b> ${r.count} tender${r.count===1?'':'s'} found${r.flagged?`, ${r.flagged} need a closer look`:''}. If this looks right, press <b>Turn into rows</b>.</div>`+tDbg(r.debug)+tPrevCards(r.rows||[]);
+        $('t-prev').innerHTML=`<div class="text-xs bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-2.5"><b><i class="fas fa-eye"></i> Preview only: nothing was saved.</b> ${r.count} tender${r.count===1?'':'s'} found${r.flagged?`, ${r.flagged} need a closer look`:''}. If this looks right, press <b>Add tender to tenders table</b>.</div>`+tDbg(r.debug)+tPrevCards(r.rows||[]);
         tMsg('Preview ready.')}
       catch(e){tMsg(esc(e.message),true);$('t-prev').innerHTML=tDbg(e.debug)}finally{tBusy(false)}},
     async trev(t){TR=t.dataset.id;await loadReview();paintTenders()},
@@ -1819,6 +2292,12 @@ const K=(()=>{
     async tapproveall(){const ok=trows.filter(r=>r.status!=='approved'&&tValid(r)),bad=trows.filter(r=>r.status!=='approved'&&!tValid(r)).length;
       if(!ok.length)return toast(bad?'Fill in entity and subject first.':'Everything is already approved.',false);
       if(!confirm(`Approve ${ok.length} row${ok.length===1?'':'s'}?${bad?`\n\n${bad} row${bad===1?' is':'s are'} missing entity or subject and will stay as drafts.`:''}\n\nHave you checked them against the image?`))return;
+      const u=await sb.from('tenders').update({status:'approved',updated_at:new Date().toISOString()}).in('id',ok.map(r=>r.id));if(u.error)throw u.error;
+      ok.forEach(r=>r.status='approved');paintReview();await tImgStatus();toast(`${ok.length} approved`)},
+    twarnonly(){tWarnOnly=!tWarnOnly;paintReview()},
+    async tapproveclean(){const ok=trows.filter(r=>r.status!=='approved'&&tClean(r)),rest=trows.filter(r=>r.status!=='approved'&&!tClean(r)).length;
+      if(!ok.length)return toast(rest?'No clean rows: every remaining row has a tag to check.':'Everything is already approved.',false);
+      if(!confirm(`Approve ${ok.length} clean row${ok.length===1?'':'s'}?${rest?`\n\n${rest} row${rest===1?'':'s'} with a red or amber tag stay as drafts for you to check.`:''}\n\nClean means nothing was flagged (entity, subject, date, price, duplicates). A quick look at the image is still wise.`))return;
       const u=await sb.from('tenders').update({status:'approved',updated_at:new Date().toISOString()}).in('id',ok.map(r=>r.id));if(u.error)throw u.error;
       ok.forEach(r=>r.status='approved');paintReview();await tImgStatus();toast(`${ok.length} approved`)},
     async trdel(t){const r=trows.find(x=>x.id===t.dataset.id);if(!r||!confirm('Delete this row?'))return;
@@ -1892,7 +2371,7 @@ const K=(()=>{
     const none=tSV.filter(r=>!(r.sector_ids||[]).length),sug=tSV.filter(r=>(r.sector_ids||[]).length&&!r.sectors_confirmed);
     const grp=(key,title,list,extra='')=>`<details data-tg="${esc(key)}" ${tOpen.has(key)?'open':''} class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
       <summary class="px-3 py-3 cursor-pointer flex items-center gap-2 font-bold text-sm"><span class="flex-1">${esc(title)}</span>${extra}<span class="text-xs font-normal text-gray-500">${list.length}</span></summary>${list.length?list.map(tCard).join(''):'<p class="px-3 py-3 text-xs text-gray-500 border-t border-gray-100">No tenders in this period.</p>'}</details>`;
-    main().innerHTML=tNav()
+    main().innerHTML=tNav()+tPipeBar()
     +((tKwErr||tSVErr)?warn('<b>Sectors for tenders are not set up yet.</b> Run <code>supabase-step6-sectors.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
     +(!tSect.length&&!tKwErr?warn('There are no sectors yet. Add them first in <b>Users &amp; sectors</b>, then come back.'):'')
     +`<div class="bg-white p-3 rounded-2xl border border-gray-200 space-y-2">
@@ -1906,6 +2385,7 @@ const K=(()=>{
         <button data-k="tclassifyall" class="${btn1}"><i class="fas fa-tags"></i> Classify unclassified (${none.length})</button>
         <button data-k="tconfirmall" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-check-double"></i> Confirm suggested (${sug.length})</button>
         <button data-k="tkw" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-key"></i> Keywords</button>
+        <button data-k="texport" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap" title="Downloads the tenders of this period and filter"><i class="fas fa-file-export"></i> Export to Excel (${tSV.length})</button>
       </div>
       <p class="text-[11px] text-gray-500">${tSV.length} tender${tSV.length===1?'':'s'} in this period${tSV.length>=1000?' (showing the first 1,000)':''}. Tenders without the chosen date are not listed. A tender in several sectors appears under each. Classify only touches tenders that have no sector yet.</p></div>`
     +grp('_none','Unclassified',none)
@@ -2028,7 +2508,19 @@ const K=(()=>{
     const f=$('kw-'+TKF);if(f){f.scrollIntoView({block:'center'});f.focus()}
   }
   Object.assign(ACT,{
-    async tmode(t){tView=t.dataset.v;if(tView==='sector'){main().innerHTML=LOADING;await loadSectorData();await loadSectorView()}else{TR=null}paintTenders()},
+    async texport(){if(!tSV.length)return toast('Nothing to export in this period.',false);await loadXlsx();
+      const H=['#','Entity','Subject','Sectors','Sectors confirmed','Booklet price','Session date','Session time','Bid bond','Link','Source paper','Page','Publish date','Status'];
+      const sn=id=>{const x=tSect.find(v=>v.id===id);return x?x.name:id};
+      const ws=XLSX.utils.aoa_to_sheet([H,...tSV.map((r,i)=>[i+1,r.entity||'',r.subject||'',(r.sector_ids||[]).map(sn).join(', '),(r.sector_ids||[]).length?(r.sectors_confirmed?'Yes':'No'):'',r.booklet_price_raw||(r.booklet_price==null?'':r.booklet_price),r.session_date||'',r.session_time?String(r.session_time).slice(0,5):'',r.bid_bond||'',r.link||'',r.source_paper||'',r.page||'',r.publish_date||'',r.status==='approved'?'Approved':'Draft'])]);
+      ws['!cols']=[5,30,60,26,10,14,12,8,16,30,16,6,12,10].map(w=>({wch:w}));if(!ws['!views'])ws['!views']=[{rightToLeft:true}];
+      const wb=XLSX.utils.book_new();wb.Workbook={Views:[{RTL:true}]};XLSX.utils.book_append_sheet(wb,ws,'Tenders');
+      XLSX.writeFile(wb,`tenders-${TS.from||'start'}-to-${TS.to||'end'}-${today()}.xlsx`);toast(tSV.length+' tender'+(tSV.length===1?'':'s')+' exported')},
+    async tpipe(t){const k=t.dataset.s;
+      if(k==='notify'){const b=document.querySelector('[data-k="tnotify"]');if(b)b.click();return}
+      TR=null;main().innerHTML=LOADING;
+      if(k==='sectors'){tView='sector';TS.status='approved';TS.by='publish_date';TS.from='2000-01-01';TS.to='2100-12-31';tOpen.add('_none');await loadSectorData();await loadSectorView();await tPipeLoad();paintTenders();return}
+      tView='images';tStage=(tStage===k?'':k);await loadTenderImages();paintTenders()},
+    async tmode(t){tView=t.dataset.v;if(tView==='sector'){main().innerHTML=LOADING;await loadSectorData();await loadSectorView();await tPipeLoad()}else{TR=null}paintTenders()},
     async tclassify(){const r=await tClassify(trows);paintReview();toast(r.tried?`${r.hit} of ${r.tried} tender${r.tried===1?'':'s'} got suggested sectors. Please confirm them.`:'Every row already has a sector.',r.tried?r.hit>0:true)},
     async tclassifyall(){if(!tSV.filter(r=>!(r.sector_ids||[]).length).length)return toast('Nothing to classify in this period.',false);
       const r=await tClassify(tSV);paintSectorView();toast(`${r.hit} of ${r.tried} tender${r.tried===1?'':'s'} got suggested sectors. Please confirm them.`,r.hit>0)},
@@ -2051,13 +2543,27 @@ const K=(()=>{
     async tnotify(t){
       await tBcLoad();
       if(tBc.err){paintTenders();throw new Error('Run supabase-step11-tender-notifications.sql in the Supabase SQL Editor first, then press Refresh.')}
-      const n=tBc.pending||0,since=tBc.last?tWhen(tBc.last):'the beginning';
-      const msg=n?`Send the tender notification update?\n\n${n} tender${n===1?'':'s'} became visible to users since ${since} (approved with confirmed sectors).\n\nEach subscribed user will be told how many of them are in their own sectors, the next time they open the site.`
-                  :`No tender has been approved with confirmed sectors since ${since}.\n\nSend an update anyway? Users will see nothing unless new tenders exist in their sectors.`;
-      if(!confirm(msg))return;
-      t.disabled=true;
-      const r=await sb.from('tender_broadcasts').insert({note:null});t.disabled=false;if(r.error)throw r.error;
-      await tBcLoad();paintTenders();toast('Notification update sent')},
+      await tPipeLoad();
+      const h=await sb.from('tender_broadcasts').select('sent_at,note').order('sent_at',{ascending:false}).limit(11),hist=h.data||[];
+      let rel=[];if(hist.length){const q=await sb.from('tenders').select('released_at').eq('status','approved').eq('sectors_confirmed',true).not('released_at','is',null).gt('released_at',hist[hist.length-1].sent_at).limit(5000);rel=(q.data||[]).map(x=>x.released_at)}
+      const n=tBc.pending||0,since=tBc.last?tWhen(tBc.last):'the beginning',P=tPipe||{a:0,b:0,c:0,d:0};
+      const chk=(cnt,ok,warnTxt)=>cnt==null?`<span class="text-gray-400">?</span>`:cnt===0?`<span class="text-emerald-700"><i class="fas fa-circle-check"></i> ${ok}</span>`:`<span class="text-amber-800"><i class="fas fa-triangle-exclamation"></i> <b>${cnt}</b> ${warnTxt}</span>`;
+      const items=[[P.a,'All images have their text read','image(s) still waiting for text'],[P.b,'Every text has been added to the tenders table','image(s) with text but no tender added yet'],[P.c,'All tenders have been reviewed and approved','image(s) with tenders still waiting for your approval'],[P.d,'All approved tenders have a confirmed sector','approved tender(s) with a sector not confirmed (users will not see them yet)']];
+      const hrows=hist.slice(0,10).map((b,k)=>{const prev=hist[k+1],c=prev?rel.filter(r=>r>prev.sent_at&&r<=b.sent_at).length:null;return `<tr class="border-t border-gray-100"><td class="py-1 pr-3 whitespace-nowrap">${esc(tWhen(b.sent_at))}</td><td class="py-1 pr-3">${c==null?'-':c+' tender'+(c===1?'':'s')}</td><td class="py-1 text-gray-500">${esc(b.note||'')}</td></tr>`}).join('');
+      modal(`<h2 class="font-extrabold text-lg mb-1">Send tender notification update</h2>
+        <p class="text-sm text-gray-700"><b>${n}</b> tender${n===1?'':'s'} became visible to users since ${esc(since)}. Each subscribed user is told how many of them are in their own sectors, the next time they open the site.</p>
+        <p class="text-xs font-bold mt-3 mb-1">Checklist before you send</p>
+        <ul class="text-xs space-y-1 bg-gray-50 border border-gray-200 rounded-lg p-2.5">${items.map(([c,ok,w])=>`<li>${chk(c,ok,w)}</li>`).join('')}
+          <li>${n>0?`<span class="text-emerald-700"><i class="fas fa-circle-check"></i> ${n} new tender${n===1?'':'s'} to announce</span>`:`<span class="text-amber-800"><i class="fas fa-triangle-exclamation"></i> Nothing new to announce: users will see nothing</span>`}</li></ul>
+        <p class="text-[11px] text-gray-500 mt-1">Warnings do not stop you: unfinished tenders are simply not announced until they are approved with a confirmed sector.</p>
+        <label class="block text-[11px] font-bold mt-3">Note for your own history (optional, users do not see it)<input id="tn-note" maxlength="120" class="${mt}" placeholder="e.g. Sunday morning batch"></label>
+        <p class="text-xs font-bold mt-3 mb-1">Last updates sent</p>
+        ${hrows?`<table class="w-full text-[11px]"><thead><tr class="text-left text-gray-500"><th class="font-bold pr-3">When</th><th class="font-bold pr-3">Tenders announced</th><th class="font-bold">Note</th></tr></thead><tbody>${hrows}</tbody></table>`:'<p class="text-[11px] text-gray-500">None yet.</p>'}
+        <div class="flex justify-end gap-2 pt-3"><button data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button data-k="tnotifygo" class="${btn1}"><i class="fas fa-bell"></i> Send update</button></div>`);
+      $('k-modal-box').classList.add('!max-w-2xl')},
+    async tnotifygo(t){t.disabled=true;const note=($('tn-note')&&$('tn-note').value.trim().slice(0,120))||null;
+      const r=await sb.from('tender_broadcasts').insert({note});t.disabled=false;if(r.error)throw r.error;
+      closeM();$('k-modal-box').classList.remove('!max-w-2xl');await tBcLoad();await tPipeLoad();paintTenders();toast('Notification update sent')},
     tkw(){TKF='';tKwModal()},
     async tkwopen(t){TKF=(t&&t.dataset.s)||'';await loadSectorData();tKwModal()},
     tkwdone(){closeM();tView==='sector'&&paintSectorView()},
@@ -2088,6 +2594,7 @@ const K=(()=>{
     }
     const c=t.closest('[data-cell]');if(c){saveCell(c);return}
     if(t.id==='l-file'){const f=t.files[0];t.value='';if(f)importFile(f);return}
+    if(t.id==='d-file'){const f=t.files[0];t.value='';if(f)importDirFile(f);return}
     if(t.id==='l-st'){lStatus=t.value;paintLeadRows();return}
     if(t.id==='i-img'){const f=t.files[0];t.value='';if(f&&imgFor)uploadImage(imgFor,f)}
   });
@@ -2104,6 +2611,18 @@ const K=(()=>{
   });
 
   // ---- events ----
+  Object.assign(ACT,{
+    gsearch(){if(!me)return;modal(`<h2 class="font-extrabold text-lg mb-2">Search everything</h2>
+        <input id="gs-q" type="search" autocomplete="off" placeholder="Name, email, mobile, company, tender entity or subject, newspaper, city..." aria-label="Search everything" class="${inp}">
+        <div id="gs-res" class="mt-1 max-h-[60vh] overflow-auto"><p class="text-xs text-gray-500 mt-2">Type at least 2 letters. Searches users, tenders, tender images (newspaper name) and the directory.</p></div>
+        <div class="flex justify-end pt-3"><button data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Close</button></div>`);
+      $('k-modal-box').classList.add('!max-w-2xl');const i=$('gs-q');i.focus();i.oninput=()=>{clearTimeout(gsT);gsT=setTimeout(()=>gsRun(i.value),300)}},
+    gsgo(t){const {kind,id,v}=t.dataset;closeM();
+      if(kind==='user'){filter=v||'';tabK='clients';showPane('clients')}
+      else if(kind==='dir'){dF={q:v||'',status:'all',sector:'',type:''};showPane('directory')}
+      else if(kind==='tender'){if(!id)return toast('This tender has no image attached.',false);TR=id;tView='images';tStage='';showPane('tenders')}}
+  });
+  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&me){e.preventDefault();ACT.gsearch()}});
   document.addEventListener('click',async e=>{
     const t=e.target.closest('[data-k]');if(!t||!sb)return;const k=t.dataset.k,n=t.dataset.n,em=t.dataset.e;
     try{
@@ -2163,6 +2682,8 @@ const K=(()=>{
   document.addEventListener('submit',async e=>{
     const f=e.target.closest('[data-k-form]');if(!f)return;e.preventDefault();
     if(f.dataset.kForm==='lead')return saveLeadForm(f);
+    if(f.dataset.kForm==='dentry')return saveDirForm(f);
+    if(f.dataset.kForm==='dsector')return saveDirSector(f);
     const b0=f.querySelector('button:not([type=button])');
     if(f.dataset.kForm==='user'){
       const v=formVals(f),uid=f.dataset.u;b0.disabled=true;
@@ -2225,7 +2746,7 @@ const K=(()=>{
   return {start,go};
 })();
 
-showPane(/type=recovery/.test(location.hash)?'clients':(['#leads','#clients','#issues','#tenders'].includes(location.hash.split('&')[0])?location.hash.slice(1):'content'));
+showPane(/type=recovery/.test(location.hash)?'clients':(['#leads','#clients','#issues','#tenders','#directory'].includes(location.hash.split('&')[0])?location.hash.slice(1):'content'));
 </script>
 </body>
 </html>

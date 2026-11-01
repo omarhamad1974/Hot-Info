@@ -8,7 +8,7 @@
   window.KHIP={wa,setPrompts:a=>{if(a&&a.length)prompts=a}};
   if(!document.querySelector('link[href*="phosphor"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css';document.head.appendChild(l)}
   if(!document.querySelector('link[href*="styles.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='styles.css';document.head.appendChild(l)}
-  const legacyNav=[['top','ph-house',T('bar_home','Home')],['services','ph-seal-check',T('bar_services','IP Services')],['news','ph-newspaper',T('bar_news','News')],['jurisdictions','ph-globe-hemisphere-west',T('bar_jur','Jurisdiction')],['about','ph-info',T('bar_about','About')],['my-files','ph-folder-user',T('bar_files','My files')]];
+  const legacyNav=[['top','ph-house',T('bar_home','Home')],['services','ph-seal-check',T('bar_services','IP Services')],['news','ph-newspaper',T('bar_news','News')],['jurisdictions','ph-globe-hemisphere-west',T('bar_jur','Jurisdiction')],['about','ph-info',T('bar_about','About')],['my-files','ph-folder-user',T('bar_files','My files')],['directory','ph-address-book',T('bar_directory','Directory')]];
   const bar=document.createElement('div');bar.id='khip-bar';
   bar.innerHTML=`<div class="kin"><form><div class="kf"><i class="ph-light ph-whatsapp-logo"></i><input aria-label="${T('msg_wa','Message KHIP on WhatsApp')}" autocomplete="off"><button type="submit" class="ks" aria-label="${T('send','Send')}" title="${T('send','Send')}"><i class="ph-light ph-paper-plane-right"></i></button></div></form><nav></nav></div>`;
   // App-shell layout: the page scrolls inside #khip-page and the bar sits below it as a normal
@@ -37,6 +37,7 @@
     const b=e.target.closest('[data-go]');if(!b)return;const k=b.dataset.go,el=document.getElementById(k);
     if(k==='my-files'){location.href='my-stuff.html';return}
     if(k==='tenders'){location.href='tenders.html';return}
+    if(k==='directory'){location.href='directory.html';return}
     if(k==='about'){/about\.html/.test(location.pathname)?page.scrollTo({top:0,behavior:'smooth'}):location.href='about.html';return}
     if(k==='top')document.getElementById('app-top')?page.scrollTo({top:0,behavior:'smooth'}):location.href='index.html';
     else el&&el.offsetParent!==null?el.scrollIntoView({behavior:'smooth'}):location.href='index.html#'+k;

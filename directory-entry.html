@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="lang.js"></script>
+<title>Directory | KHIP Intellectual Properties</title>
+<meta name="description" content="Companies, institutions and freelancers: search, filter and contact them directly on WhatsApp.">
+<meta name="theme-color" content="#1d4ed8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="tailwind-config.js"></script>
+<script src="theme.js"></script>
+<script src="brand.js"></script>
+<script src="contact.js"></script>
+<script src="motion.js"></script>
+<script src="menu.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .d-in{width:100%;border:1px solid #d6d3d1;background:#fff;border-radius:.75rem;padding:.55rem .8rem;font:inherit;font-size:.875rem;color:rgb(var(--c-ink-rgb))}
+  .d-lab{display:block;font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:#78716c;margin-bottom:.25rem}
+  .d-chip{border:1px solid #d6d3d1;background:#fff;color:rgb(var(--c-ink-rgb));border-radius:999px;padding:.4rem 1rem;font-size:.8125rem;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+  .d-chip:hover{border-color:rgb(var(--c-ink-rgb))}
+  .d-chip[aria-pressed="true"]{background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))}
+  .d-grid{display:grid;gap:1.1rem;grid-template-columns:repeat(auto-fill,minmax(16.5rem,1fr))}
+  .d-card{display:flex;flex-direction:column;background:#fff;border:1px solid rgba(231,229,228,.9);border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05);overflow:hidden;transition:box-shadow .25s,transform .25s}
+  .d-card:hover{box-shadow:0 10px 28px rgba(0,0,0,.09);transform:translateY(-2px)}
+  .d-img{position:relative;aspect-ratio:16/10;background:linear-gradient(135deg,rgb(var(--c-sand-rgb) / .55),#f5f5f4);display:flex;align-items:center;justify-content:center;color:#a8a29e}
+  .d-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .d-offer{position:absolute;top:.6rem;inset-inline-start:.6rem;max-width:calc(100% - 1.2rem);background:rgb(var(--c-gold-rgb));color:#1b2433;font-size:.6875rem;font-weight:500;border-radius:999px;padding:.2rem .7rem;box-shadow:0 2px 8px rgba(0,0,0,.18);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;z-index:1}
+  .d-pill{display:inline-block;font-size:.6875rem;border-radius:999px;padding:.15rem .6rem}
+  .d-wa{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;flex:1;background:#1faa59;color:#fff;border-radius:999px;padding:.55rem 1rem;font-size:.875rem;transition:background .2s}
+  .d-wa:hover{background:#178a47}
+  .d-ic{width:2.4rem;height:2.4rem;border-radius:999px;border:1px solid #d6d3d1;display:inline-flex;align-items:center;justify-content:center;color:#57534e;transition:border-color .2s,color .2s;flex-shrink:0}
+  .d-ic:hover{border-color:rgb(var(--c-ink-rgb));color:rgb(var(--c-ink-rgb))}
+  [dir=rtl] .flip{transform:scaleX(-1);display:inline-block}
+  .d-more{border:1px solid rgb(var(--c-ink-rgb));border-radius:999px;padding:.7rem 2rem;font-size:.875rem;background:#fff;color:rgb(var(--c-ink-rgb));cursor:pointer;transition:background .2s,color .2s}
+  .d-more:hover{background:rgb(var(--c-ink-rgb));color:#fff}
+  @media(prefers-reduced-motion:reduce){.d-card{transition:none}.d-card:hover{transform:none}}
+  .d-box{background:#fff;border:1px solid rgba(231,229,228,.9);border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .d-hero{aspect-ratio:16/9;border-radius:1rem;overflow:hidden;background:linear-gradient(135deg,rgb(var(--c-sand-rgb) / .55),#f5f5f4);display:flex;align-items:center;justify-content:center;color:#a8a29e;position:relative}
+  .d-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .d-offerbox{background:rgb(var(--c-sand-rgb) / .35);border:1px solid rgb(var(--c-gold-rgb) / .6);border-inline-start:4px solid rgb(var(--c-gold-rgb));border-radius:1rem}
+  .d-row{display:flex;gap:.75rem;align-items:flex-start;padding:.65rem 0;border-top:1px solid #f0efed;font-size:.9rem}
+  .d-row:first-of-type{border-top:0}
+  .d-row i{font-size:1.25rem;color:#78716c;margin-top:.1rem}
+  .d-row a:hover{color:rgb(var(--c-ink-rgb));text-decoration:underline}
+  .d-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;border:1px solid #d6d3d1;border-radius:999px;padding:.6rem 1rem;font-size:.875rem;color:rgb(var(--c-ink-rgb));background:#fff;transition:border-color .2s}
+  .d-btn:hover{border-color:rgb(var(--c-ink-rgb))}
+</style>
+</head>
+<body class="font-sans font-light antialiased">
+<header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
+  <div class="wrap py-3 flex items-center justify-between">
+    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="KHIP" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
+    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
+      <a href="index.html" class="hover:text-brand-600 transition" data-i18n="bar_home">Home</a><a href="patents.html" class="hover:text-brand-600 transition" data-svc-page="patents.html">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition" data-svc-page="trademarks.html">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition" data-svc-page="translation.html">Translation</a><a href="about.html" class="hover:text-brand-600 transition" data-i18n="bar_about">About</a>
+    <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a><a href="directory.html" class="text-brand-700 font-normal transition" aria-current="page" data-i18n="nav_directory">Directory</a></nav>
+    <div class="flex items-center gap-2"><div id="lang-switch"></div><span data-social class="flex gap-2"><a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a></span></div>
+  </div>
+</header>
+<main>
+<section class="band"><div class="wrap">
+  <a href="directory.html" class="inline-flex items-center gap-2 text-sm text-brand-700 hover:underline"><i class="ph-light ph-arrow-left flip"></i><span data-i18n="dir_back">Back to the directory</span></a>
+  <div id="entry" class="mt-5" aria-live="polite"></div>
+</div></section>
+</main>
+<script src="footer.js"></script>
+<script src="rich.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const K=window.KLang,T=(k,v)=>K?K.t(k,v):k,rtl=()=>!!(K&&K.rtl);
+const C=window.KHIP_SUPABASE||{};
+const cairoToday=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
+const safeUrl=u=>/^https?:\/\//i.test(u||'')?u:'';
+const TICON={company:'ph-buildings',institution:'ph-bank',freelancer:'ph-user'};
+const ID=new URLSearchParams(location.search).get('id')||'';
+let sb=null,E=null,SEC=null,state='loading';
+const niceDate=d=>new Date(d+'T00:00:00Z').toLocaleDateString(rtl()?'ar-EG':'en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+
+async function load(){
+  state='loading';paint();
+  try{
+    if(!/^[0-9a-f-]{36}$/i.test(ID)){state='none';return paint()}
+    sb=supabase.createClient(C.url,C.anonKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+    const r=await sb.from('directory_entries').select('*').eq('id',ID).eq('status','approved').maybeSingle();
+    if(r.error)throw r.error;
+    if(!r.data){state='none';return paint()}
+    E=r.data;
+    const s=await sb.from('directory_sectors').select('id,name,name_ar').eq('id',E.sector_id).maybeSingle();SEC=s.data||null;
+    state='ok';
+  }catch(e){console.error(e);state='error'}
+  paint();
+}
+function toastMsg(t){let e=$('d-toast');if(!e){e=document.createElement('div');e.id='d-toast';e.setAttribute('role','status');e.style.cssText='position:fixed;bottom:5.5rem;left:50%;transform:translateX(-50%);background:#1b2433;color:#fff;font-size:.8125rem;padding:.55rem 1.1rem;border-radius:999px;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(e)}
+  e.textContent=t;e.style.display='block';clearTimeout(toastMsg.t);toastMsg.t=setTimeout(()=>{e.style.display='none'},2200)}
+async function shareLink(url,title){
+  try{if(navigator.share){await navigator.share({title,text:title,url});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(url);toastMsg(T('dir_copied'))}catch(_){window.prompt(T('dir_share'),url)}
+}
+const imgUrl=p=>sb.storage.from('directory-images').getPublicUrl(p).data.publicUrl;
+function msg(icon,t,sub,btn){
+  $('entry').innerHTML=`<div class="d-box p-10 text-center max-w-xl"><i class="ph-light ${icon} text-5xl text-stone-400"></i><p class="mt-3 font-display text-2xl font-semibold text-title">${esc(t)}</p>${sub?`<p class="mt-1 text-sm text-stone-500">${esc(sub)}</p>`:''}${btn?`<button id="d-retry" class="d-btn mt-5 !w-auto mx-auto px-8">${esc(T('try_again'))}</button>`:`<a href="directory.html" class="d-btn mt-5 !w-auto mx-auto px-8 inline-flex">${esc(T('dir_back'))}</a>`}</div>`;
+  const b=$('d-retry');if(b)b.onclick=load;
+}
+function row(icon,inner){return inner?`<div class="d-row"><i class="ph-light ${icon}"></i><div class="min-w-0 flex-1 break-words">${inner}</div></div>`:''}
+function paint(){
+  if(K)K.dom();
+  if(state==='loading'){$('entry').innerHTML='<div class="d-box animate-pulse h-64"></div>';return}
+  if(state==='none')return msg('ph-address-book',T('dir_notfound'),T('dir_notfound_sub'));
+  if(state==='error')return msg('ph-warning-circle',T('dir_err'),'',true);
+  const e=E,nm=(rtl()&&e.name_ar)||e.name,sub=rtl()?(e.name_ar?e.name:''):(e.name_ar||''),sec=SEC?((rtl()&&SEC.name_ar)||SEC.name):'';
+  document.title=nm+' | '+T('dir_title')+' | KHIP';
+  const web=safeUrl(e.website_url),soc=safeUrl(e.social_url),off=(e.offer_title||e.offer_text)&&(!e.offer_ends||e.offer_ends>=cairoToday());
+  const wa=e.whatsapp?`https://wa.me/${encodeURIComponent(e.whatsapp)}?text=${encodeURIComponent(T('dir_wa_msg'))}`:'';
+  const addr=[e.address,e.city].filter(Boolean).join(', '),map=addr?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`:'';
+  const host=u=>{try{return new URL(u).hostname.replace(/^www\./,'')}catch(_){return u}};
+  const phones=(e.phones||[]).map(p=>`<a href="tel:${esc(String(p).replace(/[^+\d]/g,''))}" dir="ltr" class="block" style="text-align:start">${esc(p)}</a>`).join('');
+  $('entry').innerHTML=`<div class="grid lg:grid-cols-[1.5fr_1fr] gap-6 lg:gap-8 items-start">
+    <div class="space-y-6 min-w-0">
+      <div class="d-hero">${e.image_path?`<img src="${esc(imgUrl(e.image_path))}" alt="${esc(nm)}" decoding="async">`:`<i class="ph-light ${TICON[e.entry_type]||'ph-buildings'} text-8xl"></i>`}</div>
+      <div><div class="flex flex-wrap items-center gap-1.5 mb-3"><span class="d-pill bg-ink text-white">${esc(T('dir_'+e.entry_type))}</span>${sec?`<span class="d-pill bg-brand-50 text-brand-700">${esc(sec)}</span>`:''}<button type="button" id="d-share" class="d-ic ms-auto" aria-label="${esc(T('dir_share'))}" title="${esc(T('dir_share'))}"><i class="ph-light ph-export"></i></button></div>
+        <h1 dir="auto" class="font-display text-4xl md:text-5xl font-medium text-title leading-tight">${esc(nm)}</h1>${sub?`<p dir="auto" class="text-stone-500 mt-1">${esc(sub)}</p>`:''}<span class="rule mt-4"></span></div>
+      ${off?`<div class="d-offerbox p-5"><p class="font-display text-2xl font-semibold text-title"><i class="ph-light ph-tag"></i> ${esc(e.offer_title||T('dir_offer'))}</p>
+        ${e.offer_text?`<div dir="auto" class="mt-2 text-[15px] leading-relaxed">${KRich.rich(e.offer_text)}</div>`:''}
+        ${e.offer_ends?`<p class="mt-3 text-xs text-stone-600">${esc(T('dir_valid_until',{x:niceDate(e.offer_ends)}))}</p>`:''}</div>`:''}
+      <div class="d-box p-5 sm:p-6"><h2 class="font-display text-2xl font-semibold text-title mb-2">${esc(T('dir_about'))}</h2>
+        <div dir="auto" class="text-[15px] leading-relaxed">${e.description?KRich.rich(e.description):`<p class="text-stone-500">${esc(T('dir_no_info'))}</p>`}</div></div>
+    </div>
+    <aside class="d-box p-5 sm:p-6 lg:sticky lg:top-24">
+      <h2 class="font-display text-2xl font-semibold text-title mb-3">${esc(T('dir_contact'))}</h2>
+      ${wa?`<a href="${esc(wa)}" target="_blank" rel="noopener noreferrer" class="d-wa !flex !w-full mb-3"><i class="ph-light ph-whatsapp-logo text-lg"></i>${esc(T('dir_wa'))}</a>`:''}
+      ${row('ph-phone',phones)}${row('ph-envelope-simple',e.email?`<a href="mailto:${esc(e.email)}" dir="ltr" class="block" style="text-align:start">${esc(e.email)}</a>`:'')}
+      ${row('ph-map-pin',addr?`<span dir="auto">${esc(addr)}</span><a href="${esc(map)}" target="_blank" rel="noopener noreferrer" class="block text-brand-700 text-sm mt-1">${esc(T('dir_map'))}</a>`:'')}
+      ${row('ph-globe',web?`<a href="${esc(web)}" target="_blank" rel="noopener noreferrer" dir="ltr" class="block" style="text-align:start">${esc(host(web))}</a>`:'')}
+      ${row('ph-share-network',soc?`<a href="${esc(soc)}" target="_blank" rel="noopener noreferrer" dir="ltr" class="block" style="text-align:start">${esc(host(soc))}</a>`:'')}
+    </aside></div>`;
+  const sh=$('d-share');if(sh)sh.onclick=()=>shareLink(location.origin+location.pathname+'?id='+encodeURIComponent(e.id),nm);
+}
+if(window.KMENU)KMENU.onChange(()=>{if(state==='ok')paint();else if(K)K.dom()});
+load();
+</script>
+</body>
+</html>

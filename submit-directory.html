@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="lang.js"></script>
+<title>Add your business | KHIP Intellectual Properties</title>
+<meta name="description" content="Add your company, institution or freelance business to the HOT Info directory.">
+<meta name="theme-color" content="#1d4ed8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="tailwind-config.js"></script>
+<script src="theme.js"></script>
+<script src="brand.js"></script>
+<script src="contact.js"></script>
+<script src="motion.js"></script>
+<script src="menu.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .d-in{width:100%;border:1px solid #d6d3d1;background:#fff;border-radius:.75rem;padding:.55rem .8rem;font:inherit;font-size:.875rem;color:rgb(var(--c-ink-rgb))}
+  .d-lab{display:block;font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:#78716c;margin-bottom:.25rem}
+  .d-chip{border:1px solid #d6d3d1;background:#fff;color:rgb(var(--c-ink-rgb));border-radius:999px;padding:.4rem 1rem;font-size:.8125rem;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+  .d-chip:hover{border-color:rgb(var(--c-ink-rgb))}
+  .d-chip[aria-pressed="true"]{background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))}
+  .d-grid{display:grid;gap:1.1rem;grid-template-columns:repeat(auto-fill,minmax(16.5rem,1fr))}
+  .d-card{display:flex;flex-direction:column;background:#fff;border:1px solid rgba(231,229,228,.9);border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05);overflow:hidden;transition:box-shadow .25s,transform .25s}
+  .d-card:hover{box-shadow:0 10px 28px rgba(0,0,0,.09);transform:translateY(-2px)}
+  .d-img{position:relative;aspect-ratio:16/10;background:linear-gradient(135deg,rgb(var(--c-sand-rgb) / .55),#f5f5f4);display:flex;align-items:center;justify-content:center;color:#a8a29e}
+  .d-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .d-offer{position:absolute;top:.6rem;inset-inline-start:.6rem;max-width:calc(100% - 1.2rem);background:rgb(var(--c-gold-rgb));color:#1b2433;font-size:.6875rem;font-weight:500;border-radius:999px;padding:.2rem .7rem;box-shadow:0 2px 8px rgba(0,0,0,.18);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;z-index:1}
+  .d-pill{display:inline-block;font-size:.6875rem;border-radius:999px;padding:.15rem .6rem}
+  .d-wa{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;flex:1;background:#1faa59;color:#fff;border-radius:999px;padding:.55rem 1rem;font-size:.875rem;transition:background .2s}
+  .d-wa:hover{background:#178a47}
+  .d-ic{width:2.4rem;height:2.4rem;border-radius:999px;border:1px solid #d6d3d1;display:inline-flex;align-items:center;justify-content:center;color:#57534e;transition:border-color .2s,color .2s;flex-shrink:0}
+  .d-ic:hover{border-color:rgb(var(--c-ink-rgb));color:rgb(var(--c-ink-rgb))}
+  [dir=rtl] .flip{transform:scaleX(-1);display:inline-block}
+  .d-more{border:1px solid rgb(var(--c-ink-rgb));border-radius:999px;padding:.7rem 2rem;font-size:.875rem;background:#fff;color:rgb(var(--c-ink-rgb));cursor:pointer;transition:background .2s,color .2s}
+  .d-more:hover{background:rgb(var(--c-ink-rgb));color:#fff}
+  @media(prefers-reduced-motion:reduce){.d-card{transition:none}.d-card:hover{transform:none}}
+  .d-box{background:#fff;border:1px solid rgba(231,229,228,.9);border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .d-hero{aspect-ratio:16/9;border-radius:1rem;overflow:hidden;background:linear-gradient(135deg,rgb(var(--c-sand-rgb) / .55),#f5f5f4);display:flex;align-items:center;justify-content:center;color:#a8a29e;position:relative}
+  .d-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .d-offerbox{background:rgb(var(--c-sand-rgb) / .35);border:1px solid rgb(var(--c-gold-rgb) / .6);border-inline-start:4px solid rgb(var(--c-gold-rgb));border-radius:1rem}
+  .d-row{display:flex;gap:.75rem;align-items:flex-start;padding:.65rem 0;border-top:1px solid #f0efed;font-size:.9rem}
+  .d-row:first-of-type{border-top:0}
+  .d-row i{font-size:1.25rem;color:#78716c;margin-top:.1rem}
+  .d-row a:hover{color:rgb(var(--c-ink-rgb));text-decoration:underline}
+  .d-btn{display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;border:1px solid #d6d3d1;border-radius:999px;padding:.6rem 1rem;font-size:.875rem;color:rgb(var(--c-ink-rgb));background:#fff;transition:border-color .2s}
+  .d-btn:hover{border-color:rgb(var(--c-ink-rgb))}
+  .d-hp{position:absolute;inset-inline-start:-9999px;width:1px;height:1px;opacity:0}
+  .d-req{color:#b91c1c}
+  .d-in:focus{outline:2px solid rgb(var(--c-gold-rgb));outline-offset:1px}
+  .d-send{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;background:rgb(var(--c-ink-rgb));color:#fff;border-radius:999px;padding:.75rem 2.2rem;font-size:.9rem;transition:opacity .2s}
+  .d-send:disabled{opacity:.6}
+</style>
+</head>
+<body class="font-sans font-light antialiased">
+<header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
+  <div class="wrap py-3 flex items-center justify-between">
+    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="KHIP" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
+    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
+      <a href="index.html" class="hover:text-brand-600 transition" data-i18n="bar_home">Home</a><a href="patents.html" class="hover:text-brand-600 transition" data-svc-page="patents.html">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition" data-svc-page="trademarks.html">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition" data-svc-page="translation.html">Translation</a><a href="about.html" class="hover:text-brand-600 transition" data-i18n="bar_about">About</a>
+    <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a><a href="directory.html" class="text-brand-700 font-normal transition" aria-current="page" data-i18n="nav_directory">Directory</a></nav>
+    <div class="flex items-center gap-2"><div id="lang-switch"></div><span data-social class="flex gap-2"><a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a></span></div>
+  </div>
+</header>
+<main>
+<section class="band"><div class="wrap">
+  <a href="directory.html" class="inline-flex items-center gap-2 text-sm text-brand-700 hover:underline"><i class="ph-light ph-arrow-left flip"></i><span data-i18n="dir_back">Back to the directory</span></a>
+  <div class="fu mt-5"><h1 class="font-display text-4xl md:text-5xl font-medium text-title leading-tight" data-i18n="dir_s_title">Add your business to the directory</h1><span class="rule mt-4"></span>
+  <p class="text-base max-w-xl" data-i18n="dir_s_sub">Fill in the form.</p></div>
+  <div id="done" class="hidden mt-6 d-box p-10 text-center max-w-xl" role="status"><i class="ph-light ph-check-circle text-6xl text-emerald-600"></i><p class="mt-3 font-display text-3xl font-semibold text-title" data-i18n="dir_s_ok_title">Thank you!</p><p class="mt-2 text-stone-600" data-i18n="dir_s_ok_text"></p><button type="button" id="again" class="d-more mt-6" data-i18n="dir_s_again">Add another</button></div>
+  <form id="f" class="mt-6 max-w-3xl space-y-5" novalidate autocomplete="off">
+    <div class="d-box p-5 sm:p-6 grid gap-4 sm:grid-cols-2">
+      <label><span class="d-lab"><span data-i18n="dir_s_name">Name</span> <span class="d-req">*</span></span><input name="name" class="d-in" maxlength="120" required dir="auto"></label>
+      <label><span class="d-lab" data-i18n="dir_s_name_ar">Name in Arabic</span><input name="name_ar" class="d-in" maxlength="120" dir="rtl"></label>
+      <label><span class="d-lab"><span data-i18n="dir_s_type">Type</span> <span class="d-req">*</span></span><select name="entry_type" class="d-in"><option value="company"></option><option value="institution"></option><option value="freelancer"></option></select></label>
+      <label><span class="d-lab"><span data-i18n="dir_s_sector">Business sector</span> <span class="d-req">*</span></span><select name="sector_id" class="d-in" required></select></label>
+      <label><span class="d-lab" data-i18n="dir_s_city">City</span><input name="city" class="d-in" maxlength="60" dir="auto"></label>
+      <label><span class="d-lab" data-i18n="dir_s_address">Address</span><input name="address" class="d-in" maxlength="250" dir="auto"></label>
+      <label><span class="d-lab" data-i18n="dir_s_phones">Phone numbers</span><textarea name="phones" rows="2" class="d-in" dir="ltr" style="text-align:start"></textarea></label>
+      <label><span class="d-lab" data-i18n="dir_s_wa">WhatsApp number</span><input name="whatsapp" type="tel" class="d-in" maxlength="20" dir="ltr" style="text-align:start" placeholder="201001234567"></label>
+      <label><span class="d-lab" data-i18n="dir_s_email">Email</span><input name="email" type="email" class="d-in" maxlength="120" dir="ltr" style="text-align:start"></label>
+      <label><span class="d-lab" data-i18n="dir_s_web">Website</span><input name="website_url" class="d-in" maxlength="300" dir="ltr" style="text-align:start" placeholder="https://"></label>
+      <label class="sm:col-span-2"><span class="d-lab" data-i18n="dir_s_social">Social media page</span><input name="social_url" class="d-in" maxlength="300" dir="ltr" style="text-align:start" placeholder="https://"></label>
+      <label class="sm:col-span-2"><span class="d-lab" data-i18n="dir_s_desc">About you</span><textarea name="description" rows="4" class="d-in" maxlength="4000" dir="auto"></textarea></label>
+    </div>
+    <fieldset class="d-box d-offerbox p-5 sm:p-6 grid gap-4"><legend class="font-display text-xl font-semibold text-title px-1"><i class="ph-light ph-tag"></i> <span data-i18n="dir_s_offer">Special offer (optional)</span></legend>
+      <label><span class="d-lab" data-i18n="dir_s_otitle">Short title</span><input name="offer_title" class="d-in" maxlength="80" dir="auto"></label>
+      <label><span class="d-lab" data-i18n="dir_s_otext">Offer details</span><textarea name="offer_text" rows="3" class="d-in" maxlength="1500" dir="auto"></textarea></label>
+      <label><span class="d-lab" data-i18n="dir_s_oends">Valid until</span><input name="offer_ends" type="date" class="d-in !w-auto"></label>
+    </fieldset>
+    <fieldset class="d-box p-5 sm:p-6 grid gap-4 sm:grid-cols-3"><legend class="font-display text-xl font-semibold text-title px-1"><i class="ph-light ph-lock-simple"></i> <span data-i18n="dir_s_contact">Your contact details</span></legend>
+      <label><span class="d-lab" data-i18n="dir_s_cname">Your name</span><input name="contact_name" class="d-in" maxlength="120" dir="auto"></label>
+      <label><span class="d-lab" data-i18n="dir_s_cphone">Your phone</span><input name="contact_phone" type="tel" class="d-in" maxlength="40" dir="ltr" style="text-align:start"></label>
+      <label><span class="d-lab" data-i18n="dir_s_cemail">Your email</span><input name="contact_email" type="email" class="d-in" maxlength="120" dir="ltr" style="text-align:start"></label>
+      <p class="sm:col-span-3 text-xs text-stone-500" data-i18n="dir_s_contact_hint"></p>
+    </fieldset>
+    <input name="company_site" class="d-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <p id="msg" class="text-sm text-red-700 font-normal min-h-[1.25rem]" role="alert"></p>
+    <button id="send" class="d-send" data-i18n="dir_s_send">Send for review</button>
+  </form>
+</div></section>
+</main>
+<script src="footer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const K=window.KLang,T=(k,v)=>K?K.t(k,v):k,rtl=()=>!!(K&&K.rtl);
+const C=window.KHIP_SUPABASE||{};
+const sb=supabase.createClient(C.url,C.anonKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+const opened=Date.now();
+const EMAILRE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const waClean=v=>{let d=String(v||'').replace(/[٠-٩]/g,x=>'٠١٢٣٤٥٦٧٨٩'.indexOf(x)).replace(/\D/g,'');if(!d)return '';if(d.startsWith('00'))d=d.slice(2);else if(d.length===11&&d.startsWith('0'))d='20'+d.slice(1);return d};
+const urlClean=v=>{v=String(v||'').trim();return v&&!/^https?:\/\//i.test(v)?'https://'+v:v};
+const urlOk=v=>{try{const u=new URL(v);return /^https?:$/.test(u.protocol)&&u.hostname.includes('.')}catch(_){return false}};
+let SECS=[];
+function fillSelects(){
+  const f=$('f'),t=f.entry_type,cur=t.value;
+  [...t.options].forEach(o=>o.textContent=T('dir_'+o.value));t.value=cur||'company';
+  const sc=f.sector_id.value;
+  f.sector_id.innerHTML=`<option value="">${T('dir_s_pick')}</option>`+SECS.map(s=>`<option value="${s.id}">${((rtl()&&s.name_ar)||s.name).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}</option>`).join('');
+  f.sector_id.value=sc;
+}
+async function init(){
+  if(K)K.dom();
+  try{const r=await sb.from('directory_sectors').select('id,name,name_ar,sort_order').order('sort_order').order('name');if(r.error)throw r.error;SECS=r.data||[]}catch(e){console.error(e);$('msg').textContent=T('dir_s_err')}
+  fillSelects();
+}
+const ERR={bad_name:'dir_s_req',bad_type:'dir_s_req',bad_sector:'dir_s_req',bad_whatsapp:'dir_s_bad_wa',bad_email:'dir_s_bad_mail',bad_url:'dir_s_bad_url',bad_contact:'dir_s_bad_contact',rate_limit:'dir_s_limit'};
+$('f').addEventListener('submit',async ev=>{
+  ev.preventDefault();const f=ev.target,m=$('msg'),b=$('send');m.textContent='';
+  const g=n=>f.elements[n].value.trim();
+  if(!g('name')||!f.sector_id.value)return m.textContent=T('dir_s_req');
+  const wa=waClean(g('whatsapp'));if(wa&&!/^[0-9]{8,15}$/.test(wa))return m.textContent=T('dir_s_bad_wa');
+  if((g('email')&&!EMAILRE.test(g('email')))||(g('contact_email')&&!EMAILRE.test(g('contact_email'))))return m.textContent=T('dir_s_bad_mail');
+  const web=urlClean(g('website_url')),soc=urlClean(g('social_url'));
+  if((web&&!urlOk(web))||(soc&&!urlOk(soc)))return m.textContent=T('dir_s_bad_url');
+  if(!g('contact_phone')&&!g('contact_email'))return m.textContent=T('dir_s_bad_contact');
+  if(g('company_site')||Date.now()-opened<4000){f.hidden=true;$('done').classList.remove('hidden');return}   // hidden field filled or sent in under 4 seconds: a robot; show "thank you" and send nothing
+  const p={name:g('name'),name_ar:g('name_ar'),entry_type:f.entry_type.value,sector_id:f.sector_id.value,city:g('city'),address:g('address'),
+    phones:g('phones').split(/[\n,;]+/).map(x=>x.trim()).filter(Boolean).slice(0,6),whatsapp:wa,email:g('email'),website_url:web,social_url:soc,description:g('description'),
+    offer_title:g('offer_title'),offer_text:g('offer_text'),offer_ends:g('offer_ends'),contact_name:g('contact_name'),contact_phone:g('contact_phone'),contact_email:g('contact_email')};
+  b.disabled=true;b.textContent=T('dir_s_sending');
+  try{
+    const r=await sb.rpc('submit_directory_entry',{p});
+    if(r.error){const k=Object.keys(ERR).find(x=>String(r.error.message).includes(x));m.textContent=T(k?ERR[k]:'dir_s_err');return}
+    if(r.data==='exists'){m.textContent=T('dir_s_exists');return}
+    f.hidden=true;$('done').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){console.error(e);m.textContent=T('dir_s_err')}
+  finally{b.disabled=false;b.textContent=T('dir_s_send')}
+});
+$('again').onclick=()=>{const f=$('f');f.reset();fillSelects();f.hidden=false;$('done').classList.add('hidden');$('msg').textContent=''};
+if(window.KMENU)KMENU.onChange(()=>{if(K)K.dom();fillSelects()});
+document.title=T('dir_s_title')+' | KHIP';
+init();
+</script>
+</body>
+</html>

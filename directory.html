@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="lang.js"></script>
+<title>Directory | KHIP Intellectual Properties</title>
+<meta name="description" content="Companies, institutions and freelancers: search, filter and contact them directly on WhatsApp.">
+<meta name="theme-color" content="#1d4ed8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="tailwind-config.js"></script>
+<script src="theme.js"></script>
+<script src="brand.js"></script>
+<script src="contact.js"></script>
+<script src="motion.js"></script>
+<script src="menu.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .d-in{width:100%;border:1px solid #d6d3d1;background:#fff;border-radius:.75rem;padding:.55rem .8rem;font:inherit;font-size:.875rem;color:rgb(var(--c-ink-rgb))}
+  .d-lab{display:block;font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:#78716c;margin-bottom:.25rem}
+  .d-chip{border:1px solid #d6d3d1;background:#fff;color:rgb(var(--c-ink-rgb));border-radius:999px;padding:.4rem 1rem;font-size:.8125rem;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+  .d-chip:hover{border-color:rgb(var(--c-ink-rgb))}
+  .d-chip[aria-pressed="true"]{background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))}
+  .d-grid{display:grid;gap:1.1rem;grid-template-columns:repeat(auto-fill,minmax(16.5rem,1fr))}
+  .d-card{display:flex;flex-direction:column;background:#fff;border:1px solid rgba(231,229,228,.9);border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05);overflow:hidden;transition:box-shadow .25s,transform .25s}
+  .d-card:hover{box-shadow:0 10px 28px rgba(0,0,0,.09);transform:translateY(-2px)}
+  .d-img{position:relative;aspect-ratio:16/10;background:linear-gradient(135deg,rgb(var(--c-sand-rgb) / .55),#f5f5f4);display:flex;align-items:center;justify-content:center;color:#a8a29e}
+  .d-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .d-offer{position:absolute;top:.6rem;inset-inline-start:.6rem;max-width:calc(100% - 1.2rem);background:rgb(var(--c-gold-rgb));color:#1b2433;font-size:.6875rem;font-weight:500;border-radius:999px;padding:.2rem .7rem;box-shadow:0 2px 8px rgba(0,0,0,.18);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;z-index:1}
+  .d-pill{display:inline-block;font-size:.6875rem;border-radius:999px;padding:.15rem .6rem}
+  .d-wa{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;flex:1;background:#1faa59;color:#fff;border-radius:999px;padding:.55rem 1rem;font-size:.875rem;transition:background .2s}
+  .d-wa:hover{background:#178a47}
+  .d-ic{width:2.4rem;height:2.4rem;border-radius:999px;border:1px solid #d6d3d1;display:inline-flex;align-items:center;justify-content:center;color:#57534e;transition:border-color .2s,color .2s;flex-shrink:0}
+  .d-ic:hover{border-color:rgb(var(--c-ink-rgb));color:rgb(var(--c-ink-rgb))}
+  [dir=rtl] .flip{transform:scaleX(-1);display:inline-block}
+  .d-more{border:1px solid rgb(var(--c-ink-rgb));border-radius:999px;padding:.7rem 2rem;font-size:.875rem;background:#fff;color:rgb(var(--c-ink-rgb));cursor:pointer;transition:background .2s,color .2s}
+  .d-more:hover{background:rgb(var(--c-ink-rgb));color:#fff}
+  @media(prefers-reduced-motion:reduce){.d-card{transition:none}.d-card:hover{transform:none}}
+</style>
+</head>
+<body class="font-sans font-light antialiased">
+<header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
+  <div class="wrap py-3 flex items-center justify-between">
+    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="KHIP" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
+    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
+      <a href="index.html" class="hover:text-brand-600 transition" data-i18n="bar_home">Home</a><a href="patents.html" class="hover:text-brand-600 transition" data-svc-page="patents.html">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition" data-svc-page="trademarks.html">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition" data-svc-page="translation.html">Translation</a><a href="about.html" class="hover:text-brand-600 transition" data-i18n="bar_about">About</a>
+    <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a><a href="directory.html" class="text-brand-700 font-normal transition" aria-current="page" data-i18n="nav_directory">Directory</a></nav>
+    <div class="flex items-center gap-2"><div id="lang-switch"></div><span data-social class="flex gap-2"><a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a></span></div>
+  </div>
+</header>
+<main>
+<section class="band"><div class="wrap">
+  <div class="fu"><h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-medium text-title leading-[1.05]" data-i18n="dir_title">Directory</h1><span class="rule mt-5"></span>
+  <p class="text-base md:text-lg max-w-xl" data-i18n="dir_sub">Companies, institutions and freelancers. Search, filter and contact them directly on WhatsApp.</p>
+  <a href="submit-directory.html" class="d-more mt-5 inline-flex items-center gap-2"><i class="ph-light ph-plus-circle"></i><span data-i18n="dir_submit">Add your business</span></a></div>
+
+  <form id="filters" class="hidden mt-8 card !transform-none p-4 sm:p-5" autocomplete="off" onsubmit="return false" aria-label="Filter the directory">
+    <div id="d-types" class="flex flex-wrap gap-2 mb-4" role="group" aria-label="Type"></div>
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+      <label class="lg:col-span-3"><span class="d-lab" data-i18n="dir_search">Search</span><input id="f-q" type="search" class="d-in" dir="auto" data-i18n-attr="placeholder:dir_search_ph" placeholder="Name, city or phone"></label>
+      <label class="lg:col-span-2"><span class="d-lab" data-i18n="dir_sector">Sector</span><select id="f-sector" class="d-in"></select></label>
+      <label class="flex items-end gap-2 pb-2 text-sm cursor-pointer"><input id="f-offer" type="checkbox" class="w-4 h-4 accent-[#c9a227]"><span data-i18n="dir_offers_only">Special offers only</span></label>
+    </div>
+    <div class="mt-3 flex items-center justify-between gap-3"><span id="f-count" class="text-sm text-stone-500" aria-live="polite"></span><button type="button" id="f-clear" class="hidden text-sm border border-stone-300 hover:border-stone-500 text-ink px-5 py-2 rounded-full transition" data-i18n="dir_clear">Clear filters</button></div>
+  </form>
+
+  <div id="list" class="mt-6" aria-live="polite"></div>
+</div></section>
+</main>
+<script src="footer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script>
+const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.08});
+document.querySelectorAll('.fu').forEach(e=>io.observe(e));
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const K=window.KLang,T=(k,v)=>K?K.t(k,v):k,rtl=()=>!!(K&&K.rtl);
+const C=window.KHIP_SUPABASE||{};
+const cairoToday=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
+const fold=s=>String(s||'').toLowerCase().replace(/[\u064B-\u065F\u0670]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه');
+const safeUrl=u=>/^https?:\/\//i.test(u||'')?u:'';
+const TYPES=['company','institution','freelancer'],TICON={company:'ph-buildings',institution:'ph-bank',freelancer:'ph-user'};
+const STEP=24;
+let sb=null,ALL=[],SECT={},F={q:'',sector:'',type:'',offer:false},SHOW=STEP,state='loading';
+const secName=id=>{const s=SECT[id];return s?((rtl()&&s.name_ar)||s.name):''};
+const offerOn=e=>!!(e.offer_title||e.offer_ends)&&(!e.offer_ends||e.offer_ends>=cairoToday())&&!!e.offer_title;
+function toastMsg(t){let e=$('d-toast');if(!e){e=document.createElement('div');e.id='d-toast';e.setAttribute('role','status');e.style.cssText='position:fixed;bottom:5.5rem;left:50%;transform:translateX(-50%);background:#1b2433;color:#fff;font-size:.8125rem;padding:.55rem 1.1rem;border-radius:999px;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.25)';document.body.appendChild(e)}
+  e.textContent=t;e.style.display='block';clearTimeout(toastMsg.t);toastMsg.t=setTimeout(()=>{e.style.display='none'},2200)}
+async function shareLink(url,title){
+  try{if(navigator.share){await navigator.share({title,text:title,url});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(url);toastMsg(T('dir_copied'))}catch(_){window.prompt(T('dir_share'),url)}
+}
+const imgUrl=p=>sb.storage.from('directory-images').getPublicUrl(p).data.publicUrl;
+
+async function fetchApproved(){
+  const out=[],cols='id,name,name_ar,entry_type,sector_id,city,address,phones,whatsapp,website_url,social_url,offer_title,offer_ends,image_path';
+  for(let from=0;;from+=1000){
+    const {data,error}=await sb.from('directory_entries').select(cols).eq('status','approved').order('name').range(from,from+999);
+    if(error)throw error;out.push(...data);if(data.length<1000)break;
+  }
+  return out;
+}
+async function load(){
+  state='loading';paint();
+  try{
+    sb=supabase.createClient(C.url,C.anonKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+    const [rows,sr]=await Promise.all([fetchApproved(),sb.from('directory_sectors').select('id,name,name_ar,sort_order').order('sort_order').order('name')]);
+    if(sr.error)throw sr.error;
+    SECT={};(sr.data||[]).forEach(s=>SECT[s.id]=s);ALL=rows;state='ok';
+  }catch(e){console.error(e);state='error'}
+  paint();
+}
+
+const PLURAL={company:'companies',institution:'institutions',freelancer:'freelancers'};
+function typeLabel(t,plural){return T('dir_'+(plural?PLURAL[t]:t))}
+function buildFilters(){
+  const used=new Set(ALL.map(e=>e.sector_id)),secs=Object.values(SECT).filter(s=>used.has(s.id));
+  $('f-sector').innerHTML=`<option value="">${esc(T('dir_all_sectors'))}</option>`+secs.map(s=>`<option value="${esc(s.id)}" ${s.id===F.sector?'selected':''}>${esc((rtl()&&s.name_ar)||s.name)}</option>`).join('');
+  const present=TYPES.filter(t=>ALL.some(e=>e.entry_type===t));
+  $('d-types').innerHTML=[['',T('dir_all'),'ph-squares-four'],...present.map(t=>[t,typeLabel(t,true),TICON[t]])].map(([v,l,i])=>`<button type="button" class="d-chip" data-type="${v}" aria-pressed="${v===F.type}"><i class="ph-light ${i}"></i> ${esc(l)}</button>`).join('');
+}
+function match(e){
+  if(F.type&&e.entry_type!==F.type)return false;
+  if(F.sector&&e.sector_id!==F.sector)return false;
+  if(F.offer&&!offerOn(e))return false;
+  if(F.q){const h=fold([e.name,e.name_ar,e.city,e.address,secName(e.sector_id),(e.phones||[]).join(' '),e.whatsapp].join(' '));if(!fold(F.q).split(/\s+/).every(w=>h.includes(w)))return false}
+  return true;
+}
+function card(e){
+  const nm=(rtl()&&e.name_ar)||e.name,sub=rtl()?(e.name_ar?e.name:''):(e.name_ar||''),sec=secName(e.sector_id),off=offerOn(e);
+  const href='directory-entry.html?id='+encodeURIComponent(e.id),loc=[e.city,e.address].filter(Boolean).join(' · '),ph=(e.phones||[])[0],web=safeUrl(e.website_url),soc=safeUrl(e.social_url);
+  const wa=e.whatsapp?`https://wa.me/${encodeURIComponent(e.whatsapp)}?text=${encodeURIComponent(T('dir_wa_msg'))}`:'';
+  return `<article class="d-card">
+    <a href="${esc(href)}" class="d-img" tabindex="-1" aria-hidden="true">${off?`<span class="d-offer"><i class="ph-light ph-tag"></i> ${esc(e.offer_title)}</span>`:''}${e.image_path?`<img src="${esc(imgUrl(e.image_path))}" alt="" loading="lazy" decoding="async">`:`<i class="ph-light ${TICON[e.entry_type]||'ph-buildings'} text-6xl"></i>`}</a>
+    <div class="p-4 flex-1 flex flex-col">
+      <div class="flex flex-wrap gap-1.5 mb-2"><span class="d-pill bg-ink text-white">${esc(typeLabel(e.entry_type))}</span>${sec?`<span class="d-pill bg-brand-50 text-brand-700">${esc(sec)}</span>`:''}</div>
+      <h3 dir="auto" class="font-display text-xl font-semibold text-title leading-snug"><a href="${esc(href)}" class="hover:text-brand-700">${esc(nm)}</a></h3>
+      ${sub?`<p dir="auto" class="text-xs text-stone-500 mt-0.5">${esc(sub)}</p>`:''}
+      ${loc?`<p dir="auto" class="text-sm text-stone-600 mt-2"><i class="ph-light ph-map-pin"></i> ${esc(loc)}</p>`:''}
+      ${ph?`<p class="text-sm text-stone-600 mt-1" dir="ltr" style="text-align:start"><a href="tel:${esc(String(ph).replace(/[^+\d]/g,''))}" class="hover:text-brand-700"><i class="ph-light ph-phone"></i> ${esc(ph)}</a></p>`:''}
+      <a href="${esc(href)}" class="mt-3 self-start text-sm text-brand-700 hover:underline">${esc(T('dir_details'))} <i class="ph-light ph-arrow-right flip"></i></a>
+      <div class="mt-auto pt-4 flex items-center gap-2">
+        ${wa?`<a href="${esc(wa)}" target="_blank" rel="noopener noreferrer" class="d-wa"><i class="ph-light ph-whatsapp-logo text-lg"></i>${esc(T('dir_wa'))}</a>`:''}
+        ${web?`<a href="${esc(web)}" target="_blank" rel="noopener noreferrer" class="d-ic" aria-label="${esc(T('dir_website'))}" title="${esc(T('dir_website'))}"><i class="ph-light ph-globe"></i></a>`:''}
+        ${soc?`<a href="${esc(soc)}" target="_blank" rel="noopener noreferrer" class="d-ic" aria-label="${esc(T('dir_social'))}" title="${esc(T('dir_social'))}"><i class="ph-light ph-share-network"></i></a>`:''}
+        <button type="button" class="d-ic ms-auto" data-share="${esc(e.id)}" aria-label="${esc(T('dir_share'))}" title="${esc(T('dir_share'))}"><i class="ph-light ph-export"></i></button>
+      </div></div></article>`;
+}
+function note(icon,t,btn){
+  $('filters').classList.add('hidden');
+  $('list').innerHTML=`<div class="card !transform-none p-10 text-center max-w-xl"><i class="ph-light ${icon} text-5xl text-stone-400"></i><p class="mt-3 font-display text-2xl font-semibold text-title">${esc(t)}</p>${btn?`<button id="d-retry" class="d-more mt-5">${esc(T('try_again'))}</button>`:''}</div>`;
+  const b=$('d-retry');if(b)b.onclick=load;
+}
+function paint(){
+  if(K)K.dom();
+  if(state==='loading'){$('filters').classList.add('hidden');$('list').innerHTML='<div class="d-grid">'+'<div class="d-card animate-pulse"><div class="d-img"></div><div class="p-4"><div class="h-4 w-1/3 rounded bg-stone-200"></div><div class="h-5 w-2/3 rounded bg-stone-100 mt-3"></div><div class="h-4 w-1/2 rounded bg-stone-100 mt-3"></div></div></div>'.repeat(6)+'</div>';return}
+  if(state==='error')return note('ph-warning-circle',T('dir_err'),true);
+  if(!ALL.length)return note('ph-address-book',T('dir_empty'));
+  $('filters').classList.remove('hidden');
+  buildFilters();$('f-q').value=F.q;$('f-offer').checked=F.offer;
+  paintList();
+}
+function paintList(){
+  const loc=rtl()?'ar':'en',rows=ALL.filter(match).sort((a,b)=>(offerOn(b)-offerOn(a))||(((rtl()&&a.name_ar)||a.name)).localeCompare(((rtl()&&b.name_ar)||b.name),loc));
+  const act=!!(F.q||F.sector||F.type||F.offer);
+  $('f-count').textContent=rows.length===1?T('dir_count1'):T('dir_count',{x:rows.length});
+  $('f-clear').classList.toggle('hidden',!act);
+  document.querySelectorAll('#d-types .d-chip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.type===F.type)));
+  if(!rows.length){$('list').innerHTML=`<div class="card !transform-none p-10 text-center max-w-xl"><i class="ph-light ph-magnifying-glass text-5xl text-stone-400"></i><p class="mt-3 text-stone-600">${esc(T('dir_none'))}</p></div>`;return}
+  $('list').innerHTML=`<div class="d-grid">${rows.slice(0,SHOW).map(card).join('')}</div>`+(rows.length>SHOW?`<div class="text-center mt-6"><button id="d-more" class="d-more">${esc(T('dir_more'))}</button></div>`:'');
+  const m=$('d-more');if(m)m.onclick=()=>{SHOW+=STEP;paintList()};
+}
+$('list').addEventListener('click',ev=>{const b=ev.target.closest('[data-share]');if(!b)return;const e=ALL.find(x=>x.id===b.dataset.share);if(!e)return;
+  shareLink(new URL('directory-entry.html?id='+encodeURIComponent(e.id),location.href).href,(rtl()&&e.name_ar)||e.name)});
+let qt=0;
+$('f-q').addEventListener('input',e=>{F.q=e.target.value.trim();SHOW=STEP;clearTimeout(qt);qt=setTimeout(paintList,150)});
+$('f-sector').addEventListener('change',e=>{F.sector=e.target.value;SHOW=STEP;paintList()});
+$('f-offer').addEventListener('change',e=>{F.offer=e.target.checked;SHOW=STEP;paintList()});
+$('d-types').addEventListener('click',e=>{const b=e.target.closest('[data-type]');if(!b)return;F.type=b.dataset.type;SHOW=STEP;paintList()});
+$('f-clear').addEventListener('click',()=>{F={q:'',sector:'',type:'',offer:false};SHOW=STEP;$('f-q').value='';$('f-sector').value='';$('f-offer').checked=false;paintList()});
+if(window.KMENU)KMENU.onChange(()=>{if(state==='ok')paint();else if(K)K.dom()}); // the language may be settled after the menu data arrives
+document.title=T('dir_title')+' | KHIP';
+load();
+</script>
+</body>
+</html>
