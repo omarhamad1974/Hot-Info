@@ -376,8 +376,8 @@
     "mapLng": "31.48760223388672"
   },
   "brand": {
-    "image": "khip-logo.jpg",
-    "tagline": "Intellectual Properties"
+    "image": "mvxngm0u-logo-construction.png",
+    "tagline": "معلومات للبيزنس"
   },
   "chatPrompts": [
     "اشترك مع هوت انفرمبشن",
@@ -398,7 +398,38 @@
     },
     "custom": [],
     "sectionWidth": "59",
-    "sections": {}
+    "sections": {},
+    "sectionWidthTablet": "59",
+    "brand": [
+      {
+        "name": "Primary",
+        "hex": "#173a7a"
+      },
+      {
+        "name": "Secondary",
+        "hex": "#1d4ed8"
+      },
+      {
+        "name": "Accent",
+        "hex": "#a8844f"
+      },
+      {
+        "name": "Dark",
+        "hex": "#1b2433"
+      },
+      {
+        "name": "Highlight",
+        "hex": "#d9c8a4"
+      },
+      {
+        "name": "Light",
+        "hex": "#f7f6f3"
+      },
+      {
+        "name": "Neutral",
+        "hex": "#3a4051"
+      }
+    ]
   },
   "newsCategories": [
     "مناقصات",
