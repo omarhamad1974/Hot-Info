@@ -406,13 +406,9 @@
       "text": "#3a4051"
     },
     "custom": [],
-    "sectionWidth": "59",
-    "sections": {
-      "home-carousel": {
-        "hidden": true
-      }
-    },
-    "sectionWidthTablet": "59",
+    "sectionWidth": "85",
+    "sections": {},
+    "sectionWidthTablet": "68",
     "brand": [
       {
         "name": "Primary",
