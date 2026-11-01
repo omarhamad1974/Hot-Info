@@ -78,6 +78,27 @@ if(d.theme&&d.theme.sections){
     for(const w of ['widthTablet','widthDesktop'])if(s[w]!==undefined&&s[w]!==''&&!(parseFloat(s[w])>=40&&parseFloat(s[w])<=100))errs.push(`theme.sections.${k}.${w}: must be between 40 and 100`);
   }
 }
+if(d.theme&&d.theme.motion){
+  const m=d.theme.motion,T=['none','fade','fade-up','fade-down','slide-left','slide-right','zoom-in','zoom-out','blur-in','flip-up','rotate-in','reveal-up'],H=['none','lift','grow','glow','border','img-zoom'],E=['smooth','soft','inout','snappy','bounce','linear'];
+  const chk=(o,where)=>{
+    for(const k of ['type','cardType'])if(o[k]&&!T.includes(o[k]))errs.push(`${where}.${k}: unknown animation "${o[k]}"`);
+    if(o.hover&&!H.includes(o.hover))errs.push(`${where}.hover: unknown hover effect "${o.hover}"`);
+    if(o.ease&&!E.includes(o.ease))errs.push(`${where}.ease: unknown movement style "${o.ease}"`);
+    for(const [k,lo,hi] of [['duration',0,10],['delay',0,10],['distance',0,400],['stagger',0,2]])if(o[k]!==undefined&&o[k]!==''&&!(parseFloat(o[k])>=lo&&parseFloat(o[k])<=hi))errs.push(`${where}.${k}: must be between ${lo} and ${hi}`);
+  };
+  chk(m.site||{},'theme.motion.site');
+  for(const [k,s] of Object.entries(m.sections||{}))chk(s||{},`theme.motion.sections.${k}`);
+}
+if(d.menu!==undefined){
+  if(!d.menu||!Array.isArray(d.menu.items))errs.push('menu.items: must be a list');
+  else d.menu.items.forEach((it,i)=>{
+    const w=`menu.items[${i}]`;
+    if(!(it.en||it.ar))errs.push(`${w}: needs a name in English or Arabic`);
+    if(!/^(https?:\/\/|[\w\-./]+\.html(#[\w\-]+)?$|#[\w\-]+$)/.test(it.link||''))errs.push(`${w}.link: must be a page of the site (like about.html#team) or an https:// address`);
+    if(it.icon&&!/^ph-[a-z0-9-]+$/.test(it.icon))errs.push(`${w}.icon: unusual icon name`);
+  });
+}
+if(d.hot&&d.hot.perSector!==undefined&&d.hot.perSector!==''&&!(parseInt(d.hot.perSector)>=1&&parseInt(d.hot.perSector)<=12))errs.push('hot.perSector: must be a number from 1 to 12');
 if(d.brand&&d.brand.image&&!/^(https?:|data:|\.?\/)/.test(d.brand.image)&&!fs.existsSync(path.join('assets',d.brand.image)))errs.push(`brand.image: assets/${d.brand.image} does not exist`);
 for(const [k,v] of Object.entries(d.social||{}))if(v&&!/^https:\/\//.test(v))errs.push(`social.${k}: must start with https://`);
 if(errs.length){console.error(errs.join('\n'));process.exit(1)}
