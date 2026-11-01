@@ -8,9 +8,9 @@
   window.KHIP={wa,setPrompts:a=>{if(a&&a.length)prompts=a}};
   if(!document.querySelector('link[href*="phosphor"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css';document.head.appendChild(l)}
   if(!document.querySelector('link[href*="styles.css"]')){const l=document.createElement('link');l.rel='stylesheet';l.href='styles.css';document.head.appendChild(l)}
-  const nav=[['top','ph-house',T('bar_home','Home')],['services','ph-seal-check',T('bar_services','IP Services')],['news','ph-newspaper',T('bar_news','News')],['jurisdictions','ph-globe-hemisphere-west',T('bar_jur','Jurisdiction')],['about','ph-info',T('bar_about','About')],['my-files','ph-folder-user',T('bar_files','My files')]];
+  const legacyNav=[['top','ph-house',T('bar_home','Home')],['services','ph-seal-check',T('bar_services','IP Services')],['news','ph-newspaper',T('bar_news','News')],['jurisdictions','ph-globe-hemisphere-west',T('bar_jur','Jurisdiction')],['about','ph-info',T('bar_about','About')],['my-files','ph-folder-user',T('bar_files','My files')]];
   const bar=document.createElement('div');bar.id='khip-bar';
-  bar.innerHTML=`<div class="kin"><form><div class="kf"><i class="ph-light ph-whatsapp-logo"></i><input aria-label="${T('msg_wa','Message KHIP on WhatsApp')}" autocomplete="off"><button type="submit" class="ks" aria-label="${T('send','Send')}" title="${T('send','Send')}"><i class="ph-light ph-paper-plane-right"></i></button></div></form><nav>${nav.map(([k,i,l])=>`<button type="button" data-go="${k}"><i class="ph-light ${i}"></i>${l}</button>`).join('')}</nav></div>`;
+  bar.innerHTML=`<div class="kin"><form><div class="kf"><i class="ph-light ph-whatsapp-logo"></i><input aria-label="${T('msg_wa','Message KHIP on WhatsApp')}" autocomplete="off"><button type="submit" class="ks" aria-label="${T('send','Send')}" title="${T('send','Send')}"><i class="ph-light ph-paper-plane-right"></i></button></div></form><nav></nav></div>`;
   // App-shell layout: the page scrolls inside #khip-page and the bar sits below it as a normal
   // flex row, so nothing (toolbars, content height changes, fades) can ever move the bar.
   const body=document.body,me=document.currentScript;
@@ -20,10 +20,20 @@
     [...body.childNodes].forEach(n=>{if(n!==me&&n!==bar)page.appendChild(n)});body.appendChild(page)}
   body.appendChild(bar);
   const sync=()=>document.documentElement.style.setProperty('--khip-h',bar.offsetHeight+'px');
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  // The bar items: the admin's menu (Menu tab) when it has been saved, otherwise the built-in items.
+  function renderNav(){
+    const nav=bar.querySelector('nav'),custom=window.KMENU&&KMENU.items('bar');
+    nav.innerHTML=custom?custom.map(it=>`<button type="button" data-href="${esc(it.link)}"><i class="ph-light ${esc(it.icon||'ph-circle')}"></i>${esc(KMENU.label(it))}</button>`).join('')
+      :legacyNav.map(([k,i,l])=>`<button type="button" data-go="${k}"><i class="ph-light ${i}"></i>${l}</button>`).join('');
+    sync();
+  }
+  renderNav();if(window.KMENU)KMENU.onChange(renderNav);
   sync();addEventListener('resize',sync);if(window.ResizeObserver)new ResizeObserver(sync).observe(bar);
   const inp=bar.querySelector('input');
   bar.querySelector('form').addEventListener('submit',e=>{e.preventDefault();const v=inp.value.trim();if(v){wa(v);inp.value=''}});
   bar.addEventListener('click',e=>{
+    const h=e.target.closest('[data-href]');if(h){KMENU.go(h.dataset.href);return}
     const b=e.target.closest('[data-go]');if(!b)return;const k=b.dataset.go,el=document.getElementById(k);
     if(k==='my-files'){location.href='my-stuff.html';return}
     if(k==='tenders'){location.href='tenders.html';return}

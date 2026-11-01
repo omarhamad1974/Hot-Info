@@ -10,9 +10,9 @@ window.KLang=(function(){
   const LS='khip-lang',CS='khip-langs',AR_FILE='./app-data.ar.json';
   const DICT={
     en:{
-      brand:'Intellectual Properties',nav_about:'About',nav_jur:'Jurisdictions',nav_services:'IP Services',nav_news:'News',nav_files:'My files',
-      bar_home:'Home',bar_services:'IP Services',bar_news:'News',bar_jur:'Jurisdiction',bar_about:'About',bar_files:'My files',bar_tenders:'Tenders',tn_new:'{x} new tenders in your sectors',tn_new1:'1 new tender in your sectors',tn_view:'View tenders',
-      more:'More',jur_title:'Jurisdictions',svc_title:'IP Services',news_title:'Latest news',testi_title:'Client endorsements',
+      brand:'Intellectual Properties',nav_about:'About',nav_jur:'HOT News',nav_services:'IP Services',nav_news:'News',nav_files:'My files',
+      bar_home:'Home',bar_services:'IP Services',bar_news:'News',bar_jur:'HOT News',bar_about:'About',bar_files:'My files',bar_tenders:'Tenders',tn_new:'{x} new tenders in your sectors',tn_new1:'1 new tender in your sectors',tn_view:'View tenders',
+      more:'More',jur_title:'HOT News',svc_title:'IP Services',news_title:'Latest news',testi_title:'Client endorsements',
       load_err:"We couldn't load the latest content.",try_again:'Try again',close:'Close',
       no_country:'No matching country. Message us and we will check for you.',ip_guidelines:'IP guidelines available upon inquiry.',
       view_req:'View Filing Requirements',pct:'PCT Filing Guidelines',copy_link:'Copy link',link_copied:'Link copied',related:'Related news',
@@ -20,14 +20,14 @@ window.KLang=(function(){
       wa_jur:'IP filings and legal procedures in {x}',general:'General',msg_wa:'Message KHIP on WhatsApp',send:'Send',
       switch_to:'العربية',flag_aria:'{x} flag',testimonial_n:'Testimonial {x}',news_n:'News {x}',
       nav_scope:'Our Regional Scope',nav_value:'Value',nav_adv:'Advantages',nav_team:'Team',nav_contact:'Contact',
-      follow_li:'Follow us on LinkedIn',address:'Address',phone:'Phone',email:'Email',open_maps:'Open in Google Maps',filing_guidelines:'Filing guidelines',
+      follow_li:'Follow us on LinkedIn',address:'Address',hot_n:'{x} active tenders',hot_n1:'1 active tender',hot_cta:'See all tenders',hot_note:'Full details are available to subscribers.',phone:'Phone',email:'Email',open_maps:'Open in Google Maps',filing_guidelines:'Filing guidelines',
       wa_us:'WhatsApp us',team_prev:'Previous team members',team_next:'Next team members',
       prompts:["Hello KHIP, I'd like to register a trademark in Egypt","How long does a patent filing take in the UAE?","Can you translate my patent into Arabic?","What documents do I need for a PCT national phase entry?"]
     },
     ar:{
-      brand:'للملكية الفكرية',nav_about:'من نحن',nav_jur:'الاختصاصات القضائية',nav_services:'خدمات الملكية الفكرية',nav_news:'الأخبار',nav_files:'ملفاتي',
-      bar_home:'الرئيسية',bar_services:'الخدمات',bar_news:'الأخبار',bar_jur:'الدول',bar_about:'من نحن',bar_files:'ملفاتي',bar_tenders:'المناقصات',tn_new:'{x} مناقصات جديدة في قطاعاتك',tn_new1:'مناقصة جديدة في قطاعاتك',tn_view:'عرض المناقصات',
-      more:'المزيد',jur_title:'الاختصاصات القضائية',svc_title:'خدمات الملكية الفكرية',news_title:'آخر الأخبار',testi_title:'آراء العملاء',
+      brand:'للملكية الفكرية',nav_about:'من نحن',nav_jur:'أخبار HOT',nav_services:'خدمات الملكية الفكرية',nav_news:'الأخبار',nav_files:'ملفاتي',
+      bar_home:'الرئيسية',bar_services:'الخدمات',bar_news:'الأخبار',bar_jur:'أخبار HOT',bar_about:'من نحن',bar_files:'ملفاتي',bar_tenders:'المناقصات',tn_new:'{x} مناقصات جديدة في قطاعاتك',tn_new1:'مناقصة جديدة في قطاعاتك',tn_view:'عرض المناقصات',
+      more:'المزيد',jur_title:'أخبار HOT',svc_title:'خدمات الملكية الفكرية',news_title:'آخر الأخبار',testi_title:'آراء العملاء',
       load_err:'تعذر تحميل أحدث المحتوى.',try_again:'حاول مرة أخرى',close:'إغلاق',
       no_country:'لا توجد دولة مطابقة. راسلنا وسنتحقق لك.',ip_guidelines:'إرشادات الملكية الفكرية متاحة عند الاستفسار.',
       view_req:'عرض متطلبات التسجيل',pct:'إرشادات تقديم طلبات معاهدة التعاون بشأن البراءات (PCT)',copy_link:'نسخ الرابط',link_copied:'تم نسخ الرابط',related:'أخبار ذات صلة',
@@ -35,7 +35,7 @@ window.KLang=(function(){
       wa_jur:'إجراءات تسجيل الملكية الفكرية والإجراءات القانونية في {x}',general:'عام',msg_wa:'راسل KHIP عبر واتساب',send:'إرسال',
       switch_to:'English',flag_aria:'علم {x}',testimonial_n:'الرأي {x}',news_n:'الخبر {x}',
       nav_scope:'نطاقنا الإقليمي',nav_value:'القيمة',nav_adv:'المزايا',nav_team:'الفريق',nav_contact:'اتصل بنا',
-      follow_li:'تابعنا على لينكدإن',address:'العنوان',phone:'الهاتف',email:'البريد الإلكتروني',open_maps:'افتح في خرائط جوجل',filing_guidelines:'إرشادات التسجيل',
+      follow_li:'تابعنا على لينكدإن',address:'العنوان',hot_n:'{x} مناقصات سارية',hot_n1:'مناقصة سارية واحدة',hot_cta:'عرض كل المناقصات',hot_note:'التفاصيل الكاملة متاحة للمشتركين.',phone:'الهاتف',email:'البريد الإلكتروني',open_maps:'افتح في خرائط جوجل',filing_guidelines:'إرشادات التسجيل',
       wa_us:'راسلنا عبر واتساب',team_prev:'أعضاء الفريق السابقون',team_next:'أعضاء الفريق التاليون',
       prompts:['مرحباً KHIP، أود تسجيل علامة تجارية في مصر','كم يستغرق تقديم طلب براءة اختراع في الإمارات؟','هل يمكنكم ترجمة براءة الاختراع الخاصة بي إلى العربية؟','ما المستندات المطلوبة لدخول المرحلة الوطنية لمعاهدة PCT؟']
     }

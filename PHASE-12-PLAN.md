@@ -22,10 +22,15 @@ Keep this file. If a session ends, give it (with the zip) to Claude and say "con
   - Where: admin.html > **Sections** tab and **Contact** tab. Applied by theme.js, contact.js, footer.js.
   - Files touched: theme.js, contact.js, styles.css, footer.js, lang.js, admin.html, all public pages, app-data.json (contact block), scripts/validate.js.
 
-## Next
-- **12c: Animation**
-  - Animation type per section and per card group: standard (none, fade, fade-up, slide left/right, zoom)
-    and advanced (duration, delay, stagger between cards, easing, play once or every time, hover effects).
+- **12c (this zip): Animation**
+  - Animation type per section and per card group: standard (none, fade, fade up/down, slide left/right, zoom in/out)
+    and advanced (blur, 3D flip, rotate, wipe), with speed, wait, distance, movement style, stagger between cards,
+    play once or every time, card hover effects, a master "turn off" switch and a Play preview.
+  - Where: admin.html > **Animation** tab. Applied by motion.js (settings in app-data.json > theme.motion).
+  - Files touched: motion.js, styles.css, admin.html, all public pages (script tag), scripts/validate.js.
+
+## Phase 12 is complete.
+Ideas for later: animations for the header and footer, per-card hover colors, a page-load intro animation.
 
 ## Files touched in 12a
 theme.js, brand.js, styles.css, admin.html, all public .html pages (header), app-data.json (brand block),

@@ -32,7 +32,8 @@ header .wrap{width:100%;max-width:76rem}
 .h2{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.875rem;line-height:1.25;font-weight:500;color:rgb(var(--c-title-rgb))}
 .rule{display:block;width:3rem;height:1px;background:rgb(var(--c-gold-rgb));margin:.75rem 0 1.75rem}
 .card{background:#fff;color:rgb(var(--c-text-rgb));border-radius:1rem;border:1px solid rgba(231,229,228,.8);box-shadow:0 1px 2px rgba(0,0,0,.05);transition:transform .3s,box-shadow .3s}
-.card:hover{transform:translateY(-.25rem);box-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1)}
+.card:hover{transform:var(--h-tf,translateY(-.25rem));box-shadow:var(--h-sh,0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1));border-color:var(--h-bc,rgba(231,229,228,.8))}
+[data-himg] .card img{transition:transform .5s ease}[data-himg] .card:hover img{transform:scale(1.08)}
 .slider{display:flex;gap:1rem;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:.75rem;scrollbar-width:none}
 .slider::-webkit-scrollbar{display:none}
 .slider>*{scroll-snap-align:start;flex-shrink:0}
@@ -58,7 +59,9 @@ header .wrap{width:100%;max-width:76rem}
 .slide.on img{animation:kb 10s ease-out forwards}
 @keyframes kb{from{transform:scale(1)}to{transform:scale(1.07)}}
 .rv{opacity:0;transform:translateY(20px);transition:opacity .9s ease,transform .9s cubic-bezier(.16,1,.3,1)}.rv.in{opacity:1;transform:none}
-.fu{opacity:0;transform:translateY(28px);transition:opacity .9s ease var(--d,0s),transform .9s cubic-bezier(.16,1,.3,1) var(--d,0s)}.fu.in{opacity:1;transform:none}
+.fu{opacity:var(--a-opacity,0);transform:var(--a-tf,translateY(28px));filter:var(--a-fl,none);clip-path:var(--a-clip,none);transition:opacity var(--a-dur,.9s) var(--a-ez,ease) var(--d,0s),transform var(--a-dur,.9s) var(--a-ez2,cubic-bezier(.16,1,.3,1)) var(--d,0s),filter var(--a-dur,.9s) ease var(--d,0s),clip-path var(--a-dur,.9s) var(--a-ez2,cubic-bezier(.16,1,.3,1)) var(--d,0s)}.fu.in{opacity:1;transform:none;filter:none;clip-path:var(--a-clip-to,none)}
+/* Animation tab (admin): "No animation" and "Turn off all animations" */
+.fu[data-anim=none],[data-motion-off] .fu{opacity:1!important;transform:none!important;filter:none!important;clip-path:none!important;transition:none!important}
 .sheet{transition:transform .5s cubic-bezier(.16,1,.3,1),opacity .4s ease}.sheet.closed{opacity:0;transform:translateY(32px)}
 
 /* ---------- Map (about page) ---------- */
@@ -143,7 +146,7 @@ header .wrap{width:100%;max-width:76rem}
 /* ---------- Reduced motion: no slide-ins, zooms or fades for people who ask for less movement ---------- */
 @media(prefers-reduced-motion:reduce){
   html,#khip-page{scroll-behavior:auto}
-  .rv,.fu{opacity:1;transform:none;transition:none}
+  .rv,.fu{opacity:1;transform:none;filter:none;clip-path:none;transition:none}
   .slide,.slide.on img,.card,.sheet,#news-list>.ncard,.tcard,.tm-track,.ct-tile{transition:none;animation:none}
   .card:hover{transform:none}
 }

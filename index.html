@@ -16,6 +16,8 @@
 <script src="theme.js"></script>
 <script src="brand.js"></script>
 <script src="contact.js"></script>
+<script src="motion.js"></script>
+<script src="menu.js"></script>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body class="font-sans font-light antialiased">
@@ -24,7 +26,7 @@
   <div class="wrap py-3 flex items-center justify-between">
     <div class="flex items-center gap-3"><span class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="KHIP" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></span></div>
     <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
-      <a href="#about" class="hover:text-brand-600 transition" data-i18n="nav_about">About</a><a href="#jurisdictions" class="hover:text-brand-600 transition" data-i18n="nav_jur">Jurisdictions</a><a href="#services" class="hover:text-brand-600 transition" data-i18n="nav_services">IP Services</a><a href="#news" class="hover:text-brand-600 transition" data-i18n="nav_news">News</a>
+      <a href="#about" class="hover:text-brand-600 transition" data-i18n="nav_about">About</a><a href="#jurisdictions" class="hover:text-brand-600 transition" data-i18n="nav_jur">HOT News</a><a href="#services" class="hover:text-brand-600 transition" data-i18n="nav_services">IP Services</a><a href="#news" class="hover:text-brand-600 transition" data-i18n="nav_news">News</a>
     <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a></nav>
     <div class="flex items-center gap-2"><div id="lang-switch"></div><div class="flex gap-2" data-social></div></div>
   </div>
@@ -42,7 +44,7 @@
   </div></section>
 
   <section id="jurisdictions" data-sec="home-jurisdictions" class="band bg-surface hidden"><div class="wrap">
-    <div><h2 class="h2" data-i18n="jur_title">Jurisdictions</h2><span class="rule"></span></div>
+    <div><h2 class="h2" data-i18n="jur_title">HOT News</h2><span class="rule"></span></div>
     <div id="jur-chips" class="relative flex gap-2.5 overflow-x-auto no-scrollbar pb-3"></div>
     <div id="jur-card" class="mt-2 rounded-3xl bg-stone-50 border border-stone-200 p-6 md:p-9"></div>
   </div></section>
@@ -93,7 +95,7 @@ const icon=x=>/^ph-/.test(x.icon||'')?esc(x.icon.replace(/^ph-light\s*/,'')):(IC
 const show=(id,on)=>$(id).classList.toggle('hidden',!on);
 const imgErr='onerror="this.onerror=null;this.src=FALLBACK_IMG"';
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
-let D={},jur=[],slide=0,timer=null,lastFocus=null;
+let D={},hot=[],hotLoaded=false,slide=0,timer=null,lastFocus=null;
 
 async function load(){
   const ck=()=>CACHE+(KLang.rtl?'-ar':'');
@@ -112,7 +114,7 @@ function render(){
   KHIP.setPrompts(D.chatPrompts);
   const s=D.social||{};
   carousel(D.carousel||[]);
-  jur=D.jurisdictions||[];show('jurisdictions',jur.length);chips();pick(0);
+  hotInit();
   list('services',D.services,(x,i)=>`<div class="fu" style="--d:${(i%3)*.12}s"><div class="card h-full p-5 md:p-7 flex md:flex-col gap-4 md:gap-5 items-start"><div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ${icon(x)} text-2xl md:text-3xl"></i></div><div class="flex flex-col flex-1"><h3 class="font-display text-2xl font-semibold text-title">${esc(x.title)}</h3><p class="text-sm leading-relaxed mt-1.5 line-clamp-5 md:line-clamp-3">${KRich.plain(x.description)}</p><button data-act="service" data-i="${i}" class="mt-4 self-start text-sm border border-ink/30 hover:bg-ink hover:text-white px-6 py-1.5 rounded-full transition">${KLang.t('more')}</button></div></div></div>`);
   list('news',D.news,x=>`<button data-act="news" data-id="${esc(x.id)}" class="ncard card w-[17rem] sm:w-80 text-start overflow-hidden"><img loading="lazy" src="${img(x.image)}" ${imgErr} alt="" class="w-full h-40 object-cover"><div class="p-5"><span class="cat-tag">${esc(cat(x))}</span>${x.date?`<span class="text-xs text-stone-500 ms-2">${esc(x.date)}</span>`:''}<h3 class="font-display text-xl font-semibold text-title leading-snug line-clamp-2 mt-1.5">${esc(x.title)}</h3><p class="text-sm mt-2 line-clamp-3">${KRich.plain(x.excerpt)}</p></div></button>`);
   news();
@@ -195,26 +197,44 @@ function setSlide(i){
   s[slide].classList.remove('on');slide=i;s[i].classList.add('on');
 }
 
+// HOT News: sectors that have active tenders (description + publishing entity only; see supabase-step13-hot-news.sql)
+const hotName=x=>KLang.rtl&&x.name_ar?x.name_ar:x.name;
+async function hotInit(){
+  if(hotLoaded){hotPaint();return}
+  hotLoaded=true;
+  try{const c=JSON.parse(sessionStorage.getItem('khip-hot-v1'));if(Array.isArray(c)){hot=c;hotPaint()}}catch{}
+  try{
+    if(!window.KHIP_SUPABASE)await new Promise((ok,no)=>{const e=document.createElement('script');e.src='supabase-config.js';e.onload=ok;e.onerror=no;document.head.appendChild(e)});
+    const C=window.KHIP_SUPABASE;if(!C||/YOUR-/.test(C.url||''))return;
+    const per=Math.min(12,Math.max(1,parseInt((D.hot||{}).perSector)||6));
+    const r=await fetch(C.url+'/rest/v1/rpc/hot_news',{method:'POST',headers:{apikey:C.anonKey,Authorization:'Bearer '+C.anonKey,'Content-Type':'application/json'},body:JSON.stringify({p_per:per})});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    hot=await r.json();try{sessionStorage.setItem('khip-hot-v1',JSON.stringify(hot))}catch{}
+  }catch(e){console.warn('HOT News not loaded',e)}
+  hotPaint();
+}
+function hotPaint(){show('jurisdictions',hot.length);chips();pick(Math.min(jc,Math.max(0,hot.length-1)))}
 function chips(){
-  const m=jur.map((j,i)=>[j,i]);
-  window.jm=m.map(x=>x[1]);
-  $('jur-chips').innerHTML=m.map(([j,i])=>`<button data-act="jur" data-i="${i}" id="chip-${i}" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm flex-shrink-0 bg-white border border-stone-300 transition"><span class="text-base">${flag(j)}</span>${esc(j.country)}</button>`).join('')||`<p class="text-sm py-2">${KLang.t('no_country')}</p>`;
+  window.jm=hot.map((x,i)=>i);
+  $('jur-chips').innerHTML=hot.map((x,i)=>`<button data-act="jur" data-i="${i}" id="chip-${i}" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm flex-shrink-0 bg-white border border-stone-300 transition"><i class="ph-light ph-fire text-base"></i>${esc(hotName(x))}<span class="text-xs opacity-70">${x.count}</span></button>`).join('');
 }
 let jc=0;
 function pick(i){
-  const j=jur[i];if(!j){$('jur-card').innerHTML='';return}
+  const j=hot[i];if(!j){$('jur-card').innerHTML='';return}
   jc=i;
   document.querySelectorAll('[id^=chip-]').forEach(b=>{const on=b.id==='chip-'+i;b.classList.toggle('bg-ink',on);b.classList.toggle('text-white',on);b.classList.toggle('border-ink',on);b.classList.toggle('bg-white',!on)});
   const ch=$('chip-'+i),box=$('jur-chips');
   if(ch){if(KLang.rtl)ch.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});else box.scrollTo({left:ch.offsetLeft-(box.clientWidth-ch.offsetWidth)/2,behavior:'smooth'})}
   const c=$('jur-card');c.style.transition='opacity .3s ease,transform .3s ease';c.style.opacity=0;c.style.transform='translateX('+(-24*(KLang.rtl?-1:1))+'px)';
   setTimeout(()=>{
-    c.innerHTML=`<div class="flex items-center gap-3"><span class="text-[1.6875rem] leading-none">${flag(j)}</span><h3 class="font-display text-[1.4rem] leading-tight font-semibold text-title">${esc(j.country)}</h3></div><p class="mt-4 text-sm md:text-base leading-relaxed line-clamp-5 md:line-clamp-4 max-w-3xl">${KRich.card(j.brief||KLang.t('ip_guidelines'))}</p><div class="mt-6 text-center"><button data-act="jurmodal" data-i="${i}" class="text-sm bg-ink hover:bg-stone-800 text-white px-10 py-2.5 rounded-full transition">${KLang.t('view_req')}</button></div>`;
+    c.innerHTML=`<div class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ph-fire text-2xl"></i></span><div class="min-w-0"><h3 class="font-display text-[1.4rem] leading-tight font-semibold text-title">${esc(hotName(j))}</h3><p class="text-xs text-stone-500">${esc(j.count===1?KLang.t('hot_n1'):KLang.t('hot_n',{x:j.count}))}</p></div></div>`
+      +`<ul class="mt-4 divide-y divide-stone-200">${j.tenders.map(t=>`<li class="py-3"><p dir="auto" class="text-sm md:text-base leading-relaxed text-ink line-clamp-3 md:line-clamp-4">${esc(t.subject)}</p>${t.entity?`<p dir="auto" class="mt-1 text-xs text-stone-500 flex items-center gap-1.5"><i class="ph-light ph-buildings flex-shrink-0"></i><span class="min-w-0">${esc(t.entity)}</span></p>`:''}</li>`).join('')}</ul>`
+      +`<div class="mt-5 flex flex-wrap items-center gap-3"><a href="tenders.html" class="inline-flex items-center gap-2 bg-ink hover:bg-stone-800 text-white text-sm px-6 py-2.5 rounded-full transition"><i class="ph-light ph-gavel"></i>${esc(KLang.t('hot_cta'))}</a><span class="text-xs text-stone-500">${esc(KLang.t('hot_note'))}</span></div>`;
     c.style.transition='none';c.style.transform='translateX('+(24*(KLang.rtl?-1:1))+'px)';void c.offsetWidth;
     c.style.minHeight=Math.max(parseFloat(c.style.minHeight)||0,c.scrollHeight)+'px';c.style.transition='opacity .6s ease,transform .7s cubic-bezier(.16,1,.3,1)';c.style.opacity=1;c.style.transform='none';
   },300);
 }
-// Countries advance by themselves every 15 seconds
+// The sectors advance by themselves every 15 seconds
 setInterval(()=>{
   const sec=$('jurisdictions'),m=window.jm||[];
   if(REDUCED||paused(sec)||m.length<2||!$('modal').classList.contains('pointer-events-none'))return;
@@ -262,16 +282,12 @@ function openService(i){
   const more=/^[\w\-]+\.html$/.test(x.page||'');
   openModal(`<div class="flex items-center gap-4 pe-10"><div class="w-14 h-14 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ${icon(x)} text-3xl"></i></div><h3 id="m-title" class="font-display text-3xl font-semibold text-title leading-tight">${esc(x.title)}</h3></div><div class="leading-relaxed">${KRich.rich(x.description)}</div>${x.details&&x.details.trim()?`<div class="bg-stone-50 p-5 rounded-2xl border border-stone-200 text-sm leading-relaxed">${KRich.rich(x.details)}</div>`:''}${more?`<a href="${esc(x.page)}" class="block text-center w-full bg-ink hover:bg-stone-800 text-white py-3 rounded-full text-sm transition">${KLang.t('more_info')}</a>`:''}<button data-act="inquire" data-q="${esc(x.title)}" class="w-full bg-sand hover:brightness-95 text-ink py-3 rounded-full text-sm transition"><i class="ph-light ph-whatsapp-logo"></i> ${esc(KLang.t('inquire_about',{x:x.title}))}</button>`);
 }
-function openJur(i){
-  const j=jur[i];if(!j)return;
-  openModal(`<div class="flex items-center gap-4 pe-10"><span class="text-4xl">${flag(j)}</span><h3 id="m-title" class="font-display text-3xl font-semibold text-title">${esc(j.country)}</h3></div><div><h3 class="font-display text-lg font-semibold text-title mb-1">${KLang.t('pct')}</h3><div class="text-sm leading-relaxed">${KRich.rich(j.details||j.brief)}</div></div><button data-act="inquire" data-q="${esc(KLang.t('wa_jur',{x:j.country}))}" class="w-full bg-sand hover:brightness-95 text-ink py-3 rounded-full text-sm transition"><i class="ph-light ph-whatsapp-logo"></i> ${esc(KLang.t('inquire_about',{x:j.country}))}</button>`);
-}
 
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-act]');if(!t)return;
   const {act,i,id,q}=t.dataset;
   if(act==='close'){if(e.target===t||t.tagName==='BUTTON')closeModal()}
-  else if(act==='jur')pick(+i);else if(act==='jurmodal')openJur(+i);else if(act==='news')openNews(id);
+  else if(act==='jur')pick(+i);else if(act==='news')openNews(id);
   else if(act==='service')openService(+i);else if(act==='tslide')setT(+i);else if(act==='nslide')setN(+i);else if(act==='inquire')KHIP.wa(KLang.t('wa_service',{x:q}));
   else if(act==='retry')load();
   else if(act==='share'){const u=location.origin+location.pathname+'#news-'+id;(navigator.share?navigator.share({url:u}):navigator.clipboard.writeText(u)).then(()=>t.textContent=KLang.t('link_copied')).catch(()=>{})}

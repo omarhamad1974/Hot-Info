@@ -38,7 +38,7 @@
   const SECTIONS=[
     ['home-carousel','Home page: Picture carousel'],
     ['home-about','Home page: logo and About text'],
-    ['home-jurisdictions','Home page: Jurisdictions'],
+    ['home-jurisdictions','Home page: HOT News'],
     ['home-services','Home page: IP Services'],
     ['home-news','Home page: Latest news'],
     ['home-testimonials','Home page: Client endorsements'],

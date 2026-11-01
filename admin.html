@@ -121,6 +121,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="supabase-config.js"></script>
 <script src="theme.js"></script>
+<script src="motion.js"></script>
 <script src="lang.js" data-passive></script>
 <script>
 /* ============================ shared ============================ */
@@ -144,13 +145,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-pane]');if
 /* ============================ WEBSITE CONTENT ============================ */
 const SC={
  carousel:{label:'Carousel',icon:'fa-images',one:'slide',title:'title',req:['title'],f:[['title','Title'],['subtitle','Subtitle'],['tag','Tag'],['image','Image','img']]},
- jurisdictions:{label:'Jurisdictions',icon:'fa-globe-africa',one:'country',title:'country',req:['country'],f:[['country','Country'],['code','Country code, 2 letters (eg, ae, sa)'],['tag','Tag'],['brief','Overview (the country card shows the first 5 lines)','area'],['details','Filing details','area']]},
+ jurisdictions:{label:'Countries (About page)',icon:'fa-globe-africa',one:'country',title:'country',req:['country'],f:[['country','Country'],['code','Country code, 2 letters (eg, ae, sa)'],['tag','Tag'],['brief','Overview (the country card shows the first 5 lines)','area'],['details','Filing details','area']]},
  news:{label:'News',icon:'fa-newspaper',one:'article',title:'title',req:['title','excerpt'],f:[['title','Title'],['date','Date','date'],['category','Category (label)','select'],['image','Image','img'],['excerpt','Short summary','area'],['text','Full article','area']]},
  services:{label:'Services',icon:'fa-balance-scale',one:'service',title:'title',req:['title','description'],f:[['title','Title'],['icon','Icon (optional, e.g. ph-lightbulb)'],['description','1. Brief (on the home page card, and the top of the pop-up)','area'],['details','2. Pop-up content (more information, shown when the card is opened)','area'],['page','Dedicated page file (e.g. patents.html). Adds the "More information" button'],['pageContent','3. Dedicated page content. Text before the first ## is the introduction; each ## Heading becomes a card on the page','area']]},
  testimonials:{label:'Testimonials',icon:'fa-quote-right',one:'testimonial',title:'name',req:['name','text'],f:[['name','Client name'],['role','Role and company (eg, CEO, Acme)'],['text','Testimonial','plain']]},
  employees:{label:'Team',icon:'fa-users',one:'team member',title:'name',req:['name','position'],f:[['name','Name'],['position','Position'],['image','Photo (square; resized and cropped to fit automatically)','img']]},
 };
-const GEN=[['aboutMainText','About text (home page)','area'],['about','Short tagline'],['brand.image','Logo: used in the header, the home page and the About page (upload a PNG with a transparent background for the best result)','img'],['brand.tagline','Header text next to the logo (leave empty for the built-in "Intellectual Properties")'],['chatPrompts','Suggestions typed into the WhatsApp box (one per line)','lines'],['newsCategories','News categories / labels (one per line)','lines']];
+const GEN=[['aboutMainText','About text (home page)','area'],['about','Short tagline'],['hot.perSector','HOT News: how many tenders to show under each sector (1 to 12, default 6)'],['brand.image','Logo: used in the header, the home page and the About page (upload a PNG with a transparent background for the best result)','img'],['brand.tagline','Header text next to the logo (leave empty for the built-in "Intellectual Properties")'],['chatPrompts','Suggestions typed into the WhatsApp box (one per line)','lines'],['newsCategories','News categories / labels (one per line)','lines']];
 const DEFCATS=['General','KHIP News','Intellectual Property','Patents','Trademarks','Translation'];
 let S={},D=null,sha='',tab='general',dirty=false,openItem=null,q='',ASSETS=[],lang='en',DEN=null,DAR=null,shaAR='';
 
@@ -186,7 +187,7 @@ async function connect(creds){
 }
 
 function tabs(){
-  const all=[['general','General','fa-house'],...(lang==='ar'?[['pagetext','Page text','fa-file-alt'],['ui','Interface text','fa-language']]:[['brand','Brand','fa-gem'],['contact','Contact','fa-address-book'],['colors','Colors','fa-palette'],['backgrounds','Sections','fa-table-cells-large']]),...Object.entries(SC).map(([k,v])=>[k,v.label,v.icon])];
+  const all=[['general','General','fa-house'],...(lang==='ar'?[['pagetext','Page text','fa-file-alt'],['ui','Interface text','fa-language']]:[['brand','Brand','fa-gem'],['contact','Contact','fa-address-book'],['menu','Menu','fa-bars'],['colors','Colors','fa-palette'],['backgrounds','Sections','fa-table-cells-large'],['motion','Animation','fa-wand-magic-sparkles']]),...Object.entries(SC).map(([k,v])=>[k,v.label,v.icon])];
   $('tabs').innerHTML=all.map(([k,l,i])=>`<button data-act="tab" data-k="${k}" class="flex-shrink-0 text-xs font-bold px-3 py-2 rounded-xl ${k===tab?'bg-brand-600 text-white':'bg-gray-100 hover:bg-gray-200'}"><i class="fas ${i}"></i> ${l}${SC[k]?` (${(D[k]||[]).length})`:''}</button>`).join('');
 }
 const tb=(k,p,title,inner,cls='')=>`<button type="button" onmousedown="event.preventDefault()" data-act="fmt" data-k="${k}" data-t="${p}" title="${title}" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 ${cls}">${inner}</button>`;
@@ -209,6 +210,8 @@ function view(){
   if(tab==='pagetext')return viewPT();
   if(tab==='brand')return viewBrand();
   if(tab==='contact')return viewContact();
+  if(tab==='menu')return viewMenu();
+  if(tab==='motion')return viewMotion();
   if(tab==='colors')return viewColors();
   if(tab==='backgrounds')return viewBg();
   const s=SC[tab],arr=D[tab]=D[tab]||[];
@@ -247,6 +250,13 @@ function theme(){
   return t;
 }
 function cleanTheme(){ // before saving: drop backgrounds that are set back to "Default", and empty font choices
+  if(D.theme&&D.theme.motion){
+    const m=D.theme.motion,cl=o=>{for(const k of Object.keys(o||{})){if(o[k]===''||o[k]===false||o[k]==null||(typeof o[k]==='number'&&k==='stagger'&&!o[k]))delete o[k]}};
+    cl(m);cl(m.site);if(m.site&&!Object.keys(m.site).length)delete m.site;
+    for(const k of Object.keys(m.sections||{})){const x=m.sections[k];if(x&&x.stagger!==undefined&&!parseFloat(x.stagger))delete x.stagger;cl(x);if(!Object.keys(x||{}).length)delete m.sections[k]}
+    if(m.sections&&!Object.keys(m.sections).length)delete m.sections;
+    if(!Object.keys(m).length)delete D.theme.motion;
+  }
   if(D.theme&&D.theme.fonts){for(const k of Object.keys(D.theme.fonts)){const f=D.theme.fonts[k]||{};if(!f.family&&!f.color)delete D.theme.fonts[k]}if(!Object.keys(D.theme.fonts).length)delete D.theme.fonts}
   if(D.theme&&Array.isArray(D.theme.customFonts)&&!D.theme.customFonts.length)delete D.theme.customFonts;
   if(!D.theme||!D.theme.sections)return;
@@ -404,6 +414,10 @@ function brandAct(a,t){
     mark();view();toast('The site colors now follow your brand palette. Press Save to GitHub.');return true}
   if(a==='ph-add'){contactData().phones.push({label:'',number:''});mark();view();return true}
   if(a==='ph-del'){contactData().phones.splice(+t.dataset.i,1);mark();view();return true}
+  if(a==='mv-play'){
+    const M=motionData(),box=t.parentElement,key=t.dataset.key;
+    const run=(el,card)=>{if(!el)return;const c=KM.eff(M,key,card);let d=parseFloat(c.delay)||0;if(card)d+=(parseFloat((M.sections[key]||{}).stagger)||0)*2;KM.preview(el,{...c,delay:d})};
+    run(box.querySelector('[data-mvb]'),false);run(box.querySelector('[data-mvc]'),true);return true}
   if(a==='brand-reset'){if(confirm('Put the 7 brand colors back to the default values?')){brandTheme().brand=TH.BRAND_DEFAULTS.map(x=>({...x}));mark();view()}return true}
   if(a==='font-del'){const th=brandTheme(),c=th.customFonts[+t.dataset.i];
     if(c&&confirm(`Remove the font "${c.name}" from the list? (The file stays in your assets folder.)`)){
@@ -432,6 +446,106 @@ function viewContact(){
     <p class="text-xs font-bold mt-4">Map on the About page</p><p class="text-[11px] text-gray-500">Open your place in Google Maps, right-click the pin and click the two numbers to copy them. Leave both empty to hide the map.</p>
     <div class="grid grid-cols-2 gap-2 mt-1">${fld('',['contact.mapLat','Latitude (example 30.0279)'])}${fld('',['contact.mapLng','Longitude (example 31.4876)'])}</div></div>
   <div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><div><h2 class="font-extrabold text-lg">Social media</h2><p class="text-xs text-gray-600 mt-1">Full web addresses starting with https://. The icons appear in the header of every page. Leave a box empty to hide that icon.</p></div>${SOCIALS.map(([k,n])=>fld('',['social.'+k,n+' address'])).join('')}</div>`;
+}
+
+/* ---------- Animation tab (saved as theme.motion; played by motion.js) ---------- */
+const KM=window.KMOTION;
+const mvOpen=new Set();
+function motionData(){const t=theme();const m=t.motion=t.motion||{};m.site=m.site||{};m.sections=m.sections||{};return m}
+function typeOpts(sel,first){
+  const g={};KM.TYPES.forEach(([v,n,k])=>(g[k]=g[k]||[]).push([v,n]));
+  return (first?`<option value="" ${!sel?'selected':''}>${first}</option>`:'')+Object.entries(g).map(([k,l])=>`<optgroup label="${k}">${l.map(([v,n])=>`<option value="${v}" ${sel===v?'selected':''}>${n}</option>`).join('')}</optgroup>`).join('');
+}
+const easeOpts=(sel,first)=>(first?`<option value="" ${!sel?'selected':''}>${first}</option>`:'')+KM.EASES.map(([v,n])=>`<option value="${v}" ${sel===v?'selected':''}>${n}</option>`).join('');
+const hoverOpts=(sel,first)=>`<option value="" ${!sel?'selected':''}>${first}</option>`+KM.HOVERS.map(([v,n])=>`<option value="${v}" ${sel===v?'selected':''}>${n}</option>`).join('');
+const numIn=(path,v,ph,min,max,step)=>`<input type="number" min="${min}" max="${max}" step="${step}" data-p="${path}" value="${esc(v??'')}" placeholder="${esc(ph)}" class="${inp} mt-1">`;
+function motionMore(base,s,site,isSite){
+  const ph=k=>isSite?'':(site[k]!==undefined&&site[k]!==''?String(site[k]):'same as site');
+  return `<div class="grid grid-cols-2 gap-2">
+    <label class="block text-[11px] font-bold text-gray-600">Speed: seconds it takes${numIn(base+'duration',s.duration,isSite?'0.9':ph('duration'),0.1,4,0.1)}</label>
+    <label class="block text-[11px] font-bold text-gray-600">Wait before it starts (seconds)${numIn(base+'delay',s.delay,isSite?'0':ph('delay'),0,4,0.1)}</label>
+    <label class="block text-[11px] font-bold text-gray-600">Distance it travels (pixels)${numIn(base+'distance',s.distance,isSite?'28':ph('distance'),0,200,2)}</label>
+    <label class="block text-[11px] font-bold text-gray-600">Movement style<select data-p="${base}ease" class="${inp} mt-1">${easeOpts(s.ease,isSite?'Smooth (default)':'Same as the whole site')}</select></label></div>
+    <label class="flex items-center gap-2 text-xs font-bold"><input type="checkbox" data-chk="${base}repeat" ${s.repeat?'checked':''}> Play again every time it scrolls into view (otherwise only once)</label>`;
+}
+function mvPreview(key){
+  return `<div class="flex items-center gap-2 pt-1"><div data-mvb class="flex-1 rounded-xl bg-gray-100 text-center text-[11px] font-bold text-gray-500 py-3">Section block</div><div data-mvc class="flex-1 rounded-xl bg-white border border-gray-300 shadow text-center text-[11px] font-bold text-gray-500 py-3">Card</div><button data-act="mv-play" data-key="${key}" class="text-xs bg-brand-600 hover:bg-brand-700 text-white font-bold px-3 py-2 rounded-xl flex-shrink-0"><i class="fas fa-play"></i> Play</button></div>`;
+}
+function viewMotion(){
+  const m=motionData(),site=m.site;
+  const head=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><div><h2 class="font-extrabold text-lg">Animation</h2><p class="text-xs text-gray-600 mt-1">How the sections and cards appear when a visitor scrolls to them, and what cards do when the mouse moves over them. Choose the look for the whole site first; then change any single section below. Press <b>Play</b> to see a sample. Visitors who ask their device for less motion never see animations.</p></div>
+    <label class="flex items-center gap-2 text-sm font-bold"><input type="checkbox" data-chk="theme.motion.off" ${m.off?'checked':''}> Turn off all animations on the website</label></div>
+  <div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><h2 class="font-extrabold text-lg">The whole site</h2>
+    <label class="block text-[11px] font-bold text-gray-600">Animation when a section or card appears<select data-p="theme.motion.site.type" class="${inp} mt-1">${typeOpts(site.type||'fade-up')}</select></label>
+    <label class="block text-[11px] font-bold text-gray-600">When the mouse is over a card<select data-p="theme.motion.site.hover" class="${inp} mt-1">${hoverOpts(site.hover,'The look the site has now (lifts a little)')}</select></label>
+    <details class="rounded-xl border border-gray-200"><summary class="p-2.5 text-xs font-bold cursor-pointer">More options (speed, wait, distance, style, repeat)</summary><div class="p-3 pt-1 space-y-3">${motionMore('theme.motion.site.',site,{},true)}</div></details>${mvPreview('')}</div>
+  <div class="bg-white p-4 rounded-2xl border border-gray-200"><h2 class="font-extrabold text-lg">Each section</h2><p class="text-xs text-gray-600 mt-1">Leave a box on "Same as ..." to follow the whole site.</p></div>`;
+  const rows=TH.SECTIONS.map(([key,label])=>{
+    const s=m.sections[key]||{},base=`theme.motion.sections.${key}.`;
+    const changed=Object.keys(s).some(k=>s[k]!==''&&s[k]!==false&&s[k]!==undefined);
+    return `<details data-mv="${key}" ${mvOpen.has(key)?'open':''} class="bg-white rounded-2xl border border-gray-200 shadow-sm"><summary class="flex items-center gap-2 p-3 cursor-pointer"><i class="fas fa-chevron-right chev text-[10px] text-gray-400"></i><span class="flex-1 min-w-0 font-bold text-sm truncate">${esc(label)}</span><span class="text-[11px] font-bold px-2 py-1 rounded-lg ${changed?'bg-brand-50 text-brand-700':'bg-gray-100 text-gray-500'}">${changed?'Custom':'Site default'}</span></summary>
+      <div class="p-4 pt-2 space-y-3">
+        <label class="block text-[11px] font-bold text-gray-600">Section animation<select data-p="${base}type" class="${inp} mt-1">${typeOpts(s.type,'Same as the whole site')}</select></label>
+        <label class="block text-[11px] font-bold text-gray-600">Cards in this section appear with<select data-p="${base}cardType" class="${inp} mt-1">${typeOpts(s.cardType,'Same as the section')}</select></label>
+        <label class="block text-[11px] font-bold text-gray-600">Cards come one after the other: <span id="sg-${key}">${esc(s.stagger||0)}</span> s apart<input type="range" min="0" max="0.5" step="0.05" data-p="${base}stagger" data-out="sg-${key}" data-pct="1" value="${esc(s.stagger||0)}" class="w-full mt-1"></label>
+        <label class="block text-[11px] font-bold text-gray-600">When the mouse is over a card<select data-p="${base}hover" class="${inp} mt-1">${hoverOpts(s.hover,'Same as the whole site')}</select></label>
+        <details class="rounded-xl border border-gray-200"><summary class="p-2.5 text-xs font-bold cursor-pointer">More options (speed, wait, distance, style, repeat)</summary><div class="p-3 pt-1 space-y-3">${motionMore(base,s,site,false)}</div></details>${mvPreview(key)}
+      </div></details>`;
+  }).join('');
+  $('view').innerHTML=head+rows;
+}
+document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.mv){d.open?mvOpen.add(d.dataset.mv):mvOpen.delete(d.dataset.mv)}},true);
+
+/* ---------- Menu tab (saved as menu.items; used by menu.js, footer.js) ---------- */
+const MENU_DEST=[['index.html','Home page'],['index.html#about','Home: about us'],['index.html#jurisdictions','Home: HOT News'],['index.html#services','Home: IP Services'],['index.html#news','Home: News'],['index.html#testimonials','Home: Client endorsements'],
+  ['about.html','About page'],['about.html#map','About: regional scope'],['about.html#value','About: value'],['about.html#advantages','About: advantages'],['about.html#team','About: team'],['about.html#contact','About: contact'],
+  ['patents.html','Patents page'],['trademarks.html','Trademarks page'],['translation.html','Translation page'],['tenders.html','Tenders page'],['my-stuff.html','My files page']];
+const MENU_ICONS=[['ph-house','House'],['ph-seal-check','Seal'],['ph-newspaper','Newspaper'],['ph-fire','Flame (HOT)'],['ph-megaphone','Megaphone'],['ph-info','Info'],['ph-folder-user','Folder'],['ph-gavel','Gavel'],['ph-scales','Scales'],['ph-certificate','Certificate'],['ph-lightbulb','Light bulb'],['ph-translate','Translate'],['ph-briefcase','Briefcase'],['ph-users','People'],['ph-star','Star'],['ph-envelope-simple','Envelope'],['ph-phone','Phone'],['ph-map-pin','Map pin'],['ph-globe-hemisphere-west','Globe'],['ph-chat-circle-text','Chat']];
+const MENU_DEFAULT=()=>[
+  {id:'home',en:'Home',ar:'الرئيسية',link:'index.html',icon:'ph-house',header:true,bar:true},
+  {id:'services',en:'IP Services',ar:'الخدمات',link:'index.html#services',icon:'ph-seal-check',header:true,bar:true},
+  {id:'news',en:'News',ar:'الأخبار',link:'index.html#news',icon:'ph-newspaper',header:true,bar:true},
+  {id:'hot',en:'HOT News',ar:'أخبار HOT',link:'index.html#jurisdictions',icon:'ph-fire',header:true,bar:true},
+  {id:'about',en:'About',ar:'من نحن',link:'about.html',icon:'ph-info',header:true,bar:true},
+  {id:'files',en:'My files',ar:'ملفاتي',link:'my-stuff.html',icon:'ph-folder-user',header:true,bar:true},
+  {id:'tenders',en:'Tenders',ar:'المناقصات',link:'tenders.html',icon:'ph-gavel',header:false,bar:false,hidden:true},
+  {id:'contact',en:'Contact',ar:'اتصل بنا',link:'about.html#contact',icon:'ph-envelope-simple',header:false,bar:false,hidden:true}
+];
+function viewMenu(){
+  if(!$('adm-ph')){const l=document.createElement('link');l.id='adm-ph';l.rel='stylesheet';l.href='https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css';document.head.appendChild(l)}
+  const custom=!!(D.menu&&Array.isArray(D.menu.items)),items=custom?D.menu.items:MENU_DEFAULT();
+  const head=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><div><h2 class="font-extrabold text-lg">Menu</h2><p class="text-xs text-gray-600 mt-1">The menu at the top of every page (big screens) and the bar at the bottom (all screens), in English and Arabic. Each item has a name in both languages, a destination and an icon, and can be shown in the top menu, the bottom bar, both, or hidden. The bottom bar looks best with 6 items or fewer.</p></div>
+    ${custom?`<div class="flex flex-wrap gap-2"><button data-act="menu-add" class="text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] font-bold px-3.5 py-2 rounded-xl"><i class="fas fa-plus"></i> Add an item</button><button data-act="menu-off" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-rotate-left"></i> Go back to the built-in menus</button></div>`
+    :`<div class="rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs p-3">The website is using the built-in menus (they differ a little from page to page). Press the button to edit them: the list below becomes the menu of every page.<div class="mt-2"><button data-act="menu-on" class="text-xs bg-brand-600 hover:bg-brand-700 text-white font-bold px-3.5 py-2 rounded-xl"><i class="fas fa-pen"></i> Customise the menu</button></div></div>`}</div>`;
+  const row=(it,i)=>{
+    const known=MENU_DEST.some(d=>d[0]===it.link),sel=known?it.link:'__custom',base=`menu.items.${i}.`;
+    const dis=custom?'':'disabled';
+    return `<div class="bg-white rounded-2xl border ${it.hidden?'border-dashed border-gray-300 opacity-70':'border-gray-200'} p-3 space-y-2 ${custom?'':'pointer-events-none opacity-60'}">
+      <div class="flex items-center gap-2"><i class="ph-light ${esc(it.icon||'ph-circle')} text-2xl text-brand-600 w-7 text-center"></i><span class="font-bold text-sm flex-1 truncate">${esc(it.en||it.ar||'(no name)')}${it.hidden?' <span class="text-[11px] text-gray-500">(hidden)</span>':''}</span>
+        <button data-act="menu-up" data-i="${i}" aria-label="Move up" class="w-8 h-8 rounded-lg bg-gray-100" ${dis}><i class="fas fa-arrow-up text-xs"></i></button><button data-act="menu-down" data-i="${i}" aria-label="Move down" class="w-8 h-8 rounded-lg bg-gray-100" ${dis}><i class="fas fa-arrow-down text-xs"></i></button><button data-act="menu-del" data-i="${i}" aria-label="Delete" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" ${dis}><i class="fas fa-trash text-xs"></i></button></div>
+      <div class="grid grid-cols-2 gap-2"><label class="block text-[11px] font-bold text-gray-600">Name in English<input data-p="${base}en" value="${esc(it.en||'')}" class="${inp} mt-1" ${dis}></label><label class="block text-[11px] font-bold text-gray-600">الاسم بالعربية<input dir="rtl" data-p="${base}ar" value="${esc(it.ar||'')}" class="${inp} mt-1" ${dis}></label></div>
+      <div class="grid grid-cols-2 gap-2"><label class="block text-[11px] font-bold text-gray-600">Opens<select data-menu-dest="${i}" class="${inp} mt-1" ${dis}>${MENU_DEST.map(d=>`<option value="${d[0]}" ${sel===d[0]?'selected':''}>${d[1]}</option>`).join('')}<option value="__custom" ${sel==='__custom'?'selected':''}>Another address...</option></select></label>
+        <label class="block text-[11px] font-bold text-gray-600">Icon (bottom bar)<select data-p="${base}icon" class="${inp} mt-1" ${dis}>${MENU_ICONS.map(d=>`<option value="${d[0]}" ${it.icon===d[0]?'selected':''}>${d[1]}</option>`).join('')}</select></label></div>
+      ${sel==='__custom'?`<label class="block text-[11px] font-bold text-gray-600">Address (https://... or a page of this site)<input data-p="${base}link" value="${esc(it.link||'')}" class="${inp} mt-1" ${dis}></label>`:''}
+      <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold"><label class="flex items-center gap-1.5"><input type="checkbox" data-chk="${base}header" ${it.header?'checked':''} ${dis}> In the top menu</label><label class="flex items-center gap-1.5"><input type="checkbox" data-chk="${base}bar" ${it.bar?'checked':''} ${dis}> In the bottom bar</label><label class="flex items-center gap-1.5"><input type="checkbox" data-chk="${base}hidden" data-view="1" ${it.hidden?'checked':''} ${dis}> Hide it</label></div></div>`;
+  };
+  $('view').innerHTML=head+items.map(row).join('');
+}
+function menuChange(e){
+  const el=e.target;if(!D||!el.dataset.menuDest)return false;
+  const i=+el.dataset.menuDest,it=D.menu.items[i];
+  it.link=el.value==='__custom'?(it.link&&!MENU_DEST.some(d=>d[0]===it.link)?it.link:'https://'):el.value;
+  mark();view();return true;
+}
+function menuAct(a,t){
+  const items=()=>D.menu.items,mv=(i,d)=>{const j=i+d;if(j<0||j>=items().length)return;[items()[i],items()[j]]=[items()[j],items()[i]];mark();view()};
+  if(a==='menu-on'){D.menu={items:MENU_DEFAULT()};mark();view();return true}
+  if(a==='menu-off'){if(confirm('Remove your menu and go back to the built-in menus of each page?')){delete D.menu;mark();view()}return true}
+  if(a==='menu-add'){items().push({id:'m'+Date.now().toString(36),en:'New item',ar:'عنصر جديد',link:'index.html',icon:'ph-star',header:true,bar:false});mark();view();return true}
+  if(a==='menu-up'){mv(+t.dataset.i,-1);return true}
+  if(a==='menu-down'){mv(+t.dataset.i,1);return true}
+  if(a==='menu-del'){if(confirm('Delete this menu item?')){items().splice(+t.dataset.i,1);mark();view()}return true}
+  return false;
 }
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.bg){d.open?bgOpen.add(d.dataset.bg):bgOpen.delete(d.dataset.bg)}},true);
 
@@ -614,7 +728,7 @@ document.addEventListener('input',e=>{
   if(/\.(title|country|name)$/.test(p)){const sm=e.target.closest('details')?.querySelector('summary span');if(sm)sm.textContent=e.target.value||'Untitled'}
 });
 document.addEventListener('change',e=>{
-  if(brandChange(e))return;
+  if(brandChange(e)||menuChange(e))return;
   const bs=e.target.dataset.bgsel;
   if(bs&&D){const s=theme().sections[bs]=theme().sections[bs]||{};
     if(e.target.value==='__custom'){s.color=TH.resolve(s.color,D.theme)||'#cccccc'}else s.color=e.target.value;
@@ -628,7 +742,7 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('[data-act]');if(!t)return;
   const a=t.dataset.act,i=+t.dataset.i,arr=D&&D[tab];
   if(t.closest('summary'))e.preventDefault();
-  if(brandAct(a,t))return;
+  if(brandAct(a,t)||menuAct(a,t))return;
   if(a==='tab'){tab=t.dataset.k;openItem=null;q='';tabs();view()}
   else if(a==='add'){const s=SC[tab];const o={id:String(Math.max(0,...arr.map(x=>+x.id||0))+1)};s.f.forEach(([k])=>o[k]='');if(tab==='news')o.category=(D.newsCategories||[]).filter(Boolean)[0]||'General';arr.push(o);openItem=`${tab}.${arr.length-1}`;q='';mark();tabs();view();document.querySelector('details[open] input')?.focus()}
   else if(a==='dup'){const c=JSON.parse(JSON.stringify(arr[i]));c.id=String(Math.max(0,...arr.map(x=>+x.id||0))+1);const k=SC[tab].title;c[k]=(c[k]||'')+' (copy)';arr.splice(i+1,0,c);openItem=`${tab}.${i+1}`;mark();tabs();view()}
@@ -842,7 +956,7 @@ const K=(()=>{
       <div class="flex gap-2"><input name="name" required maxlength="40" placeholder="e.g. Construction" autocomplete="off" class="${inp}"><button class="flex-shrink-0 ${btn1}"><i class="fas fa-plus"></i> Add sector</button></div></form>`
     +`<h2 class="font-extrabold text-lg pt-2">Sectors <span class="text-sm font-normal text-gray-500">(${sectors.length})</span></h2>`
     +(sectors.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No sectors yet.</p>')
-    +sectors.map(x=>`<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex items-center gap-3"><i class="fas fa-layer-group text-brand-600"></i><div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${esc(x.name)}</p><p class="text-[11px] text-gray-500">${count(x.id)} current subscriber${count(x.id)===1?'':'s'} &middot; folder <code>sectors/${esc(x.id)}</code></p></div><button data-k="tkwopen" data-s="${esc(x.id)}" class="text-xs bg-amber-50 text-amber-800 hover:bg-amber-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-key"></i> Keywords</button><button data-k="opensector" data-s="${esc(x.id)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-folder-open"></i> Files</button><button data-k="rensector" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Rename sector" title="Rename"><i class="fas fa-pen text-xs"></i></button><button data-k="delsector" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete sector"><i class="fas fa-trash text-xs"></i></button></div>`).join('');
+    +sectors.map(x=>`<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex items-center gap-3"><i class="fas fa-layer-group text-brand-600"></i><div class="flex-1 min-w-0"><p class="font-bold text-sm truncate">${esc(x.name)}</p><p class="text-[11px] text-gray-500">${count(x.id)} current subscriber${count(x.id)===1?'':'s'} &middot; folder <code>sectors/${esc(x.id)}</code></p></div><button data-k="tkwopen" data-s="${esc(x.id)}" class="text-xs bg-amber-50 text-amber-800 hover:bg-amber-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-key"></i> Keywords</button><button data-k="opensector" data-s="${esc(x.id)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-folder-open"></i> Files</button><button data-k="rensector" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Rename sector" title="Rename"><i class="fas fa-pen text-xs"></i></button><button data-k="rensectorar" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Arabic name of the sector" title="Arabic name (for HOT News)"><span class="text-xs font-bold">ع</span></button><button data-k="delsector" data-s="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete sector"><i class="fas fa-trash text-xs"></i></button></div>`).join('');
   }
 
   // ---- overview dashboard ----
@@ -2024,6 +2138,11 @@ const K=(()=>{
         if(p&&confirm(`Delete this subscription period?\n\n${sname(p.sector_id)}: ${fd(p.start_date)} to ${fd(p.end_date)}`)){const r=await sb.from('subscription_periods').delete().eq('id',p.id);if(r.error)throw r.error;toast('Subscription period deleted');await home()}}
       else if(k==='rensector'){const x=sectors.find(v=>v.id===t.dataset.s),nm=prompt('New name for this sector',x.name);
         if(nm&&nm.trim()&&nm.trim()!==x.name){const r=await sb.from('sectors').update({name:nm.trim().slice(0,40)}).eq('id',x.id);if(r.error)throw r.error;toast('Sector renamed');await home()}}
+      else if(k==='rensectorar'){const x=sectors.find(v=>v.id===t.dataset.s);
+        const cur=await sb.from('sectors').select('name_ar').eq('id',x.id).single();
+        if(cur.error)throw new Error('Run supabase-step13-hot-news.sql in the Supabase SQL Editor first (it adds the Arabic name column).');
+        const nm=prompt('Arabic name of this sector (shown on the Arabic website). Leave empty to use the English name.',cur.data.name_ar||'');
+        if(nm!==null){const r=await sb.from('sectors').update({name_ar:nm.trim().slice(0,60)||null}).eq('id',x.id);if(r.error)throw r.error;toast('Arabic name saved')}}
       else if(k==='delsector'){const x=sectors.find(v=>v.id===t.dataset.s);
         const ic=await sb.from('issues').select('issue_no',{count:'exact',head:true}).eq('sector_id',x.id);
         if(!ic.error&&ic.count>0)throw new Error(`"${x.name}" still has ${ic.count} issue${ic.count===1?'':'s'} in HOT Info Issues. Move or delete them first.`);
