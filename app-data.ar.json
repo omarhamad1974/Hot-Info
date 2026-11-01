@@ -7,6 +7,16 @@
   "brand": {
     "tagline": "معلومات للبيزنس"
   },
+  "ui": {
+    "brand": "معلومات في البيزنس",
+    "nav_about": "من نحن",
+    "nav_jur": "آخر أخبار البيزنس",
+    "nav_services": "خدمات هوت",
+    "nav_news": "آخر الأخبار",
+    "nav_files": "ملفاتي",
+    "bar_services": "خدمات",
+    "svc_title": "خدمات هوت"
+  },
   "pageText": {
     "about": {
       "about_title": "هوت انفورميشن - 20 عاما من خبرة المعلومات",
