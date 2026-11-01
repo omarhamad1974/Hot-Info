@@ -101,5 +101,33 @@ if(d.menu!==undefined){
 if(d.hot&&d.hot.perSector!==undefined&&d.hot.perSector!==''&&!(parseInt(d.hot.perSector)>=1&&parseInt(d.hot.perSector)<=12))errs.push('hot.perSector: must be a number from 1 to 12');
 if(d.brand&&d.brand.image&&!/^(https?:|data:|\.?\/)/.test(d.brand.image)&&!fs.existsSync(path.join('assets',d.brand.image)))errs.push(`brand.image: assets/${d.brand.image} does not exist`);
 for(const [k,v] of Object.entries(d.social||{}))if(v&&!/^https:\/\//.test(v))errs.push(`social.${k}: must start with https://`);
+
+// Directory (phase 14): the pages exist, and every text key they use is written in English AND Arabic in lang.js.
+{
+  const pages=['directory.html','directory-entry.html','submit-directory.html'];
+  const missing=pages.filter(f=>!fs.existsSync(f));
+  missing.forEach(f=>errs.push(`directory: ${f} is missing`));
+  if(!missing.length&&fs.existsSync('lang.js')){
+    const L=fs.readFileSync('lang.js','utf8'),iEn=L.search(/\ben:\{/),iAr=L.search(/\bar:\{/);
+    if(iEn<0||iAr<0)errs.push('lang.js: could not find the en:{ and ar:{ blocks');
+    else{
+      const [lo,hi]=iEn<iAr?[[iEn,iAr],[iAr,L.length]]:[[iAr,iEn],[iEn,L.length]];
+      const en=iEn<iAr?L.slice(lo[0],lo[1]):L.slice(hi[0],hi[1]),ar=iEn<iAr?L.slice(hi[0],hi[1]):L.slice(lo[0],lo[1]);
+      const has=(blk,k)=>new RegExp(`\\b${k}\\s*:`).test(blk);
+      for(const f of pages){
+        const html=fs.readFileSync(f,'utf8'),keys=new Set();
+        for(const m of html.matchAll(/data-i18n(?:-attr)?="(?:[a-z]+:)?(dir_\w+)"/g))keys.add(m[1]);
+        for(const m of html.matchAll(/\bT\('(dir_\w+)'/g))keys.add(m[1]);
+        for(const m of html.matchAll(/\bT\('(dir_)'\s*\+/g))['company','institution','freelancer'].forEach(t=>keys.add('dir_'+t));
+        if(/typeLabel\(/.test(html))['companies','institutions','freelancers'].forEach(t=>keys.add('dir_'+t));
+        for(const k of keys){
+          if(!has(en,k))errs.push(`${f}: text "${k}" is missing in English (lang.js)`);
+          if(!has(ar,k))errs.push(`${f}: text "${k}" is missing in Arabic (lang.js)`);
+        }
+      }
+    }
+  }
+  for(const q of ['supabase-step14-directory.sql','supabase-step14f-submissions.sql'])if(!fs.existsSync(q))errs.push(`directory: ${q} is missing`);
+}
 if(errs.length){console.error(errs.join('\n'));process.exit(1)}
 console.log('app-data.json OK');
