@@ -1,5 +1,5 @@
 {
-  "languages": "ar",
+  "languages": "both",
   "about": "",
   "aboutMainText": "هوت انفرمبشن \nالأفضل منذ 20 عاما .. نحن شركة ممتازة و مميزه \nهوت انفرمبشن \nالأفضل منذ 20 عاما .. نحن شركة ممتازة و مميزه \n",
   "carousel": [
@@ -350,9 +350,9 @@
     }
   ],
   "social": {
-    "linkedin": "https://www.linkedin.com/company/khip/",
+    "linkedin": "https://www.linkedin.com/company/hotinformationonline/",
     "youtube": "",
-    "facebook": "",
+    "facebook": "https://web.facebook.com/HOTinformation.eg",
     "instagram": "",
     "x": "",
     "tiktok": "",
@@ -398,7 +398,11 @@
     },
     "custom": [],
     "sectionWidth": "59",
-    "sections": {},
+    "sections": {
+      "home-carousel": {
+        "hidden": true
+      }
+    },
     "sectionWidthTablet": "59",
     "brand": [
       {
