@@ -364,17 +364,17 @@
       "accentDark": "#1e40af",
       "accentSoft": "#eff6ff",
       "sand": "#d9c8a4",
-      "page": "#f7f6f3",
+      "page": "#00ffff",
       "surface": "#ffffff",
       "text": "#3a4051"
     },
     "custom": [],
-    "sectionWidth": "85",
+    "sectionWidth": "86",
     "sections": {
       "home-carousel": {
         "mode": "image",
         "overlay": "30",
-        "image": "mvz63g6r-84333.jpg",
+        "image": "",
         "tone": "light"
       }
     },
