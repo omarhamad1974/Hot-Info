@@ -125,8 +125,8 @@
   "news": [
     {
       "id": "1",
-      "title": "KHIP attends the event bla bla bla",
-      "image": "./assets/slider1.jpg",
+      "title": "Hot Information launches it's new website ",
+      "image": "mvzrk0qy-84332.jpg",
       "excerpt": "KHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt",
       "text": "KHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt\n\nKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt\n\nKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt\n\nKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt",
       "category": "General"
@@ -139,6 +139,24 @@
       "excerpt": "What will be the future of IP in the region and middle east ",
       "text": "What will be the future of IP in the region and middle east What will be the future of IP in the region and middle east What will be the future of IP in the region and middle east ",
       "category": "General"
+    },
+    {
+      "id": "3",
+      "title": "IP future in the middle east  (copy)",
+      "date": "2026-10-24",
+      "image": "mvzrljow-84331.jpg",
+      "excerpt": "What will be the future of IP in the region and middle east ",
+      "text": "What will be the future of IP in the region and middle east What will be the future of IP in the region and middle east What will be the future of IP in the region and middle east ",
+      "category": "General"
+    },
+    {
+      "id": "4",
+      "title": "News",
+      "date": "",
+      "category": "مناقصات",
+      "image": "mvzrm5pe-84336.jpg",
+      "excerpt": "Bka black ",
+      "text": "Full article "
     }
   ],
   "services": [],
