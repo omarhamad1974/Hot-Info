@@ -5,10 +5,10 @@
   "carousel": [
     {
       "id": "1",
-      "title": "Using Legal Skills with Technical Knowledge",
-      "subtitle": "Discover legal and IP services.",
+      "title": "Providing information for businesses ",
+      "subtitle": "Since 2000",
       "tag": "Featured",
-      "image": "mvvcn74s-84337.jpg"
+      "image": "mvzrh5dn-84334.jpg"
     },
     {
       "id": "5",
@@ -19,17 +19,17 @@
     },
     {
       "id": "2",
-      "title": "Protecting Innovation",
-      "subtitle": "Discover legal and IP services.",
+      "title": "Tenders information everyday",
+      "subtitle": "More opportunities to your business ",
       "tag": "Featured",
-      "image": "./assets/slider2.jpg"
+      "image": "mvzrij88-84338.jpg"
     },
     {
       "id": "3",
       "title": "Making a difference ",
       "subtitle": "To people lives and people business ",
       "tag": "",
-      "image": "mvm9bed7-65080.jpg"
+      "image": "mvzrj8m0-84335.jpg"
     }
   ],
   "jurisdictions": [
@@ -376,6 +376,31 @@
         "overlay": "30",
         "image": "",
         "tone": "light"
+      },
+      "home-about": {
+        "mode": "image",
+        "overlay": "65",
+        "image": "mvzr71u1-84333.jpg",
+        "tone": "light"
+      },
+      "home-testimonials": {
+        "hidden": true
+      },
+      "about-intro": {
+        "mode": "color",
+        "color": "role:accent"
+      },
+      "about-value": {
+        "hidden": true
+      },
+      "about-map": {
+        "hidden": true
+      },
+      "about-quote": {
+        "hidden": true
+      },
+      "about-team": {
+        "hidden": true
       }
     },
     "sectionWidthTablet": "68",
@@ -415,9 +440,19 @@
           "type": "zoom-in"
         },
         "home-about": {
-          "type": "slide-left",
-          "cardType": "fade-up"
+          "type": "fade-down",
+          "cardType": "fade-down",
+          "stagger": "0.2",
+          "hover": "grow"
+        },
+        "home-services": {
+          "type": "none",
+          "cardType": "fade",
+          "stagger": "0.1"
         }
+      },
+      "site": {
+        "type": "none"
       }
     }
   },
