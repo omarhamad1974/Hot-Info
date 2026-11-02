@@ -22,7 +22,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
 <!-- Top bar: switch between the two admin areas -->
 <div class="sticky top-0 z-40 bg-gray-900 text-white">
   <div class="max-w-3xl mx-auto px-4 h-12 flex items-center gap-3">
-    <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center font-black text-xs flex-shrink-0">KH</div>
+    <div id="adm-logo" class="h-7 min-w-[1.75rem] rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center font-black text-xs flex-shrink-0 overflow-hidden"><span id="adm-kh">KH</span><img id="adm-img" alt="" class="hidden h-7 w-auto max-w-[8rem] object-contain bg-white px-1"></div>
     <nav class="flex gap-1 flex-1 overflow-x-auto" aria-label="Admin areas">
       <button data-pane="content" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-pen-to-square"></i> Website content</button>
       <!-- hidden for now: Leads
@@ -165,7 +165,12 @@ const full=v=>!v?'':/^(https?:|\.\/|\/)/.test(v)?v:'./assets/'+v;
 const imgSrc=v=>!v?'':/^https?:/.test(v)?v:`https://raw.githubusercontent.com/${S.o}/${S.r}/${S.b}/${full(v).replace(/^\.?\//,'')}`;
 const b64=u8=>{let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s)};
 const unb64=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g,'')),c=>c.charCodeAt(0)));
-function mark(on=true){dirty=on;$('save').disabled=!on;$('discard').disabled=!on;$('state').textContent=on?'Unsaved changes':'All changes saved'}
+// the logo chosen in General > Logo also replaces the "KH" box in this bar (falls back to KH if the image cannot load)
+function admLogo(){const im=$('adm-img'),kh=$('adm-kh'),box=$('adm-logo');if(!im||typeof D==='undefined'||!D)return;
+  const v=String((D.brand&&D.brand.image)||'khip-logo.jpg').trim(),src=imgSrc(v);if(im.dataset.v===src)return;im.dataset.v=src;
+  im.onload=()=>{im.classList.remove('hidden');kh.classList.add('hidden');box.classList.remove('bg-gradient-to-tr')};
+  im.onerror=()=>{im.classList.add('hidden');kh.classList.remove('hidden');box.classList.add('bg-gradient-to-tr')};im.src=src}
+function mark(on=true){try{admLogo()}catch(_){}dirty=on;$('save').disabled=!on;$('discard').disabled=!on;$('state').textContent=on?'Unsaved changes':'All changes saved'}
 
 async function api(path,{method='GET',query='',body}={}){
   const r=await fetch(`https://api.github.com/repos/${S.o}/${S.r}/contents/${path}${query}`,{method,headers:{Authorization:'Bearer '+S.t,Accept:'application/vnd.github+json'},body:body&&JSON.stringify(body)});
@@ -199,7 +204,7 @@ function fld(base,[k,l,t],req=[]){
   const p=base+k;let v=get(D,p);const star=req.includes(k)&&lang!=='ar'?'<span class="text-red-600" title="Required"> *</span>':'';let h;
   const showPh=lang==='ar'&&PHSEC.has(base.split('.')[0]),xa=(lang==='ar'?'dir="rtl"':'')+(showPh?` placeholder="${PH}"`:''),ref=lang==='ar'?enRef(p):'';
   if(showPh&&v===PH)v='';
-  if(t==='area')h=`<div class="flex items-center gap-1 mb-1">${tb('b',p,'Bold','B','text-sm font-bold')}${tb('h',p,'Subtitle','H','text-xs font-bold')}${tb('l',p,'Bullet list','<i class="fas fa-list-ul text-xs"></i>')}<span class="text-[11px] text-gray-500 ml-2">**bold** &nbsp; ## subtitle &nbsp; - bullet</span></div><textarea data-p="${p}" ${xa} aria-label="${esc(l)}" rows="5" class="${inp}">${esc(v)}</textarea>`;
+  if(t==='area')h=`<div class="flex items-center gap-1 mb-1">${tb('b',p,'Bold','B','text-sm font-bold')}${tb('h',p,'Subtitle','H','text-xs font-bold')}${tb('l',p,'Bullet list','<i class="fas fa-list-ul text-xs"></i>')}<label class="h-8 px-2.5 inline-flex items-center gap-1 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 text-xs font-bold cursor-pointer ml-1" title="Import a formatted Markdown (.md) file into this box. Only the structure is imported; fonts and colours come from the site."><i class="fas fa-file-import"></i> Import .md<input type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" data-md="${p}" class="hidden"></label><span class="text-[11px] text-gray-500 ml-2">**bold** &nbsp; ## subtitle &nbsp; - bullet</span></div><textarea data-p="${p}" ${xa} aria-label="${esc(l)}" rows="5" class="${inp}">${esc(v)}</textarea>`;
   else if(t==='plain')h=`<textarea data-p="${p}" ${xa} aria-label="${esc(l)}" rows="4" class="${inp}">${esc(v)}</textarea>`;
   else if(t==='lines')h=`<textarea data-p="${p}" ${xa} data-lines="1" aria-label="${esc(l)}" rows="4" class="${inp}">${esc(Array.isArray(v)?v.join('\n'):v)}</textarea>`;
   else if(t==='select'){const o=((D.newsCategories||[]).filter(Boolean).length?D.newsCategories.filter(Boolean):DEFCATS).slice(),cur=v||o[0];if(cur&&!o.includes(cur))o.push(cur);h=`<select data-p="${p}" ${xa} aria-label="${esc(l)}" class="${inp}">${o.map(x=>`<option ${x===cur?'selected':''}>${esc(x)}</option>`).join('')}</select>`}
@@ -307,8 +312,8 @@ function bgStyle(t,s){
 }
 function viewBg(){
   const t=theme();
-  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200"><h2 class="font-extrabold text-lg">Sections</h2><p class="text-xs text-gray-600 mt-1">For every section of the website you can hide it, set its width on tablet and desktop, and give it a background color (from your brand palette) or a photo. Open a section below to change it. Phones always use the full width.</p></div>
-  <div class="bg-white p-4 rounded-2xl border border-gray-200"><h2 class="font-extrabold text-lg">Width of all sections</h2><p class="text-xs text-gray-600">The normal width of the page sections, as a share of the screen (67% is about two thirds). A section can override it below.</p>
+  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200"><h2 class="font-extrabold text-lg">Sections</h2><p class="text-xs text-gray-600 mt-1">For every section of the website you can hide it, set its own width on tablet and desktop with a slider, and give it a background color (from your brand palette) or a photo. Open a section below to change it. Phones always use the full width.</p></div>
+  <div class="bg-white p-4 rounded-2xl border border-gray-200"><h2 class="font-extrabold text-lg">Width of all sections</h2><p class="text-xs text-gray-600">The normal width of the page sections, as a share of the screen (67% is about two thirds). Each section can have its own width: open a section below and move its Tablet / Desktop slider (untick "Same as site" first).</p>
     <label class="block text-xs font-bold mt-3">Tablet: <span id="swt-out">${esc(t.sectionWidthTablet)}%</span><input type="range" min="50" max="100" step="1" data-p="theme.sectionWidthTablet" data-out="swt-out" value="${esc(t.sectionWidthTablet)}" aria-label="Section width on tablet" class="w-full mt-1"></label>
     <label class="block text-xs font-bold mt-3">Desktop: <span id="sw-out">${esc(t.sectionWidth)}%</span><input type="range" min="50" max="100" step="1" data-p="theme.sectionWidth" data-out="sw-out" value="${esc(t.sectionWidth)}" aria-label="Section width on desktop" class="w-full mt-1"></label>
   </div>`
@@ -432,10 +437,15 @@ function brandAct(a,t){
 
 /* ---------- Sections: hide + width; Contact tab ---------- */
 const WOPTS=sel=>`<option value="" ${!sel?'selected':''}>Same as the whole site</option>`+[50,55,60,65,70,75,80,85,90,95,100].map(v=>`<option value="${v}" ${String(sel)===String(v)?'selected':''}>${v}%</option>`).join('');
+// width of ONE section: a slider like the whole-site ones; the tick box "Same as the whole site" removes the override
+function wSlider(label,path,val,glob,id){
+  const own=val!==undefined&&val!==null&&val!=='',v=own?val:(glob||67);
+  return `<div class="rounded-lg border border-gray-200 p-2.5"><div class="flex items-center justify-between gap-2 text-[11px] font-bold text-gray-600"><span>${label}: <span id="wo-${id}">${own?esc(v)+'%':'same as the whole site'}</span></span><label class="flex items-center gap-1 font-normal"><input type="checkbox" data-wdef="${path}" data-wid="${id}" ${own?'':'checked'}> Same as site</label></div><input type="range" min="50" max="100" step="1" data-p="${path}" data-out="wo-${id}" value="${esc(v)}" ${own?'':'disabled'} aria-label="${esc(label)}" class="w-full mt-1 disabled:opacity-40"></div>`;
+}
 function secExtra(key,s){
   const base=`theme.sections.${key}.`;
   return `<label class="flex items-center gap-2 text-sm font-bold"><input type="checkbox" data-chk="${base}hidden" data-view="1" ${s.hidden?'checked':''}> Hide this section on the website</label>`
-   +(TH.NOWIDTH.includes(key)?'':`<div class="grid grid-cols-2 gap-2"><label class="block text-[11px] font-bold text-gray-600">Width on tablet<select data-p="${base}widthTablet" class="${inp} mt-1">${WOPTS(s.widthTablet)}</select></label><label class="block text-[11px] font-bold text-gray-600">Width on desktop<select data-p="${base}widthDesktop" class="${inp} mt-1">${WOPTS(s.widthDesktop)}</select></label></div>`);
+   +(TH.NOWIDTH.includes(key)?'':`<div class="grid sm:grid-cols-2 gap-2">${wSlider('Width on tablet',base+'widthTablet',s.widthTablet,theme().sectionWidthTablet,key+'-t')}${wSlider('Width on desktop',base+'widthDesktop',s.widthDesktop,theme().sectionWidth,key+'-d')}</div>`);
 }
 const SOCIALS=[['linkedin','LinkedIn'],['youtube','YouTube'],['facebook','Facebook'],['instagram','Instagram'],['x','X (Twitter)'],['tiktok','TikTok'],['telegram','Telegram']];
 function contactData(){const c=D.contact=D.contact||{};if(!Array.isArray(c.phones))c.phones=[];D.social=D.social||{};return c}
@@ -553,6 +563,56 @@ function menuAct(a,t){
 }
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.bg){d.open?bgOpen.add(d.dataset.bg):bgOpen.delete(d.dataset.bg)}},true);
 
+/* Markdown import: keeps only the structure (title, subtitles, paragraphs, bullets, bold).
+   Fonts, colours and sizes always come from the site, so nothing visual is imported. */
+function mdToKhip(src){
+  const t=String(src).replace(/^﻿/,'').replace(/\r\n?/g,'\n').replace(/^---\n[\s\S]*?\n---\n/,'');
+  const inl=x=>x.replace(/!\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replace(/`([^`]+)`/g,'$1')
+    .replace(/(\*\*|__)(.+?)\1/g,'**$2**').replace(/(^|[^*\w])\*(?![\s*])([^*]+?)\*(?!\*)/g,'$1$2')
+    .replace(/(^|[\s(])_(?!\s)([^_]+?)_(?=[\s).,;:!?]|$)/g,'$1$2').replace(/~~(.+?)~~/g,'$1').replace(/<[^>]+>/g,'').trim();
+  const out=[];let para=[],fence=false,title='';
+  const flush=()=>{if(para.length){const x=inl(para.join(' '));if(x)out.push({p:x});para=[]}};
+  for(let line of t.split('\n')){
+    if(/^\s*(```|~~~)/.test(line)){flush();fence=!fence;continue}
+    if(fence){if(line.trim())out.push({p:line.trim()});continue}
+    line=line.replace(/^\s*>\s?/,'');
+    if(!line.trim()){flush();continue}
+    if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)){flush();continue}
+    let m=line.match(/^\s{0,3}(#{1,6})\s+(.*?)\s*#*\s*$/);
+    if(m){flush();const h=inl(m[2]).replace(/\*\*/g,'');
+      if(!title&&!out.length&&m[1].length===1)title=h;else if(h)out.push({h});continue}
+    m=line.match(/^\s*(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?(.*)$/);
+    if(m){flush();const x=inl(m[1]);if(x)out.push({li:x});continue}
+    if(/^\s*\|/.test(line)){flush();if(/^[\s:|-]+$/.test(line))continue;
+      const x=inl(line.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim()).filter(Boolean).join(' - '));if(x)out.push({p:x});continue}
+    if(/^\s+\S/.test(line)&&!para.length&&out.length&&out[out.length-1].li!=null){out[out.length-1].li+=' '+inl(line);continue}
+    para.push(line.trim());
+  }
+  flush();
+  let s='',prev=null;
+  for(const b of out){
+    const k=b.h!=null?'h':b.li!=null?'li':'p';
+    if(prev)s+=(prev==='li'&&k==='li')||prev==='h'?'\n':'\n\n';
+    s+=k==='h'?'## '+b.h:k==='li'?'- '+b.li:b.p;prev=k;
+  }
+  return {title,body:s};
+}
+async function importMd(file,p){
+  const ta=document.querySelector(`textarea[data-p="${p}"]`);if(!ta)return;
+  if(file.size>1048576)return toast('That file is too large (limit 1 MB).',false);
+  let r;try{r=mdToKhip(await file.text())}catch(_){return toast('Could not read that file.',false)}
+  if(!r.body&&!r.title)return toast('Nothing to import: the file looks empty.',false);
+  let body=r.body,note='Imported '+file.name+'.';
+  if(r.title){ // a first "# Title" line fills the Title box when it is still empty, otherwise it stays as a subtitle
+    const tp=p.replace(/\.[^.]+$/,'.title'),ti=document.querySelector(`input[data-p="${tp}"]`);
+    if(ti&&!ti.value.trim()){ti.value=r.title;ti.dispatchEvent(new Event('input',{bubbles:true}));note+=' The first heading was used as the title.'}
+    else body='## '+r.title+(body?'\n'+body:'');
+  }
+  const cur=ta.value.trim();
+  if(cur&&!confirm('This box already has text.\n\nOK = replace it with the file.\nCancel = add the file after the current text.'))body=cur+'\n\n'+body;
+  ta.value=body;ta.dispatchEvent(new Event('input',{bubbles:true}));
+  toast(note+' Check it, then save.');
+}
 function fmt(k,p){
   const ta=document.querySelector(`textarea[data-p="${p}"]`);if(!ta)return;
   const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;
@@ -732,6 +792,11 @@ document.addEventListener('input',e=>{
   if(/\.(title|country|name)$/.test(p)){const sm=e.target.closest('details')?.querySelector('summary span');if(sm)sm.textContent=e.target.value||'Untitled'}
 });
 document.addEventListener('change',e=>{
+  if(e.target.dataset&&e.target.dataset.wdef&&D){const c=e.target,r=c.closest('div.rounded-lg').querySelector('input[type=range]'),o=$('wo-'+c.dataset.wid);
+    if(c.checked){set(D,c.dataset.wdef,'');r.disabled=true;if(o)o.textContent='same as the whole site'}
+    else{r.disabled=false;set(D,c.dataset.wdef,r.value);if(o)o.textContent=r.value+'%'}
+    mark();return}
+  if(e.target.dataset&&e.target.dataset.md){const f=e.target.files&&e.target.files[0];if(f)importMd(f,e.target.dataset.md);e.target.value='';return}
   if(brandChange(e)||menuChange(e))return;
   const bs=e.target.dataset.bgsel;
   if(bs&&D){const s=theme().sections[bs]=theme().sections[bs]||{};
@@ -1833,6 +1898,29 @@ const K=(()=>{
   const tPending=async()=>{const r=await sb.from('tender_images').select('*').in('status',['uploaded','text_read']).not('image_path','is',null).order('created_at',{ascending:true}).limit(200);if(r.error)throw r.error;return r.data||[]};
   const tMsg=(h,bad)=>{const m=$('t-ocrmsg');if(m){m.className='text-[11px] '+(bad?'text-red-700 font-bold':'text-gray-600');m.innerHTML=h}};
   const tCount=()=>{const a=$('t-text'),c=$('t-chars');if(a&&c)c.textContent=a.value.length.toLocaleString()+' characters'};
+  /* Progress indicator for the slow steps (reading the image text, turning it into rows).
+     Shows: step x of y, what is happening, a bar, and the seconds passed. The bar moves by estimate and never claims 100% until the step really ends. */
+  const tProg=(()=>{
+    let timer=null,st=0,cur=null,fin=false;
+    const mm=ms=>{const s=Math.max(0,Math.round(ms/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+    const host=()=>{let h=$('t-prog');if(h)return h;h=$('t-float');
+      if(!h){h=document.createElement('div');h.id='t-float';h.className='fixed bottom-20 left-1/2 -translate-x-1/2 z-[70] w-[min(92vw,26rem)] bg-white border border-gray-200 rounded-2xl shadow-xl p-3';document.body.appendChild(h)}return h};
+    const draw=(pct,head,sub,tone)=>{const h=host();
+      h.innerHTML=`<div class="rounded-lg border ${tone==='bad'?'border-red-200 bg-red-50':tone==='ok'?'border-emerald-200 bg-emerald-50':'border-brand-100 bg-brand-50'} p-2.5 my-1.5">
+        <div class="flex items-center justify-between gap-2 text-xs font-bold"><span>${tone==='ok'?'<i class="fas fa-circle-check text-emerald-600"></i>':tone==='bad'?'<i class="fas fa-circle-xmark text-red-600"></i>':'<i class="fas fa-spinner fa-spin text-brand-600"></i>'} ${head}</span><span class="tabular-nums text-gray-600">${Math.round(pct)}%</span></div>
+        <div class="h-2.5 rounded-full bg-white/80 border border-gray-200 overflow-hidden mt-1.5" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}"><div class="h-full ${tone==='bad'?'bg-red-500':tone==='ok'?'bg-emerald-500':'bg-brand-600'} transition-all duration-300" style="width:${pct}%"></div></div>
+        <p class="text-[11px] text-gray-600 mt-1">${sub}</p></div>`};
+    const paint=()=>{if(!cur||fin)return;const el=Date.now()-st,f=.95*(1-Math.exp(-el/(cur.est*500))),pct=Math.min(97,((cur.step-1)+f)/cur.total*100),slow=el>cur.est*1500;
+      draw(pct,`${cur.total>1?`Step ${cur.step} of ${cur.total}: `:''}${cur.label}`,`${mm(el)} passed${slow?' &middot; taking longer than usual, still working. Please keep this page open.':` &middot; usually about ${cur.est} seconds`}`)};
+    const halt=()=>{if(timer){clearInterval(timer);timer=null}};
+    return {
+      set(step,total,label,est){fin=false;cur={step,total,label,est:est||30};st=Date.now();halt();paint();timer=setInterval(paint,500)},
+      done(msg,bad){halt();if(!cur&&!bad)return;fin=true;const el=cur?Date.now()-st:0;draw(bad?(cur?Math.min(97,((cur.step-1)+.5)/cur.total*100):0):100,msg||(bad?'Stopped':'Done'),bad?'See the message below.':'Finished in '+mm(el)+' for the last step.',bad?'bad':'ok');
+        const f=$('t-float');if(f)setTimeout(()=>{if(fin&&f.isConnected)f.remove()},bad?6000:2500);cur=null},
+      halt,
+      clear(){halt();fin=true;cur=null;const f=$('t-float');if(f)f.remove();const h=$('t-prog');if(h)h.innerHTML=''}
+    };
+  })();
   const tBusy=on=>document.querySelectorAll('#k-modal-box [data-k^="tocr"],#k-modal-box [data-k="tbrowser"],#k-modal-box [data-k="tsavetext"],#k-modal-box [data-k="tparse"],#k-modal-box [data-k="tpreview"],#k-modal-box [data-k="tone"]').forEach(b=>b.disabled=on);
   Object.assign(ACT,{
     tread(t){const x=tById(t.dataset.id);if(!x)return;const u=tUrl[x.image_path];
@@ -1850,6 +1938,7 @@ const K=(()=>{
           <button data-k="tcoledit" data-id="${esc(x.id)}" class="text-xs bg-white border border-gray-300 hover:bg-gray-100 font-bold px-3 py-1.5 rounded-lg">Adjust lines</button>
           <span id="t-colinfo" class="font-normal text-gray-600">${tColInfo(x)}</span></div>
         <div id="t-coled" class="hidden space-y-2 mb-2"></div>
+        <div id="t-prog"></div>
         <p id="t-ocrmsg" class="text-[11px] text-gray-600 min-h-[1rem]">${x.ocr_text?`Saved text from ${tPName(x.ocr_provider)}. Fix any mistakes below, then press Save text.`:'No text yet. Press a Read button.'}</p>
         <textarea id="t-text" dir="rtl" lang="ar" rows="12" class="${inp} leading-7" placeholder="النص يظهر هنا">${esc(x.ocr_text||'')}</textarea>
         <p id="t-chars" class="text-[11px] text-gray-500"></p>
@@ -1859,18 +1948,18 @@ const K=(()=>{
       $('k-modal-box').classList.add('!max-w-3xl');tCount();$('t-text').oninput=tCount},
     async tocr(t){const x=tById(t.dataset.id),ta=$('t-text');if(!x)return;
       if(ta.value.trim()&&!confirm('Replace the text in the box with a new reading?'))return;
-      const p=t.dataset.p;tBusy(true);tMsg('Reading with '+tPName(p)+'... this can take 10 to 30 seconds.');
+      const p=t.dataset.p;tBusy(true);tMsg('Reading with '+tPName(p)+'... this can take 10 to 30 seconds.');tProg.set(1,1,'Reading the text with '+tPName(p),20);
       try{const body={action:'read',image_id:x.id,provider:p,engine:$('t-eng').value},bl=await tStripBlobs(x);
-        if(bl){tMsg(`Cutting the image into ${bl.length} columns and reading them right to left with ${tPName(p)}... up to ${bl.length*20} seconds.`);body.strips=await Promise.all(bl.map(tB64))}
+        if(bl){tMsg(`Cutting the image into ${bl.length} columns and reading them right to left with ${tPName(p)}... up to ${bl.length*20} seconds.`);tProg.set(1,1,`Reading ${bl.length} columns with ${tPName(p)}`,bl.length*20);body.strips=await Promise.all(bl.map(tB64))}
         const r=await tFn(body);
         if(!r||typeof r.text!=='string'||!r.text.trim())throw new Error('The reader answered but sent back no text. The ocr-tender function on Supabase is probably an old version. Press "Check setup", then deploy the latest ocr-tender.');
         const ta2=$('t-text')||ta;ta2.value=r.text;tCount();x.ocr_text=r.text;x.ocr_provider=p;x.status=r.status||x.status;
         tBump(p);
-        tMsg(`Done and saved (${r.text.length.toLocaleString()} characters). Check the Arabic against the image, fix mistakes, then press Save text.`)}
-      catch(e){tMsg(esc(e.message)+(e.blocked&&p==='ocrspace'?` <button data-k="tbrowser" data-id="${esc(x.id)}" class="underline font-bold text-brand-700">Try from this browser</button>`:''),true)}
+        tMsg(`Done and saved (${r.text.length.toLocaleString()} characters). Check the Arabic against the image, fix mistakes, then press Save text.`);tProg.done('Text read and saved')}
+      catch(e){tProg.done('Reading failed',true);tMsg(esc(e.message)+(e.blocked&&p==='ocrspace'?` <button data-k="tbrowser" data-id="${esc(x.id)}" class="underline font-bold text-brand-700">Try from this browser</button>`:''),true)}
       finally{tBusy(false)}},
     async tbrowser(t){ // OCR.space blocked this server's IP: call it from the admin's own browser instead
-      const x=tById(t.dataset.id);if(!x)return;tBusy(true);tMsg('Reading from this browser...');
+      const x=tById(t.dataset.id);if(!x)return;tBusy(true);tMsg('Reading from this browser...');tProg.set(1,1,'Reading the text from this browser',20);
       try{const {key}=await tFn({action:'browser_key'});
         const one=async(blob,name)=>{const f=new FormData();f.append('language','ara');f.append('OCREngine',$('t-eng').value);f.append('scale','true');f.append('detectOrientation','true');f.append('isOverlayRequired','false');f.append('file',blob,name);
           const res=await fetch('https://api.ocr.space/parse/image',{method:'POST',headers:{apikey:key},body:f}),j=await res.json();
@@ -1878,15 +1967,15 @@ const K=(()=>{
           if(j.IsErroredOnProcessing||!res.ok)throw new Error('OCR.space: '+(em||'HTTP '+res.status));
           return (j.ParsedResults||[]).map(r=>r.ParsedText||'').join('\n').trim()};
         const bl=await tStripBlobs(x);let text;
-        if(bl){const parts=[];for(let i=0;i<bl.length;i++){tMsg(`Reading column ${i+1} of ${bl.length}...`);parts.push(await one(bl[i],'col'+(i+1)+'.jpg'))}text=parts.filter(Boolean).join('\n\n')}
+        if(bl){const parts=[];for(let i=0;i<bl.length;i++){tMsg(`Reading column ${i+1} of ${bl.length}...`);tProg.set(i+1,bl.length,`Reading column ${i+1}`,20);parts.push(await one(bl[i],'col'+(i+1)+'.jpg'))}text=parts.filter(Boolean).join('\n\n')}
         else{const d=await sb.storage.from(TB).download(x.image_path);if(d.error)throw d.error;text=await one(d.data,'tender.'+(d.data.type.split('/')[1]||'jpg'))}
         if(!text)throw new Error('No text was found in this image.');
         const patch={ocr_text:text,ocr_provider:'ocrspace',updated_at:new Date().toISOString()};if(['uploaded','text_read'].includes(x.status))patch.status='text_read';
         const u=await sb.from('tender_images').update(patch).eq('id',x.id);if(u.error)throw u.error;
         await sb.from('ocr_log').insert({image_id:x.id,provider:'ocrspace',via:'browser',ok:true,chars:text.length});
         Object.assign(x,patch);$('t-text').value=text;tCount();tBump('ocrspace');
-        tMsg(`Done from this browser and saved (${text.length.toLocaleString()} characters).`)}
-      catch(e){tMsg(esc(e.message),true)}finally{tBusy(false)}},
+        tMsg(`Done from this browser and saved (${text.length.toLocaleString()} characters).`);tProg.done('Text read and saved')}
+      catch(e){tProg.done('Reading failed',true);tMsg(esc(e.message),true)}finally{tBusy(false)}},
     async tsavetext(t){const x=tById(t.dataset.id);if(!x)return;const text=$('t-text').value.trim();
       const patch={ocr_text:text||null,updated_at:new Date().toISOString()};if(text&&x.status==='uploaded')patch.status='text_read';
       const r=await sb.from('tender_images').update(patch).eq('id',x.id);if(r.error)throw r.error;
@@ -2206,12 +2295,12 @@ const K=(()=>{
       if(typed.length>=20&&typed!==(x.ocr_text||'')){const patch={ocr_text:typed,updated_at:new Date().toISOString()};const u=await sb.from('tender_images').update(patch).eq('id',x.id);if(u.error)throw u.error;Object.assign(x,patch)}
       const c=tCnt[x.id];if(c&&c.n-c.ok>0&&!confirm(`This image already has ${c.n-c.ok} draft row${c.n-c.ok===1?'':'s'}. They will be replaced (approved rows stay). Continue?`))return;
       const multi=$('t-multi')&&$('t-multi').checked;tBusy(true);$('t-prev').innerHTML='';
-      try{const r=await tOne(x,{prov:'ocrspace',fb:'groq',noparse:true},m=>tMsg('Step 1 of 2: '+esc(m)));
+      try{const r=await tOne(x,{prov:'ocrspace',fb:'groq',noparse:true},m=>{tMsg('Step 1 of 2: '+esc(m));tProg.set(1,2,'Reading the text from the image',20)});
         const a=$('t-text');if(a){a.value=x.ocr_text||'';tCount()}
         if(r.read)tBump(r.provider);
-        tMsg('Step 2 of 2: the AI is splitting the text into tenders and the rows are being saved... up to 40 seconds');
-        await tParseRun(x,true)}
-      catch(e){tMsg(esc(e.message),true);const pv=$('t-prev');if(pv)pv.innerHTML=tDbg(e.debug)}finally{tBusy(false)}},
+        tMsg('Step 2 of 2: the AI is splitting the text into tenders and the rows are being saved... up to 40 seconds');tProg.set(2,2,'The AI is splitting the text into tenders and saving the rows',40);
+        await tParseRun(x,true);tProg.done('Tenders added')}
+      catch(e){tProg.done('Stopped',true);tMsg(esc(e.message),true);const pv=$('t-prev');if(pv)pv.innerHTML=tDbg(e.debug)}finally{tBusy(false)}},
     async tbatch(){
       main().style.opacity='.6';let list;
       try{list=await tPending()}finally{main().style.opacity=''}
@@ -2226,6 +2315,7 @@ const K=(()=>{
           <label class="flex items-center gap-2"><input type="checkbox" id="tb-old" checked class="w-4 h-4"> Oldest first (untick for newest first)</label>
         </div>
         <p class="text-[11px] text-gray-500">Keep this window open while it works (about 20 to 60 seconds per image). Press Stop at any time: finished images stay finished. A failed image is skipped and listed, and you can retry it later.</p>
+        <div id="tb-bar" class="hidden mt-3 rounded-lg border border-brand-100 bg-brand-50 p-2.5"><div class="flex items-center justify-between gap-2 text-xs font-bold"><span id="tb-bt">Starting...</span><span id="tb-bp" class="tabular-nums text-gray-600">0%</span></div><div class="h-2.5 rounded-full bg-white/80 border border-gray-200 overflow-hidden mt-1.5" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div id="tb-bf" class="h-full bg-brand-600 transition-all duration-300" style="width:0%"></div></div><p id="tb-be" class="text-[11px] text-gray-600 mt-1"></p></div>
         <div id="tb-log" class="hidden mt-3 space-y-1 max-h-[38vh] overflow-auto text-xs border border-gray-200 rounded-lg p-2 bg-gray-50"></div>
         <p id="tb-sum" class="text-xs font-bold mt-2"></p>
         <div class="flex justify-end gap-2 pt-3"><button data-k="tbatchdone" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Close</button><button data-k="tbatchstop" id="tb-stop" class="hidden text-xs bg-red-50 text-red-700 hover:bg-red-100 font-bold px-4 py-2.5 rounded-xl"><i class="fas fa-stop"></i> Stop</button><button data-k="tbatchgo" id="tb-go" class="${btn1}"><i class="fas fa-bolt"></i> Start (${list.length})</button></div>`);
@@ -2240,21 +2330,27 @@ const K=(()=>{
       document.querySelectorAll('#k-modal-box input,#k-modal-box select').forEach(i=>i.disabled=true);
       const L=$('tb-log');L.classList.remove('hidden');
       L.innerHTML=list.map((x,i)=>`<p data-bl="${i}" class="flex items-start gap-1.5"><i class="fas fa-clock text-gray-400 w-4 text-center"></i> ${esc(x.source_paper||'No source')}${x.page?' &middot; p. '+esc(x.page):''}</p>`).join('');
-      let done=0,fail=0,rows=0,flag=0,i=0;
+      let done=0,fail=0,rows=0,flag=0,i=0,cs=Date.now(),fin=false;const durs=[],t0=Date.now(),mm=ms=>{const q=Math.max(0,Math.round(ms/1000));return Math.floor(q/60)+':'+String(q%60).padStart(2,'0')};
+      $('tb-bar').classList.remove('hidden');
+      const bar=()=>{const n=list.length,f=$('tb-bf');if(!f)return;const avg=durs.length?durs.reduce((a,b)=>a+b,0)/durs.length:40000,el=Date.now()-cs,fr=fin?0:Math.min(.95,el/Math.max(avg,8000)),pct=Math.min(100,(fin?n:(done+fail+fr))/n*100),left=Math.max(0,(n-done-fail)*avg-el);
+        f.style.width=pct+'%';$('tb-bp').textContent=Math.round(pct)+'%';f.parentNode.setAttribute('aria-valuenow',Math.round(pct));
+        $('tb-bt').innerHTML=fin?(B.stop?'Stopped':'Finished'):`Image ${Math.min(n,done+fail+1)} of ${n}`;
+        $('tb-be').textContent=fin?`Total time ${mm(Date.now()-t0)}.`:`${mm(Date.now()-t0)} passed${durs.length?' · about '+mm(left)+' left (a guess from the images done so far)':' · the first image sets the time estimate'}.`};
+      const bt=setInterval(bar,500);bar();
       const sum=()=>{const e=$('tb-sum');if(e)e.textContent=`${done} done, ${fail} failed, ${list.length-done-fail} left. ${rows} tender${rows===1?'':'s'} added${flag?`, ${flag} need a closer look`:''}.`};
       for(;i<list.length;i++){
         if(B.stop||!$('tb-log')||$('k-modal').classList.contains('hidden'))break;
         const x=list[i],lbl=`${esc(x.source_paper||'No source')}${x.page?' &middot; p. '+esc(x.page):''}`;
-        tBatLine(i,'fa-spinner fa-spin','text-brand-600',lbl+' ...');
+        cs=Date.now();tBatLine(i,'fa-spinner fa-spin','text-brand-600',lbl+' ...');
         try{const r=await tOne(x,o,m=>tBatLine(i,'fa-spinner fa-spin','text-brand-600',lbl+': '+esc(m)));
           done++;rows+=+r.rows||0;flag+=r.flagged||0;
           if(r.read)tBump(r.provider);
           tBatLine(i,'fa-circle-check','text-emerald-600',`${lbl}: ${r.rows??'?'} tender${r.rows===1?'':'s'} added${r.read?' (read with '+tPName(r.provider)+')':' (text already there)'}${r.flagged?`, ${r.flagged} to check`:''}`)}
         catch(e){fail++;tBatLine(i,'fa-circle-xmark','text-red-600',`${lbl}: <span class="text-red-700">${esc(e.message)}</span>`)}
-        sum();
+        durs.push(Date.now()-cs);sum();bar();
         if(i<list.length-1&&!B.stop)await new Promise(r=>setTimeout(r,800));
       }
-      B.run=false;
+      B.run=false;fin=true;clearInterval(bt);bar();
       const s=$('tb-sum');if(s){sum();s.insertAdjacentHTML('beforeend',B.stop||i<list.length?' Stopped.':' Finished.');
         const sb2=$('tb-stop');if(sb2)sb2.classList.add('hidden');
         const d=document.querySelector('[data-k="tbatchdone"]');if(d){d.className=btn1;d.innerHTML='<i class="fas fa-table-list"></i> Close and go to review'}}
@@ -2264,24 +2360,26 @@ const K=(()=>{
     async tparse(t){const x=tById(t.dataset.id),ta=$('t-text');if(!x)return;const text=ta.value.trim();
       if(text.length<20)return toast('Read the text first.',false);
       const c=tCnt[x.id];if(c&&c.n-c.ok>0&&!confirm(`This image already has ${c.n-c.ok} draft row${c.n-c.ok===1?'':'s'}. They will be replaced (approved rows stay). Continue?`))return;
-      tBusy(true);$('t-prev').innerHTML='';tMsg('Step 1 of 3: saving the text...');
+      tBusy(true);$('t-prev').innerHTML='';tMsg('Step 1 of 2: saving the text...');tProg.set(1,2,'Saving the text',5);
       try{if(text!==(x.ocr_text||'')){const patch={ocr_text:text,updated_at:new Date().toISOString()};const u=await sb.from('tender_images').update(patch).eq('id',x.id);if(u.error)throw u.error;Object.assign(x,patch)}
-        tMsg('Step 2 of 3: the AI is splitting the text into tenders and the rows are being saved... up to 40 seconds');
-        await tParseRun(x,true)}
-      catch(e){tMsg(esc(e.message),true);const pv=$('t-prev');if(pv)pv.innerHTML=tDbg(e.debug)}finally{tBusy(false)}},
+        tMsg('Step 2 of 2: the AI is splitting the text into tenders and the rows are being saved... up to 40 seconds');tProg.set(2,2,'The AI is splitting the text into tenders and saving the rows',40);
+        await tParseRun(x,true);tProg.done('Tenders added')}
+      catch(e){tProg.done('Stopped',true);tMsg(esc(e.message),true);const pv=$('t-prev');if(pv)pv.innerHTML=tDbg(e.debug)}finally{tBusy(false)}},
     async tpreview(t){const x=tById(t.dataset.id),ta=$('t-text');if(!x)return;const text=ta.value.trim();
       if(text.length<20)return toast('Read the text first.',false);
-      tBusy(true);$('t-prev').innerHTML='';tMsg('Preview: saving the text, then asking the AI... nothing is saved as rows');
+      tBusy(true);$('t-prev').innerHTML='';tMsg('Preview: saving the text, then asking the AI... nothing is saved as rows');tProg.set(1,1,'Asking the AI for a preview (nothing is saved as rows)',40);
       try{if(text!==(x.ocr_text||'')){const patch={ocr_text:text,updated_at:new Date().toISOString()};const u=await sb.from('tender_images').update(patch).eq('id',x.id);if(u.error)throw u.error;Object.assign(x,patch)}
         const r=await tFn({image_id:x.id,dry_run:true,multi:$('t-multi')?$('t-multi').checked:false},'parse-tenders');
         $('t-prev').innerHTML=`<div class="text-xs bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-2.5"><b><i class="fas fa-eye"></i> Preview only: nothing was saved.</b> ${r.count} tender${r.count===1?'':'s'} found${r.flagged?`, ${r.flagged} need a closer look`:''}. If this looks right, press <b>Add tender to tenders table</b>.</div>`+tDbg(r.debug)+tPrevCards(r.rows||[]);
-        tMsg('Preview ready.')}
-      catch(e){tMsg(esc(e.message),true);$('t-prev').innerHTML=tDbg(e.debug)}finally{tBusy(false)}},
+        tMsg('Preview ready.');tProg.done('Preview ready')}
+      catch(e){tProg.done('Preview failed',true);tMsg(esc(e.message),true);$('t-prev').innerHTML=tDbg(e.debug)}finally{tBusy(false)}},
     async trev(t){TR=t.dataset.id;await loadReview();paintTenders()},
     async tback(){TR=null;await home()},
     ttext:t=>ACT.tread(t),
     async treparse(){const x=tById(TR);if(!x)return;const d=trows.filter(r=>r.status!=='approved').length;
-      if(!confirm(`Read the rows again from the saved text?\n\n${d} draft row${d===1?'':'s'} will be replaced (approved rows stay).`))return;await tParseRun(x)},
+      if(!confirm(`Read the rows again from the saved text?\n\n${d} draft row${d===1?'':'s'} will be replaced (approved rows stay).`))return;
+      tProg.set(1,1,'The AI is turning the saved text into rows',40);
+      try{await tParseRun(x);tProg.done('Rows updated')}catch(e){tProg.done('Stopped',true);throw e}},
     async tadd(){const x=tById(TR);if(!x)return;
       const r=await sb.from('tenders').insert({image_id:x.id,position:trows.reduce((a,q)=>Math.max(a,q.position||0),0)+1,source_paper:x.source_paper,page:x.page,publish_date:x.publish_date}).select().single();
       if(r.error)throw r.error;trows.push(r.data);await tImgStatus();paintReview();const e=document.querySelector(`[data-id="${r.data.id}"][data-tc="entity"]`);e&&e.focus()},

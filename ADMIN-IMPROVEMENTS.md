@@ -63,6 +63,25 @@ Four small meters under the five counters (Images screen): OCR.space this month 
 - A small grey line under the top bar describes the tab you are on.
 - Grouping the tabs was left out: there are only four visible tabs (Leads and HOT Info Issues are still hidden). No SQL to run. Only admin.html changed. Build 01-Nov-k.
 
+## 15. The brand logo also shows in the admin bar
+The logo chosen in General > Logo now replaces the "KH" box at the left of the dark top bar of the admin page. It updates as soon as you pick or change the logo (before saving), and falls back to "KH" if the image cannot load. Only admin.html changed. No SQL.
+
+## 14. Progress bars while reading images, and a width slider for each section
+**Progress while reading and adding tenders** (Tender images)
+- Every slow step now shows a bar with "Step x of y", what is happening, the seconds passed and a percentage: reading the text (one image, columns, or from the browser), "Read text + add tender", Add tender to tenders table, Preview rows, and "Read the rows again" on the review screen (a small card at the bottom of the screen there).
+- The bar moves by estimate and stays under 100% until the step really ends. After about 1.5 times the usual time it says it is taking longer but still working. It turns green when done and red if it stops.
+- **Read text + add all waiting tenders** (batch) has an overall bar: "Image 3 of 12", the percentage, time passed and an estimated time left that improves as images finish.
+
+**Width of each section**: the Tablet and Desktop drop-downs inside each section (Colors > Sections) are now sliders (50 to 100%). Tick **Same as site** to follow the whole-site width. Saved per section as before.
+No SQL to run. Only admin.html changed.
+
+## 13. Import a Markdown (.md) file into any text box
+Every formatted text box in the Website content area (news "Full article" and "Short summary", services, About text, and so on, in English or Arabic) has a new **Import .md** button next to B, H and the bullet button.
+- Only the **structure** is imported. Fonts, colours and sizes always come from the site.
+- `# Title` becomes the item's Title if that box is still empty (otherwise a subtitle). `##`, `###` and deeper become subtitles (the site has one subtitle level). Paragraphs, `-`, `*`, `+` and numbered lists (become bullets), and **bold** are kept. Italic, links, images, code marks, quotes, rules and tables are simplified to plain text; the text of links and tables is kept.
+- If the box already has text you choose: OK = replace, Cancel = add after it. Then check the text and save as usual.
+- File limit 1 MB, UTF-8 (Arabic works). No SQL to run. Only admin.html changed.
+
 ## 12. Excel export buttons (the 30-day bin was dropped)
 - **Directory > Export to Excel**: downloads exactly the entries you see (status chips, search, sector and type filters apply). Columns match the import template plus Status, Submitted by and Added on.
 - **Tenders > By sector > Export to Excel (N)**: downloads the tenders of the current period and filter (entity, subject, sectors, confirmed, booklet price, session date and time, bid bond, link, paper, page, publish date, status). The sheet opens right-to-left for Arabic.
