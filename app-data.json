@@ -407,7 +407,14 @@
     },
     "custom": [],
     "sectionWidth": "85",
-    "sections": {},
+    "sections": {
+      "home-carousel": {
+        "mode": "image",
+        "overlay": "30",
+        "image": "mvz63g6r-84333.jpg",
+        "tone": "light"
+      }
+    },
     "sectionWidthTablet": "68",
     "brand": [
       {
@@ -438,7 +445,18 @@
         "name": "Neutral",
         "hex": "#3a4051"
       }
-    ]
+    ],
+    "motion": {
+      "sections": {
+        "home-carousel": {
+          "type": "zoom-in"
+        },
+        "home-about": {
+          "type": "slide-left",
+          "cardType": "fade-up"
+        }
+      }
+    }
   },
   "newsCategories": [
     "مناقصات",
