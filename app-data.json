@@ -340,9 +340,9 @@
     }
   ],
   "social": {
-    "linkedin": "https://www.linkedin.com/company/hotinformationonline/",
+    "linkedin": "",
     "youtube": "",
-    "facebook": "https://web.facebook.com/HOTinformation.eg",
+    "facebook": "",
     "instagram": "",
     "x": "",
     "tiktok": "",
@@ -358,10 +358,14 @@
       {
         "label": "",
         "number": "+2010 690 33 777"
+      },
+      {
+        "label": "",
+        "number": ""
       }
     ],
-    "email": "info@khipme.com",
-    "address": "",
+    "email": "info@hotinfo.com",
+    "address": "111 شارع ترعة الزمر ",
     "mapLat": "30.027992248535156",
     "mapLng": "31.48760223388672"
   },
