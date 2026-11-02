@@ -132,13 +132,21 @@
       "category": "General"
     },
     {
+      "id": "5",
+      "title": "Hot Information launches it's new website  (copy)",
+      "image": "mvzrk0qy-84332.jpg",
+      "excerpt": "KHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt",
+      "text": "KHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt\n\nKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt\n\nKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt\n\nKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt",
+      "category": "مناقصات"
+    },
+    {
       "id": "2",
       "title": "IP future in the middle east ",
       "date": "2026-10-24",
-      "image": "slider1.jpg",
+      "image": "mvzsl8v4-84334.jpg",
       "excerpt": "What will be the future of IP in the region and middle east ",
       "text": "What will be the future of IP in the region and middle east What will be the future of IP in the region and middle east What will be the future of IP in the region and middle east ",
-      "category": "General"
+      "category": "عملات"
     },
     {
       "id": "3",
@@ -152,6 +160,15 @@
     {
       "id": "4",
       "title": "News",
+      "date": "",
+      "category": "مناقصات",
+      "image": "mvzrm5pe-84336.jpg",
+      "excerpt": "Bka black ",
+      "text": "Full article "
+    },
+    {
+      "id": "6",
+      "title": "News (copy)",
       "date": "",
       "category": "مناقصات",
       "image": "mvzrm5pe-84336.jpg",
@@ -393,12 +410,6 @@
     "custom": [],
     "sectionWidth": "86",
     "sections": {
-      "home-about": {
-        "mode": "image",
-        "overlay": "65",
-        "image": "mvzr71u1-84333.jpg",
-        "tone": "light"
-      },
       "home-testimonials": {
         "hidden": true
       },
