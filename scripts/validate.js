@@ -4,12 +4,42 @@ const d=JSON.parse(fs.readFileSync('app-data.json','utf8')),errs=[];
 const need={carousel:['id','title'],jurisdictions:['id','country'],news:['id','title','excerpt'],services:['id','title','description'],products:['id','title'],testimonials:['id','name','text'],employees:['id','name','position']};
 // Same rule as the site: a bare file name lives in ./assets/
 const resolve=u=>/^(https?:|data:)/.test(u)?null:(/^(\.\/|\/)/.test(u)?u.replace(/^\//,'./'):'./assets/'+u);
+// Image effects (colour overlay + SVG mask), saved as "imageFx" next to a photo. See theme.js > KFX.
+const FXMASKS=new Set(fs.readFileSync('theme.js','utf8').split("const MASKS=[")[1].split("];")[0].match(/\['([\w-]+)','/g).map(x=>x.slice(2,-3)));
+const FXROLES=new Set(['title','ink','gold','accent','accentDark','accentSoft','sand','page','surface','text']);
+const FXDIRS=['to bottom','to top','to right','to left','to bottom right','to bottom left','to top right','to top left','radial'];
+const customIds=new Set((((d.theme||{}).custom)||[]).map(c=>String(c.id)));
+const fxColor=c=>/^#[0-9a-f]{6}$/i.test(c||'')||/^brand:[1-7]$/.test(c||'')||(/^role:\w+$/.test(c||'')&&FXROLES.has(String(c).slice(5)))||(/^custom:/.test(c||'')&&customIds.has(String(c).slice(7)));
+function checkFx(where,fx){
+  if(fx===undefined)return;
+  if(!fx||typeof fx!=='object'||Array.isArray(fx)){errs.push(`${where}: must be an object`);return}
+  const pct=v=>typeof v==='number'&&v>=0&&v<=100;
+  if(fx.ov!==undefined){
+    const o=fx.ov||{};
+    if(!['matt','gradient'].includes(o.type))errs.push(`${where}.ov.type: must be matt or gradient`);
+    if(!fxColor(o.color))errs.push(`${where}.ov.color: not a brand, site, own or #rrggbb color`);
+    if(!pct(o.opacity))errs.push(`${where}.ov.opacity: must be a number from 0 to 100`);
+    if(o.type==='gradient'){
+      if(!fxColor(o.color2))errs.push(`${where}.ov.color2: not a brand, site, own or #rrggbb color`);
+      if(!pct(o.opacity2))errs.push(`${where}.ov.opacity2: must be a number from 0 to 100`);
+      if(!FXDIRS.includes(o.dir))errs.push(`${where}.ov.dir: unknown direction`);
+    }
+  }
+  if(fx.mask!==undefined){
+    const m=fx.mask||{},sh=String(m.shape||'');
+    if(sh.startsWith('file:')){const n=sh.slice(5);if(!/^[\w.\-]+\.svg$/i.test(n))errs.push(`${where}.mask.shape: bad file name`);else if(!fs.existsSync(path.join('assets',n)))errs.push(`${where}.mask.shape: SVG not found in assets (${n})`)}
+    else if(!FXMASKS.has(sh))errs.push(`${where}.mask.shape: unknown shape "${sh}"`);
+    if(m.fit!==undefined&&!['contain','cover','stretch'].includes(m.fit))errs.push(`${where}.mask.fit: must be contain, cover or stretch`);
+    if(m.invert!==undefined&&typeof m.invert!=='boolean')errs.push(`${where}.mask.invert: must be true or false`);
+  }
+}
 for(const [k,fields] of Object.entries(need)){
   const arr=d[k];if(!Array.isArray(arr)){errs.push(`${k}: must be an array`);continue}
   const ids=new Set();
   arr.forEach((x,i)=>{
     fields.forEach(f=>{if(!String(x[f]??'').trim())errs.push(`${k}[${i}]: missing "${f}"`)});
     if(ids.has(x.id))errs.push(`${k}[${i}]: duplicate id "${x.id}"`);ids.add(x.id);
+    checkFx(`${k}[${i}].imageFx`,x.imageFx);
     if(typeof x.image==='string'&&x.image){const f=resolve(x.image);if(f&&!fs.existsSync(path.join('.',f)))errs.push(`${k}[${i}]: image not found ${x.image}`)}
     if(k==='jurisdictions'&&x.code&&!/^[a-z]{2}$/i.test(x.code))errs.push(`${k}[${i}]: code must be 2 letters`);
     if(k==='services'&&x.page&&!/^[\w-]+\.html$/.test(x.page))errs.push(`${k}[${i}]: page must look like patents.html`);
@@ -74,6 +104,7 @@ if(d.contact!==undefined){
 }
 if(d.theme&&d.theme.sections){
   for(const [k,s] of Object.entries(d.theme.sections)){
+    checkFx(`theme.sections.${k}.imageFx`,s.imageFx);
     if(s.hidden!==undefined&&typeof s.hidden!=='boolean')errs.push(`theme.sections.${k}.hidden: must be true or false`);
     for(const w of ['widthTablet','widthDesktop'])if(s[w]!==undefined&&s[w]!==''&&!(parseFloat(s[w])>=40&&parseFloat(s[w])<=100))errs.push(`theme.sections.${k}.${w}: must be between 40 and 100`);
   }
@@ -128,6 +159,16 @@ for(const [k,v] of Object.entries(d.social||{}))if(v&&!/^https:\/\//.test(v))err
     }
   }
   for(const q of ['supabase-step14-directory.sql','supabase-step14f-submissions.sql'])if(!fs.existsSync(q))errs.push(`directory: ${q} is missing`);
+}
+// Tenders redesign (phases T2 to T4): helper file and SQL exist; the front-page preview texts exist in English AND Arabic.
+{
+  for(const q of ['tender-dict.js','supabase-step15-tenders-table.sql','supabase-step16-tender-words.sql','supabase-step17-hot-news-more.sql'])if(!fs.existsSync(q))errs.push(`tenders: ${q} is missing`);
+  if(fs.existsSync('admin.html')&&!/src="tender-dict\.js"/.test(fs.readFileSync('admin.html','utf8')))errs.push('admin.html: tender-dict.js is not loaded');
+  if(fs.existsSync('index.html')&&fs.existsSync('lang.js')){
+    const html=fs.readFileSync('index.html','utf8'),L=fs.readFileSync('lang.js','utf8'),keys=new Set();
+    for(const m of html.matchAll(/KLang\.t\('(hot_\w+)'/g))keys.add(m[1]);
+    for(const k of keys){const n=(L.match(new RegExp(`\\b${k}\\s*:`,'g'))||[]).length;if(n<2)errs.push(`index.html: text "${k}" must be written in English and Arabic in lang.js (found ${n})`)}
+  }
 }
 if(errs.length){console.error(errs.join('\n'));process.exit(1)}
 console.log('app-data.json OK');
