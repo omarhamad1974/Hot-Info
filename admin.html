@@ -32,7 +32,9 @@ details[open]>summary .chev{transform:rotate(90deg)}
       <!-- hidden for now: HOT Info Issues
       <button data-pane="issues" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-table"></i> HOT Info Issues</button>
       -->
-      <button data-pane="tenders" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-gavel"></i> Tenders<span id="bd-tenders" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Images waiting for you"></span></button>
+      <button data-pane="tenders1" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-camera"></i> 1 &middot; Read &amp; name</button>
+      <button data-pane="tenders2" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-pen-nib"></i> 2 &middot; Write<span id="bd-tenders2" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Tenders waiting to be written"></span></button>
+      <button data-pane="tenders3" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-circle-check"></i> 3 &middot; Review &amp; publish<span id="bd-tenders3" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Written tenders waiting for review"></span></button>
       <button data-pane="directory" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-address-book"></i> Directory<span id="bd-directory" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Entries waiting for approval"></span></button>
     </nav>
     <!-- hidden for now: Search (remove these comment marks and the SEARCH_ON line in the script to bring it back)
@@ -144,7 +146,7 @@ function showPane(p){
   pane=p;history.replaceState(null,'','#'+p);
   $('pane-content').classList.toggle('hidden',p!=='content');$('pane-clients').classList.toggle('hidden',p==='content');
   document.querySelectorAll('.pane-btn').forEach(b=>{const on=b.dataset.pane===p;b.className='pane-btn text-xs font-bold px-3 py-1.5 rounded-lg '+(on?'bg-white text-gray-900':'text-gray-300 hover:bg-white/10')});
-  const hi=$('pane-hint');if(hi)hi.textContent=({content:'Edit the website text, photos, news, team and languages.',clients:'Manage users, their subscriptions to sectors, and the files in each sector.',leads:'People who may become subscribers.',issues:'The HOT Info issues table.',tenders:'Type the tenders in the table (or read them from a picture), choose their sectors and publish. Older tools: Newspaper images and By sector.',directory:'Companies, institutions and freelancers shown in the public Directory: approve, edit, import.'})[p]||'';
+  const hi=$('pane-hint');if(hi)hi.textContent=({content:'Edit the website text, photos, news, team and languages.',clients:'Manage users, their subscriptions to sectors, and the files in each sector.',leads:'People who may become subscribers.',issues:'The HOT Info issues table.',tenders1:'Step 1: upload tender images (or import a sheet) and give each one a unique name.',tenders2:'Step 2: type each tender, or read it from its image with OCR. Press Done to send it to step 3.',tenders3:'Step 3: check the written tenders, choose sectors and publish.',directory:'Companies, institutions and freelancers shown in the public Directory: approve, edit, import.'})[p]||'';
   if(p!=='content')K.go(p);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pane]');if(b)showPane(b.dataset.pane)});
@@ -1012,10 +1014,10 @@ const K=(()=>{
     $('gs-res').innerHTML=out||'<p class="text-xs text-gray-500">Nothing found.</p>';
   }
   async function badges(){ // red counters on the top bar: what is waiting for the admin
-    try{const ci=st=>sb.from('tender_images').select('id',{count:'exact',head:true}).eq('status',st);
-      const [a,b,c,d]=await Promise.all([ci('uploaded'),ci('text_read'),ci('parsed'),sb.from('directory_entries').select('id',{count:'exact',head:true}).eq('status','pending')]);
+    try{const tc=q=>q.select('id',{count:'exact',head:true});
+      const [a,b,d]=await Promise.all([tc(sb.from('tenders')).eq('written',false),tc(sb.from('tenders')).eq('written',true).eq('status','draft'),sb.from('directory_entries').select('id',{count:'exact',head:true}).eq('status','pending')]);
       const set=(id,n)=>{const e=$(id);if(!e)return;e.textContent=n>99?'99+':n;e.classList.toggle('hidden',!(n>0))};
-      set('bd-tenders',(a.error||b.error||c.error)?0:(a.count||0)+(b.count||0)+(c.count||0));set('bd-directory',d.error?0:(d.count||0))}catch(_){}
+      set('bd-tenders2',a.error?0:(a.count||0));set('bd-tenders3',b.error?0:(b.count||0));set('bd-directory',d.error?0:(d.count||0))}catch(_){}
   }
   window.kBadges=badges;
   async function enter(user){
@@ -1025,7 +1027,7 @@ const K=(()=>{
       await sb.auth.signOut();return;
     }
     me=user;err('');
-    $('k-login').classList.add('hidden');$('k-app').classList.remove('hidden');$('k-who').textContent='Signed in as '+user.email+' \u00b7 page version 03-Nov-b';
+    $('k-login').classList.add('hidden');$('k-app').classList.remove('hidden');$('k-who').textContent='Signed in as '+user.email+' \u00b7 page version 03-Nov-c tender workflow';
     cur=null;path=[];home();badges();
   }
 
@@ -1059,7 +1061,7 @@ const K=(()=>{
   let periods=[],profiles={},subErr=false,stFilter='all',filter='';
   const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
   const addDays=(d,n)=>{const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
-  const fd=d=>new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+  const fd=d=>dmy(d)||'';   // dd-mm-yy everywhere
   const DUR=[['1 week','1 week'],['1 year','1 year'],['2 years','2 years']];
   // end date = start + duration - 1 day (same rule as the database trigger)
   function endOf(start,dur){
@@ -1109,16 +1111,19 @@ const K=(()=>{
   const label=r=>((profiles[r.id]||{}).full_name||r.email);
   const badge=r=>!r.account?pill('bg-gray-100 text-gray-600','Folder only')
     :r.confirmed?pill('bg-emerald-50 text-emerald-700','Account active'):pill('bg-amber-100 text-amber-800','Invite pending');
+  const T_TITLES=['','1 \u00b7 Read & name tenders','2 \u00b7 Write tenders','3 \u00b7 Review & publish'];
   const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues',tenders:'Tenders',directory:'Directory'};
   const setW=w=>{main().className=w==='wide'?'p-3 space-y-3':w==='mid'?'max-w-6xl mx-auto p-4 space-y-3':'max-w-3xl mx-auto p-4 space-y-3'};
   async function home(){
-    cur=null;path=[];$('k-title').textContent=TITLES[tabK]||'Admin';main().innerHTML=LOADING;
-    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await(tView==='table'?loadTableView():loadTenderImages());else if(tabK==='directory')await loadDirectory();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
+    cur=null;path=[];$('k-title').textContent=(tabK==='tenders'?T_TITLES[tStep]:TITLES[tabK])||'Admin';main().innerHTML=LOADING;
+    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await(tStep===1?loadT1():(tStep===3&&tView==='sector')?(async()=>{await loadSectorData();await loadSectorView();await tPipeLoad()})():(tView='table',loadTableView()));else if(tabK==='directory')await loadDirectory();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
     paintHome();
   }
-  const paintHome=()=>{setW(tabK==='issues'||(tabK==='tenders'&&tView==='table')?'wide':(tabK==='leads'||tabK==='tenders'||tabK==='directory')?'mid':'narrow');tabK==='directory'?paintDirectory():tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
+  const paintHome=()=>{setW(tabK==='issues'||(tabK==='tenders'&&(tStep<3||tView==='table'))?'wide':(tabK==='leads'||tabK==='tenders'||tabK==='directory')?'mid':'narrow');tabK==='directory'?paintDirectory():tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
   function go(p){ // called by the top bar: leads | clients | issues | tenders
-    tabK=p==='clients'?(['overview','clients','sectors'].includes(tabK)?tabK:'overview'):p;
+    if(p==='tenders')p='tenders1';
+    if(/^tenders[123]$/.test(p)){tStep=+p.slice(7);tabK='tenders';tView='table';TR=null;tbF.st='all';tbSel.clear();tbCap=100}
+    else tabK=p==='clients'?(['overview','clients','sectors'].includes(tabK)?tabK:'overview'):p;
     if(!started||!sb)start();else if(me)home();
   }
   const warn=(t)=>`<div class="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl p-4">${t}</div>`;
@@ -1919,10 +1924,10 @@ const K=(()=>{
       +((tPipe.a+tPipe.b)>0?`<div class="flex flex-wrap items-center gap-2 pt-1"><button data-k="tbatch" class="${btn1}"><i class="fas fa-bolt"></i> Read text + add all waiting tenders (${tPipe.a+tPipe.b})</button><span class="text-[11px] text-gray-500">Does steps 1 and 2 for every image that is waiting, one after the other. You check the new tenders afterwards.</span></div>`:'');
   }
   function paintTenders(){
-    setW(tView==='table'?'wide':'mid');
-    if(TR&&tById(TR))return paintReview();TR=null;
-    if(tView==='table')return paintTable();
-    if(tView==='sector')return paintSectorView();
+    setW(tStep<3||tView==='table'?'wide':'mid');TR=null;
+    if(tStep===1)return paintT1();
+    if(tStep===3&&tView==='sector')return paintSectorView();
+    return paintTable();
     const lab='text-[11px] font-bold';
     main().innerHTML=tNav()+tPipeBar()+tMeters()+(timgErr?warn('<b>Tender images is not set up yet.</b> Run <code>supabase-step3-tender-images.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
     +`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">
@@ -1953,11 +1958,6 @@ const K=(()=>{
         ${x.image_path?`<button data-k="tread" data-id="${esc(x.id)}" class="text-xs bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-language"></i> ${x.ocr_text?'Text':'Read text'}</button>`:''}
         <button data-k="tedit" data-id="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="Edit details" title="Edit details"><i class="fas fa-pen text-xs"></i></button>
         <button data-k="tdel" data-id="${esc(x.id)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete image" title="Delete"><i class="fas fa-trash text-xs"></i></button></div>`}).join('');
-  }
-  function tNeedDetails(){
-    const bad=[];if(!TF.source.trim())bad.push('Source paper');if(!TF.date)bad.push('Publish date');
-    document.querySelectorAll('[data-tf]').forEach(i=>i.classList.toggle('bad',(i.dataset.tf==='source'&&!TF.source.trim())||(i.dataset.tf==='date'&&!TF.date)));
-    if(bad.length)toast('Fill in: '+bad.join(' and '),false);return bad.length>0;
   }
   async function tUpload(file){
     const ext=TTYPES[file.type];
@@ -2336,7 +2336,8 @@ const K=(()=>{
   }
   async function tSaveCell(el){
     const r=trows.find(x=>x.id===el.dataset.id)||tbl.find(x=>x.id===el.dataset.id);if(!r)return;if(r._new)return tbInsert(r,el);const f=el.dataset.tc;let v=el.value.trim();
-    if(f==='booklet_price_raw')v=tDigits(v)||null;
+    if(el.dataset.dmy!==undefined){const p=parseDmy(v);if(v&&!p){toast('Write the date as dd-mm-yy, for example 10-10-26',false);el.value=dmy(r[f]);return}v=p;el.value=dmy(p)}
+    else if(f==='booklet_price_raw')v=tDigits(v)||null;
     else if(f==='session_date'||f==='session_time')v=v||null;
     else if(f==='entity'||f==='subject')v=tDigits(v);
     else if(f==='bid_bond')v=tDigits(v)||null;
@@ -2544,10 +2545,10 @@ const K=(()=>{
   // Tenders table (phase T1): a spreadsheet-like table for typing tenders in Arabic. Same `tenders` table as the other screens.
   // =====================================================================================================
   const GOVS=['القاهرة','الجيزة','الإسكندرية','القليوبية','الشرقية','الدقهلية','البحيرة','المنوفية','الغربية','كفر الشيخ','دمياط','بورسعيد','الإسماعيلية','السويس','شمال سيناء','جنوب سيناء','الفيوم','بني سويف','المنيا','أسيوط','سوهاج','قنا','الأقصر','أسوان','البحر الأحمر','الوادي الجديد','مطروح','جميع المحافظات'];
-  const TBCOLS='id,image_id,entity,subject,governorate,publish_date,session_date,booklet_price_raw,booklet_price,bid_bond,status,sector_ids,sectors_confirmed,created_at';
+  const TBCOLS='id,image_id,entity,subject,governorate,publish_date,session_date,booklet_price_raw,booklet_price,bid_bond,status,sector_ids,sectors_confirmed,created_at,name,source_kind,source_code,source_paper,page,sub_page,written,hot_featured';
   const TBW={entity:'min-w-[14rem] w-[14rem]',gov:'min-w-[9rem] w-[9rem]',pub:'min-w-[9rem] w-[9rem]',subject:'min-w-[26rem] w-[26rem]',ses:'min-w-[9rem] w-[9rem]',price:'min-w-[8rem] w-[8rem]',bond:'min-w-[7rem] w-[7rem]'};
   async function loadTable(){
-    const r=await sb.from('tenders').select(TBCOLS).order('created_at',{ascending:false}).limit(400);
+    const r=await sb.from('tenders').select(TBCOLS).eq('written',tStep===3).order('created_at',{ascending:false}).limit(400);
     tbErr=r.error?r.error.message:'';const keep=tbl.filter(x=>x._new);tbl=r.error?[]:keep.concat(r.data||[]);
     const f=tbl.find(x=>!x._new&&x.publish_date);if(f&&!tbLast.publish_date){tbLast.publish_date=f.publish_date;tbLast.governorate=f.governorate||''}
   }
@@ -2558,7 +2559,10 @@ const K=(()=>{
     if(tbF.st==='draft'&&r.status==='approved')return false;
     if(tbF.st==='approved'&&r.status!=='approved')return false;
     if(tbF.st==='nosector'&&!(r.status==='approved'&&!tbLive(r)))return false;
-    const q=tFold(tbF.q);return !q||tFold((r.entity||'')+' '+(r.subject||'')+' '+(r.governorate||'')).includes(q);
+    if(tbF.st==='hot'&&!r.hot_featured)return false;
+    if(tbF.st==='empty'&&String(r.subject||'').trim())return false;
+    if(tbF.st==='text'&&!String(r.subject||'').trim())return false;
+    const q=tFold(tbF.q);return !q||tFold((r.entity||'')+' '+(r.subject||'')+' '+(r.governorate||'')+' '+(r.name||'')).includes(q);
   };
   const tbOkBtn=r=>{
     const ok=r.status==='approved',live=tbLive(r),ic=!ok?'fa-circle text-gray-300':live?'fa-circle-check text-emerald-600':'fa-circle-exclamation text-amber-500';
@@ -2566,56 +2570,72 @@ const K=(()=>{
     return `<button data-k="tbok" data-id="${esc(r.id)}" ${r._new?'disabled':''} class="w-9 h-9 disabled:opacity-30" aria-label="${tt}" title="${tt}"><i class="fas ${ic} text-lg"></i></button>`;
   };
   const tbSectCell=r=>r._new?'<div class="text-[11px] text-gray-400 px-2 py-2">&nbsp;</div>':`<div class="flex flex-wrap gap-1 items-center px-1.5 py-1">${tChips(r)} ${tSectBtns(r)}</div>`;
-  const tbActs=r=>`<div class="flex items-center gap-1"><button data-k="tbimg" data-id="${esc(r.id)}" class="h-8 px-2 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 text-[11px] font-bold whitespace-nowrap" title="Read from image: choose or take a photo; the text goes into the description" lang="ar"><i class="fas fa-camera"></i> قراءة من صورة</button>`
-    +(r.image_id?`<button data-k="tbview" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="View the picture" title="View the picture this row was read from"><i class="fas fa-image text-xs"></i></button>`:'')
+  const tbActs=r=>`<div class="flex items-center gap-1">`
+    +(r.image_id?`<button data-k="tbocr1" data-id="${esc(r.id)}" class="h-8 px-2 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 text-[11px] font-bold whitespace-nowrap" title="Read the text of this row's image (OCR)"><i class="fas fa-wand-magic-sparkles"></i> <span lang="ar">قراءة</span></button>`
+      :`<button data-k="tbimg" data-id="${esc(r.id)}" class="h-8 px-2 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 text-[11px] font-bold whitespace-nowrap" title="Read from image: choose or take a photo; the text goes into the description" lang="ar"><i class="fas fa-camera"></i> قراءة من صورة</button>`)
+    +(tStep===2?`<button data-k="tbwrite" data-id="${esc(r.id)}" class="h-8 px-2 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-[11px] font-bold whitespace-nowrap" title="Finished writing: send to step 3 (Review & publish)"><i class="fas fa-check"></i> Done</button>`
+      :`<button data-k="tbback" data-id="${esc(r.id)}" class="h-8 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-[11px] font-bold whitespace-nowrap" title="Send back to step 2 (Write)"><i class="fas fa-rotate-left"></i> To write</button>`)
     +`<button data-k="tbdel" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete this row" title="Delete"><i class="fas fa-trash text-xs"></i></button></div>`;
   function tbRow(r,i){
-    const am=on=>on?' !bg-amber-100':'',id=esc(r.id);
+    const am=on=>on?' !bg-amber-100':'',id=esc(r.id),w=tStep===2,dt=f=>`<input data-tc="${f}" data-id="${id}" data-dmy type="text" inputmode="numeric" placeholder="dd-mm-yy" value="${esc(dmy(r[f]))}" class="${TC}">`;
     return `<tr data-row="${id}" class="align-top ${r.status==='approved'?'bg-emerald-50':'bg-white'}">
-      <td class="border border-gray-300 text-center text-[11px] text-gray-400 px-1" data-n>${i}</td>
+      <td class="border border-gray-300 text-center px-1"><input type="checkbox" data-sel="${id}" ${tbSel.has(r.id)?'checked':''} class="w-4 h-4" aria-label="Select this row"><div class="text-[10px] text-gray-400" data-n>${i}</div></td>
+      <td class="border border-gray-300 px-1.5 py-1 min-w-[9rem]"><div class="flex items-center gap-1.5">${tThumbBtn(r)}<span dir="ltr" class="font-mono text-[10px] text-gray-600 break-all">${esc(r.name||'')}</span></div></td>
       <td class="border border-gray-300 p-0 ${TBW.entity}"><input data-tc="entity" data-id="${id}" list="t-ents" autocomplete="off" dir="rtl" lang="ar" value="${esc(r.entity||'')}" class="${TC}${am(!r.entity&&r.status==='approved')}"><div data-entchip="${id}" class="px-2 pb-1">${tEntChip(r)}</div></td>
       <td class="border border-gray-300 p-0 ${TBW.gov}"><select data-tc="governorate" data-id="${id}" dir="rtl" class="${TC}"><option value=""></option>${GOVS.map(g=>`<option ${g===r.governorate?'selected':''}>${esc(g)}</option>`).join('')}${r.governorate&&!GOVS.includes(r.governorate)?`<option selected>${esc(r.governorate)}</option>`:''}</select></td>
-      <td class="border border-gray-300 p-0 ${TBW.pub}"><input data-tc="publish_date" data-id="${id}" type="date" value="${esc(r.publish_date||'')}" class="${TC}"></td>
-      <td class="border border-gray-300 p-0 relative ${TBW.subject}"><div data-hl aria-hidden="true" dir="rtl" lang="ar" class="absolute inset-0 px-2 py-1.5 text-sm whitespace-pre-wrap break-words pointer-events-none text-transparent overflow-hidden"></div><textarea data-tc="subject" data-id="${id}" dir="rtl" lang="ar" rows="1" spellcheck="false" class="${TC} relative focus:!bg-transparent${am(!r.subject&&r.status==='approved')}">${esc(r.subject||'')}</textarea><div data-unk dir="rtl" lang="ar" class="px-2 pb-1 flex flex-wrap gap-1 items-center"></div></td>
-      <td class="border border-gray-300 p-0 ${TBW.ses}"><input data-tc="session_date" data-id="${id}" type="date" value="${esc(r.session_date||'')}" class="${TC}"></td>
+      <td class="border border-gray-300 p-0 ${TBW.pub}">${dt('publish_date')}</td>
+      <td class="border border-gray-300 p-0 relative ${TBW.subject}"><div data-hl aria-hidden="true" dir="rtl" lang="ar" class="absolute inset-0 px-2 py-1.5 text-sm whitespace-pre-wrap break-words pointer-events-none text-transparent overflow-hidden"></div><textarea data-tc="subject" data-id="${id}" dir="rtl" lang="ar" rows="1" spellcheck="false" class="${TC} relative focus:!bg-transparent${am(!r.subject&&r.status==='approved')}">${esc(r.subject||'')}</textarea><div data-unk dir="rtl" lang="ar" class="px-2 pb-1 text-[11px] text-red-700"></div></td>
+      <td class="border border-gray-300 p-0 ${TBW.ses}">${dt('session_date')}</td>
       <td class="border border-gray-300 p-0 ${TBW.price}"><textarea data-tc="booklet_price_raw" data-id="${id}" dir="rtl" lang="ar" rows="1" class="${TC}">${esc(r.booklet_price_raw||'')}</textarea></td>
       <td class="border border-gray-300 p-0 ${TBW.bond}"><textarea data-tc="bid_bond" data-id="${id}" dir="rtl" lang="ar" rows="1" class="${TC}">${esc(r.bid_bond||'')}</textarea></td>
       <td class="border border-gray-300 min-w-[9rem]" data-sc>${tbSectCell(r)}</td>
-      <td class="border border-gray-300 text-center" data-ok>${tbOkBtn(r)}</td>
+      ${w?'':`<td class="border border-gray-300 text-center" data-ok>${tbOkBtn(r)}</td><td class="border border-gray-300 text-center" data-hot>${tbHotBtn(r)}</td>`}
       <td class="border border-gray-300 px-1 whitespace-nowrap" data-acts>${tbActs(r)}</td></tr>`;
   }
   function paintTbRows(){
     const box=$('tb-rows');if(!box)return;
     const all=tbl.filter(tbShow),list=all.slice(0,tbCap+tbl.filter(x=>x._new).length);
-    box.innerHTML=list.map((r,i)=>tbRow(r,i+1)).join('')||`<tr><td colspan="11" class="text-center text-sm text-gray-500 p-6">${tbl.length?'No tender matches this search.':'No tenders yet. Press Add row.'}</td></tr>`;
+    box.innerHTML=list.map((r,i)=>tbRow(r,i+1)).join('')||`<tr><td colspan="14" class="text-center text-sm text-gray-500 p-6">${tbl.length?'No tender matches this search.':(tStep===2?'Nothing to write. New rows come from tab 1.':'Nothing waiting for review. Rows arrive here when they are marked Done in tab 2.')}</td></tr>`;
     box.querySelectorAll('textarea[data-tc]').forEach(autosize);
     const c=$('tb-count');if(c)c.textContent=`${all.length} tender${all.length===1?'':'s'}`+(list.length<all.length?` (showing ${list.length})`:'');
     const m=$('tb-more');if(m)m.classList.toggle('hidden',list.length>=all.length);
     if(window.tbSpellAll)tbSpellAll();
+    tThumbsLater();
   }
   function paintTable(){
+    const w=tStep===2;
     const chip=(k,l)=>`<button data-k="tbst" data-v="${k}" class="text-xs font-bold px-3 py-1.5 rounded-lg ${tbF.st===k?'bg-gray-900 text-white':'bg-gray-100 hover:bg-gray-200'}">${l}</button>`;
+    const chips=w?chip('all','All')+chip('empty','No text yet')+chip('text','Has text')+chip('nosector','No sector'):chip('all','All')+chip('draft','Waiting approval')+chip('approved','Approved')+chip('hot','In slider');
+    const sb2=(k,ic,l,tt)=>`<button data-k="${k}" data-selbtn disabled class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-40 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="${tt}"><i class="fas ${ic}"></i> ${l}</button>`;
+    const th=(a,e)=>`<th class="sticky top-0 z-10 bg-gray-100 border border-gray-300 px-2 py-1.5 text-xs font-bold whitespace-nowrap text-center">${a}${a?'<span class="block font-normal text-[10px] text-gray-500">'+e+'</span>':e}</th>`;
+    const heads=[['الجهة المعلنة','Entity'],['المحافظة','Governorate'],['تاريخ النشر','Published dd-mm-yy'],['الوصف','Description'],['موعد الجلسة','Session dd-mm-yy'],['ثمن الكراسة','Booklet price'],['التأمين','Bid bond'],['القطاع','Sector']].concat(w?[]:[['اعتماد','Approve'],['السلايدر','Slider']]);
     main().innerHTML=tNav()
-      +(tbErr?warn('<b>The tenders table could not be read.</b> Database message: <code>'+esc(tbErr)+'</code><br>If it mentions the column <b>governorate</b>, run <code>supabase-step15-tenders-table.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
+      +(tbErr?warn('<b>The tenders table could not be read.</b> Database message: <code>'+esc(tbErr)+'</code><br>Run <code>supabase-step18-tender-workflow.sql</code> (and step15 if it mentions governorate) in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
       +`<div class="bg-white px-2.5 py-2 rounded-xl border border-gray-200 flex flex-wrap items-center gap-2">
-        <span id="tb-count" class="text-xs font-bold text-gray-600 whitespace-nowrap"></span>
+        <span id="tb-count" class="text-xs font-bold text-gray-600 whitespace-nowrap"></span><span id="tb-selcount" class="text-xs font-bold text-brand-700 whitespace-nowrap"></span>
         <input id="tb-q" type="search" dir="rtl" lang="ar" placeholder="بحث / Search" aria-label="Search tenders" value="${esc(tbF.q)}" class="${inp} !w-44 !py-1.5">
-        <div class="flex gap-1">${chip('all','All')}${chip('draft','Drafts')}${chip('approved','Published')}${chip('nosector','Needs sector')}</div>
-        <div class="ml-auto flex flex-wrap items-center gap-2"><button data-k="tdict" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg" title="Arabic dictionary used to underline unknown words"><i class="fas fa-spell-check"></i> Dictionary</button><button data-k="tentman" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-building-columns"></i> Entities</button>
-        <button data-k="tbadd" class="${btn1} !py-1.5" title="Ctrl+Enter"><i class="fas fa-plus"></i> Add row</button></div></div>
-      <details class="text-[11px] text-gray-600"><summary class="cursor-pointer font-bold">How to enter tenders (3 steps)</summary><ol class="list-decimal ms-5 mt-1 space-y-0.5"><li><b>Type or read:</b> fill the cells like a Word table (<b>Tab</b> = next cell, <b>Enter</b> = down, <b>Ctrl+Enter</b> = new row), or press <b>قراءة من صورة</b> on the row to read the description from a photo.</li><li><b>Check:</b> words underlined in red are not in the Arabic dictionary. Click one to add it or ignore it. Cells save when you leave them.</li><li><b>Publish:</b> choose the sector, then press the circle. Subscribers see it once it is published and its sector is confirmed.</li></ol></details>
+        <div class="flex gap-1">${chips}</div>
+        <div class="ml-auto flex flex-wrap items-center gap-2">
+          ${w?`<button data-k="tbselunread" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Select the rows that have an image but no text yet"><i class="fas fa-check-double"></i> Select unread</button>${sb2('tbocrsel','fa-wand-magic-sparkles','Read selected (OCR)','Read the text of the selected images')}<button data-k="tbclassify" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Suggest sectors from the keywords for the visible rows that have none"><i class="fas fa-tags"></i> Auto-classify</button>${sb2('tbwritesel','fa-check','Done (selected)','Send the selected rows to step 3')}`
+            :`${sb2('tbapprovesel','fa-circle-check','Approve selected','Approve the selected tenders')}${sb2('tbhotsel','fa-star','Slider on/off (selected)','Show / stop showing the selected approved tenders in the Hot News slider')}${sb2('tbbacksel','fa-rotate-left','Back to writing','Send the selected rows back to step 2')}`}
+          <button data-k="tdict" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg" title="Arabic dictionary used to underline unknown words"><i class="fas fa-spell-check"></i> Dictionary</button>
+          <button data-k="tentman" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-building-columns"></i> Entities</button>
+          <button data-k="tkwopen" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-key"></i> Keywords</button></div></div>
+      <details class="text-[11px] text-gray-600"><summary class="cursor-pointer font-bold">${w?'How step 2 works':'How step 3 works'}</summary><ol class="list-decimal ms-5 mt-1 space-y-0.5">${w
+        ?'<li><b>Write:</b> type the cells (Tab = next cell, Enter = down), or read the text from the image with OCR: one row (قراءة) or many (select rows, then Read selected).</li><li><b>Check:</b> words underlined in red are not in the dictionary. Click one to add or ignore it.</li><li><b>Sector:</b> press Auto-classify, or choose sectors by hand on each row.</li><li><b>Done</b> sends the row to step 3. It needs an entity, a description and a sector.</li>'
+        :'<li><b>Approve:</b> press the circle (or select rows and Approve selected). Subscribers of the sectors of the tender can then see it.</li><li><b>Slider:</b> press the star on approved tenders to show them in the Hot News slider. A sector with starred tenders shows only those; a sector with none shows its latest.</li><li><b>Notify:</b> when you have approved the new tenders, press Send tender notification update (it needs the By sector view for the counter).</li>'}</ol></details>
       <datalist id="t-ents">${tEnt.map(e=>`<option value="${esc(e.name)}">`).join('')}</datalist>
       <div class="bg-white border border-gray-300 rounded-xl overflow-auto" style="max-height:calc(100vh - 17rem)"><table dir="rtl" class="border-collapse text-sm" style="min-width:100%"><thead><tr>
-        ${[['','#'],['الجهة المعلنة','Entity'],['المحافظة','Governorate'],['تاريخ النشر','Published'],['الوصف','Description'],['موعد الجلسة','Session date'],['ثمن الكراسة','Booklet price'],['التأمين','Bid bond'],['القطاع','Sector'],['نشر','Publish'],['','']].map(([a,e])=>`<th class="sticky top-0 z-10 bg-gray-100 border border-gray-300 px-2 py-1.5 text-xs font-bold whitespace-nowrap text-center">${a}${a?'<span class="block font-normal text-[10px] text-gray-500" dir="ltr">'+e+'</span>':''}</th>`).join('')}</tr></thead>
+        <th class="sticky top-0 z-10 bg-gray-100 border border-gray-300 px-1 py-1.5"><input type="checkbox" data-selall class="w-4 h-4" aria-label="Select all"></th>${th('الصورة','Image / name')}${heads.map(([a,e])=>th(a,e)).join('')}${th('','')}</tr></thead>
         <tbody id="tb-rows"></tbody></table></div>
       <div id="tb-more" class="hidden text-center"><button data-k="tbmore" class="text-xs bg-white border border-gray-200 hover:bg-gray-50 font-bold px-4 py-2 rounded-xl">Show more rows</button></div>`;
-    paintTbRows();
+    paintTbRows();tbSelCount();
   }
   // normalised database values for one cell (same rules as the review table)
   function tbVal(f,raw){
     let v=String(raw??'').trim();const x={};
     if(f==='booklet_price_raw'){v=tDigits(v)||null;x.booklet_price=v&&/مجان/.test(v)?0:(v&&!/لم\s*يذكر/.test(v)?tPrice(v):null)}
-    else if(f==='session_date'||f==='publish_date')v=v||null;
+    else if(f==='session_date'||f==='publish_date')v=parseDmy(v);
     else if(f==='entity'||f==='subject')v=tDigits(v);
     else if(f==='bid_bond')v=tDigits(v)||null;
     else v=v||null;
@@ -2648,11 +2668,11 @@ const K=(()=>{
     async tbok(t){const r=tbl.find(x=>x.id===t.dataset.id);if(!r||r._new)return;
       const to=r.status==='approved'?'draft':'approved';
       if(to==='approved'&&!tValid(r))return toast('Entity and description are required before publishing.',false);
-      const u=await sb.from('tenders').update({status:to,updated_at:new Date().toISOString()}).eq('id',r.id);if(u.error)throw u.error;
-      r.status=to;const tr=t.closest('tr');tr.classList.toggle('bg-emerald-50',to==='approved');tr.classList.toggle('bg-white',to!=='approved');t.outerHTML=tbOkBtn(r);
+      const u=await sb.from('tenders').update({status:to,...(to==='draft'?{hot_featured:false}:{}),updated_at:new Date().toISOString()}).eq('id',r.id);if(u.error)throw u.error;
+      r.status=to;if(to==='draft')r.hot_featured=false;const tr=t.closest('tr');tr.classList.toggle('bg-emerald-50',to==='approved');tr.classList.toggle('bg-white',to!=='approved');const hc=tr.querySelector('[data-hot]');if(hc)hc.innerHTML=tbHotBtn(r);t.outerHTML=tbOkBtn(r);
       if(to==='approved'&&!(r.sector_ids||[]).length){toast('Published. Now choose its sector so subscribers can see it.');ACT.tsect({dataset:{id:r.id}})}},
     async tbdel(t){const r=tbl.find(x=>x.id===t.dataset.id);if(!r)return;
-      if(!r._new){if(!confirm('Delete this tender?'))return;const d=await sb.from('tenders').delete().eq('id',r.id);if(d.error)throw d.error}
+      if(!r._new){if(!confirm('Delete this tender?'))return;const d=await sb.from('tenders').delete().eq('id',r.id);if(d.error)throw d.error;await t1DropImage(r.image_id)}
       tbl=tbl.filter(x=>x!==r);paintTbRows()}
   });
   document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='tb-q'){tbF.q=t.value;tbCap=100;paintTbRows()}});
@@ -2689,7 +2709,7 @@ const K=(()=>{
     const ext=TTYPES[blob.type];if(!ext)throw new Error('Only JPG, PNG or WebP pictures are accepted.');
     const d=new Date(),path=`${d.getUTCFullYear()}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${crypto.randomUUID()}.${ext}`;
     const up=await sb.storage.from(TB).upload(path,blob,{contentType:blob.type,upsert:false});if(up.error)throw up.error;
-    const ins=await sb.from('tender_images').insert({image_path:path,original_name:(file.name||'photo').slice(0,120),size_bytes:blob.size,source_paper:'Tenders table',page:null,publish_date:r.publish_date||today()}).select().single();
+    const ins=await sb.from('tender_images').insert({image_path:path,original_name:(file.name||'photo').slice(0,120),size_bytes:blob.size,source_paper:r.source_paper||'Tenders table',page:r.page||null,publish_date:r.publish_date||today()}).select().single();
     if(ins.error){await sb.storage.from(TB).remove([path]);throw ins.error}
     return ins.data;
   }
@@ -2844,7 +2864,7 @@ const K=(()=>{
 
   // ---- Tender notification update: tells subscribed users how many new tenders were added in their sectors ----
   let tBc={last:null,pending:null,err:false};
-  const tWhen=iso=>new Date(iso).toLocaleString('en-GB',{timeZone:'Africa/Cairo',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const tWhen=iso=>new Date(iso).toLocaleString('en-GB',{timeZone:'Africa/Cairo',day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}).replace(/\//g,'-').replace(', ',' ');
   async function tBcLoad(){ // last update sent + tenders that became visible to users since then
     const l=await sb.from('tender_broadcasts').select('sent_at').order('sent_at',{ascending:false}).limit(1);
     if(l.error){tBc={last:null,pending:null,err:true};return}
@@ -2853,7 +2873,7 @@ const K=(()=>{
     if(last)q=q.gt('released_at',last);
     const c=await q;tBc={last,pending:c.error?null:(c.count||0),err:!!c.error};
   }
-  const tNav=()=>`<div class="flex flex-wrap items-center gap-2"><div class="flex gap-1.5">${[['table','Tenders table','fa-table'],['images','Newspaper images','fa-camera'],['sector','By sector','fa-layer-group']].map(([k,l,i])=>`<button data-k="tmode" data-v="${k}" class="text-xs font-bold px-3 py-1.5 rounded-lg ${k===tView?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>
+  const tNav=()=>tStep!==3?'':`<div class="flex flex-wrap items-center gap-2"><div class="flex gap-1.5">${[['table','Review & publish','fa-table'],['sector','By sector','fa-layer-group']].map(([k,l,i])=>`<button data-k="tmode" data-v="${k}" class="text-xs font-bold px-3 py-1.5 rounded-lg ${k===tView?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>
     <div class="ml-auto flex flex-wrap items-center gap-2 justify-end"><span class="text-[11px] text-gray-500 text-right ${tView==='table'?'hidden':''}">${tBc.err?'Notifications are not set up yet':`${tBc.last?'Last update sent '+esc(tWhen(tBc.last)):'No update sent yet'}${tBc.pending!=null?` &middot; <b>${tBc.pending}</b> new tender${tBc.pending===1?'':'s'} since`:''}`}</span>
     <button data-k="tnotify" class="${btn1}" title="Shows users a notification with the number of new tenders in their sectors"><i class="fas fa-bell"></i> Send tender notification update</button></div></div>`;
   function tDefaults(){
@@ -2876,14 +2896,14 @@ const K=(()=>{
     const none=tSV.filter(r=>!(r.sector_ids||[]).length),sug=tSV.filter(r=>(r.sector_ids||[]).length&&!r.sectors_confirmed);
     const grp=(key,title,list,extra='')=>`<details data-tg="${esc(key)}" ${tOpen.has(key)?'open':''} class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
       <summary class="px-3 py-3 cursor-pointer flex items-center gap-2 font-bold text-sm"><span class="flex-1">${esc(title)}</span>${extra}<span class="text-xs font-normal text-gray-500">${list.length}</span></summary>${list.length?list.map(tCard).join(''):'<p class="px-3 py-3 text-xs text-gray-500 border-t border-gray-100">No tenders in this period.</p>'}</details>`;
-    main().innerHTML=tNav()+tPipeBar()
+    main().innerHTML=tNav()
     +((tKwErr||tSVErr)?warn('<b>Sectors for tenders are not set up yet.</b> Run <code>supabase-step6-sectors.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
     +(!tSect.length&&!tKwErr?warn('There are no sectors yet. Add them first in <b>Users &amp; sectors</b>, then come back.'):'')
     +`<div class="bg-white p-3 rounded-2xl border border-gray-200 space-y-2">
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <label class="text-[11px] font-bold">Period by<select data-ts="by" class="${inp}"><option value="session_date" ${TS.by==='session_date'?'selected':''}>Session date</option><option value="publish_date" ${TS.by==='publish_date'?'selected':''}>Publish date</option></select></label>
-        <label class="text-[11px] font-bold">From<input data-ts="from" type="date" value="${esc(TS.from)}" class="${inp}"></label>
-        <label class="text-[11px] font-bold">To<input data-ts="to" type="date" value="${esc(TS.to)}" class="${inp}"></label>
+        <label class="text-[11px] font-bold">From<input data-ts="from" data-dmy type="text" placeholder="dd-mm-yy" inputmode="numeric" value="${esc(dmy(TS.from))}" class="${inp}"></label>
+        <label class="text-[11px] font-bold">To<input data-ts="to" data-dmy type="text" placeholder="dd-mm-yy" inputmode="numeric" value="${esc(dmy(TS.to))}" class="${inp}"></label>
         <label class="text-[11px] font-bold">Show<select data-ts="status" class="${inp}"><option value="all" ${TS.status==='all'?'selected':''}>All tenders</option><option value="approved" ${TS.status==='approved'?'selected':''}>Approved only</option><option value="draft" ${TS.status==='draft'?'selected':''}>Drafts only</option></select></label>
       </div>
       <div class="flex flex-wrap gap-2 items-center">
@@ -2987,9 +3007,9 @@ const K=(()=>{
     throw new Error('Could not make this image small enough (1 MB). Try cropping closer.');
   }
   async function tFinishUpload(file){
-    toast('Uploading...');await tUpload(file);
-    if(/^\d+$/.test(TF.page.trim()))TF.page=String(+TF.page.trim()+1);
-    TP=null;closeM();toast('Uploaded ('+sizeOf(file.size)+')');await home();
+    toast('Uploading...');const name=await t1Upload(file);
+    if(/^\d+$/.test(String(t1F.sub).trim()))t1F.sub=String(+t1F.sub+1);   // the next image is the next tender of the page
+    t1Persist();TP=null;closeM();toast('Uploaded: '+name+' ('+sizeOf(file.size)+')');await loadT1();paintTenders();
   }
   Object.assign(ACT,{
     tcam(){if(tNeedDetails())return;$('t-cam').click()},
@@ -3000,7 +3020,7 @@ const K=(()=>{
     async tpupedit(){if(!TP)return;toast('Preparing the image...');const blob=await tExport(),n=(TP.file.name||'photo').replace(/\.[^.]+$/,'')+'.jpg';
       await tFinishUpload(new File([blob],n,{type:'image/jpeg'}))},
   });
-  document.addEventListener('change',async e=>{const t=e.target,k=t&&t.dataset&&t.dataset.ts;if(!k)return;TS[k]=t.value;
+  document.addEventListener('change',async e=>{const t=e.target,k=t&&t.dataset&&t.dataset.ts;if(!k)return;if(t.dataset.dmy!==undefined){const p=parseDmy(t.value);if(!p){toast('Write the date as dd-mm-yy',false);t.value=dmy(TS[k]);return}TS[k]=p;t.value=dmy(p)}else TS[k]=t.value;
     try{await loadSectorView();paintSectorView()}catch(x){toast(x.message,false)}});
   function tKwModal(){
     modal(`<h2 class="font-extrabold text-lg mb-1">Sector keywords</h2>
@@ -3085,6 +3105,411 @@ const K=(()=>{
   document.addEventListener('change',e=>{const t=e.target;if(!t||(t.id!=='t-file'&&t.id!=='t-cam'))return;const f=t.files[0];t.value='';if(!f||tNeedDetails())return;
     tPrep(f).catch(x=>toast(x.message,false))});
   document.addEventListener('input',e=>{const t=e.target,k=t&&t.dataset&&t.dataset.tf;if(k){TF[k]=t.value;t.classList.remove('bad')}});
+
+
+  // =====================================================================================================
+  // TENDER WORKFLOW, 3 tabs:  1 Read & name  ->  2 Write  ->  3 Review & publish
+  //   Tab 1: upload images / import a sheet, every row gets a UNIQUE name (ahram-p1-1-10-10-26)
+  //   Tab 2: type or OCR the fields (single or batch), "Done" sends the row to tab 3
+  //   Tab 3: sector, publish, notifications (needs supabase-step18-tender-workflow.sql)
+  // Dates in the whole tender area are written dd-mm-yy (stored as normal dates in the database).
+  // =====================================================================================================
+  let tStep=1;
+  const NOPAGE='0',NOSUB='0';                                   // written in the name when page / sub-page is missing
+  const T1PAPERS=[['ahram','Al-Ahram'],['akhbar','Al-Akhbar'],['gomohareya','Al-Gomhouria']];
+  const T1KINDS=[['newspaper','Newspaper'],['private','Private'],['manzooma','Manzooma']];
+  const t1Label=(kind,code)=>kind==='newspaper'?((T1PAPERS.find(p=>p[0]===code)||[0,code||''])[1]):kind==='private'?'Private':'Manzooma';
+  const dmy=d=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(d||'');return m?`${m[3]}-${m[2]}-${m[1].slice(2)}`:''};
+  function parseDmy(s){ // "10-10-26", "10/10/2026", "10.10.26", "101026", "2026-10-10"  ->  "2026-10-10" (or null)
+    s=tDigits(String(s??'')).trim();if(!s)return null;
+    let y,m,d,x;
+    if(x=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s)){y=+x[1];m=+x[2];d=+x[3]}
+    else if(x=/^(\d{1,2})\D+(\d{1,2})\D+(\d{4}|\d{2})$/.exec(s)){d=+x[1];m=+x[2];y=+x[3]}
+    else if(x=/^(\d{2})(\d{2})(\d{2})$/.exec(s)){d=+x[1];m=+x[2];y=+x[3]}
+    else return null;
+    if(y<100)y+=2000;
+    const dt=new Date(Date.UTC(y,m-1,d));
+    if(dt.getUTCFullYear()!==y||dt.getUTCMonth()!==m-1||dt.getUTCDate()!==d)return null;
+    return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+  const t1Slug=s=>tDigits(String(s??'')).trim().toLowerCase().replace(/[^a-z0-9ء-ي]+/g,'-').replace(/^-+|-+$/g,'');
+  const t1Name=o=>`${t1Slug(o.code)||'x'}-p${t1Slug(o.page)||NOPAGE}-${t1Slug(o.sub)||NOSUB}-${o.date?dmy(o.date):'00-00-00'}`;
+  const t1RowName=r=>t1Name({code:r.source_code||t1Slug(r.source_paper),page:r.page,sub:r.sub_page,date:r.publish_date});
+
+  let t1rows=[],t1Err='',t1Q={q:'',st:'all'},t1Cap=100,t1Dirty=false,tbSel=new Set(),tImgPath={},t1AttachId=null,t1ImgFile={},t1Pend=null,tbOcrIds=[];
+  let t1F={kind:'newspaper',code:'ahram',page:'',sub:'1',date:''};
+  try{const s=JSON.parse(localStorage.getItem('hotx.t1F')||'null');if(s&&s.kind)t1F=Object.assign(t1F,s)}catch(_){}
+  const t1Persist=()=>{try{localStorage.setItem('hotx.t1F',JSON.stringify(t1F))}catch(_){}};
+
+  async function loadT1(){
+    if(!t1F.date||!parseDmy(t1F.date))t1F.date=today();
+    const r=await sb.from('tenders').select(TBCOLS).order('created_at',{ascending:false}).limit(500);
+    t1Err=r.error?r.error.message:'';t1rows=r.error?[]:(r.data||[]);
+  }
+  const t1Taken=(name,exceptId)=>t1rows.some(r=>r.id!==exceptId&&String(r.name||'').toLowerCase()===String(name).toLowerCase());
+  async function t1AssertFree(name,exceptId){
+    const q=await sb.from('tenders').select('id').eq('name',name).limit(2);if(q.error)throw q.error;
+    if((q.data||[]).some(x=>x.id!==exceptId))throw new Error(`The name "${name}" already exists. Change the sub-page (or the name) so it is unique.`);
+  }
+  async function t1AllNames(){
+    const out=new Set();
+    for(let from=0;;from+=1000){const q=await sb.from('tenders').select('name').not('name','is',null).range(from,from+999);if(q.error)throw q.error;
+      (q.data||[]).forEach(x=>out.add(String(x.name).toLowerCase()));if((q.data||[]).length<1000)break}
+    return out;
+  }
+
+  // ---- thumbnails: signed links are fetched only for the images on the screen ----
+  const tThumbBtn=r=>r.image_id?`<button data-k="t1view" data-id="${esc(r.id)}" class="flex-shrink-0" title="View the image" aria-label="View the image"><img data-thumb="${esc(r.image_id)}" alt="" class="w-10 h-12 object-cover rounded border bg-gray-100"></button>`
+    :`<span class="w-10 h-12 rounded border border-dashed border-gray-300 flex items-center justify-center text-gray-300 flex-shrink-0" title="No image"><i class="fas fa-image text-xs"></i></span>`;
+  async function tPaths(ids){
+    const need=[...new Set(ids)].filter(id=>id&&!(id in tImgPath));
+    for(let i=0;i<need.length;i+=100){const ch=need.slice(i,i+100),q=await sb.from('tender_images').select('id,image_path').in('id',ch);
+      (q.data||[]).forEach(x=>tImgPath[x.id]=x.image_path||'');ch.forEach(id=>{if(!(id in tImgPath))tImgPath[id]=''})}
+    const paths=[...new Set(ids.map(id=>tImgPath[id]).filter(p=>p&&!tUrl[p]))];
+    for(let i=0;i<paths.length;i+=100){const {data}=await sb.storage.from(TB).createSignedUrls(paths.slice(i,i+100),3600);(data||[]).forEach(x=>{if(x.signedUrl&&x.path)tUrl[x.path]=x.signedUrl})}
+  }
+  async function tThumbs(){
+    const els=[...document.querySelectorAll('img[data-thumb]')].filter(i=>!i.getAttribute('src'));if(!els.length)return;
+    await tPaths(els.map(i=>i.dataset.thumb));
+    els.forEach(i=>{const u=tUrl[tImgPath[i.dataset.thumb]];if(u)i.src=u});
+  }
+  const tThumbsLater=()=>setTimeout(()=>tThumbs().catch(()=>{}),0);
+
+  // ---- Tab 1: the details bar (kept for the next images) ----
+  function t1BarHtml(){
+    const f=t1F,nk=f.kind==='newspaper',nm=t1Name({code:f.code,page:f.page,sub:f.sub,date:f.date}),taken=t1Taken(nm),L='text-[11px] font-bold',S=`${mt} !py-1.5 !w-auto block`;
+    return `<p class="text-xs font-bold">Details for the next images <span class="font-normal text-gray-500">(they stay for the next ones; the sub-page goes up by 1 after each upload)</span></p>
+      <div class="flex flex-wrap items-end gap-2">
+        <label class="${L}">Source<select data-t1f="kind" class="${S}">${T1KINDS.map(([k,l])=>`<option value="${k}" ${k===f.kind?'selected':''}>${l}</option>`).join('')}</select></label>
+        ${nk?`<label class="${L}">Newspaper<select data-t1f="code" class="${S}">${T1PAPERS.map(([k,l])=>`<option value="${k}" ${k===f.code?'selected':''}>${l}</option>`).join('')}</select></label>`:''}
+        <label class="${L} w-20">Page<input data-t1f="page" maxlength="12" value="${esc(f.page)}" placeholder="${NOPAGE}" autocomplete="off" class="${mt} !py-1.5"></label>
+        <label class="${L} w-20">Sub-page<input data-t1f="sub" maxlength="12" value="${esc(f.sub)}" placeholder="${NOSUB}" autocomplete="off" class="${mt} !py-1.5"></label>
+        <label class="${L} w-28">Date<input data-t1f="date" maxlength="10" inputmode="numeric" value="${esc(dmy(f.date))}" placeholder="dd-mm-yy" autocomplete="off" class="${mt} !py-1.5"></label>
+        <button data-k="tpick" class="${btn1} !py-2"><i class="fas fa-image"></i> Choose image</button>
+        <button data-k="tcam" class="${btn1} !py-2"><i class="fas fa-camera"></i> Take photo</button>
+        <button data-k="t1add" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl whitespace-nowrap" title="A row without an image"><i class="fas fa-plus"></i> Add row (no image)</button>
+        <button data-k="t1import" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl whitespace-nowrap" title="Append rows from an Excel or CSV sheet"><i class="fas fa-file-excel"></i> Import sheet</button>
+        <button data-k="t1tpl" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl whitespace-nowrap">Template</button>
+        <button data-k="t1bulk" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl whitespace-nowrap" title="Choose many images: each goes to the row with the same name (or the image file name from the sheet)"><i class="fas fa-images"></i> Attach images</button>
+      </div>
+      <p class="text-[11px]">Next name: <b dir="ltr" class="font-mono ${taken?'text-red-700':''}">${esc(nm)}</b>${taken?' <span class="text-red-700 font-bold">is already used: change the page or sub-page</span>':''}</p>
+      ${t1Dirty?`<div class="text-[11px] bg-amber-50 border border-amber-200 text-amber-900 rounded-lg px-2.5 py-1.5 flex flex-wrap items-center gap-2"><span><b>You changed the details.</b> They apply to this and all next images once you save them.</span><button data-k="t1savef" class="${btn1} !py-1">Save details</button></div>`:''}
+      <p class="text-[11px] text-gray-500">A missing page or sub-page is written as ${NOPAGE} in the name, so every name has the same shape. The name can be edited in the table. JPG, PNG or WebP up to 1 MB: after choosing a photo you can crop and brighten it.</p>`;
+  }
+  const paintT1Bar=()=>{const b=$('t1-bar');if(b)b.innerHTML=t1BarHtml()};
+  document.addEventListener('change',e=>{const t=e.target,k=t&&t.dataset&&t.dataset.t1f;if(!k)return;
+    let v=t.value;
+    if(k==='date'){const p=parseDmy(v);if(!p){toast('Write the date as dd-mm-yy, for example 10-10-26',false);t.value=dmy(t1F.date);return}v=p}
+    if(k==='kind'){t1F.kind=v;t1F.code=v==='newspaper'?(T1PAPERS.some(p=>p[0]===t1F.code)?t1F.code:'ahram'):v}
+    else t1F[k]=v.trim();
+    t1Dirty=true;paintT1Bar()});
+  function tNeedDetails(){ // true = something is wrong, do not continue
+    if(tStep!==1){toast('Images are uploaded in tab 1 (Read & name).',false);return true}
+    const f=t1F;if(!parseDmy(f.date)){toast('Write the date as dd-mm-yy first.',false);return true}
+    if(f.kind==='newspaper'&&!f.code){toast('Choose the newspaper.',false);return true}
+    if(t1Dirty){if(!confirm('You changed the details.\n\nUse them for this image and the next ones?'))return true;t1Persist();t1Dirty=false;paintT1Bar()}
+    const nm=t1Name({code:f.code,page:f.page,sub:f.sub,date:f.date});
+    if(t1Taken(nm)){toast(`The name ${nm} is already used. Change the page or sub-page.`,false);return true}
+    return false;
+  }
+  async function t1Upload(file){
+    const f=t1F,name=t1Name({code:f.code,page:f.page,sub:f.sub,date:f.date});
+    await t1AssertFree(name);
+    const ext=TTYPES[file.type];if(!ext)throw new Error('Only JPG, PNG or WebP images are accepted.');
+    if(file.size>TMAXB)throw new Error(`This image is ${sizeOf(file.size)}. The limit is 1 MB: compress it before uploading.`);
+    const d=new Date(),path=`${d.getUTCFullYear()}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${crypto.randomUUID()}.${ext}`,label=t1Label(f.kind,f.code);
+    const up=await sb.storage.from(TB).upload(path,file,{contentType:file.type,upsert:false});if(up.error)throw up.error;
+    const im=await sb.from('tender_images').insert({image_path:path,original_name:(file.name||'image').slice(0,120),size_bytes:file.size,source_paper:label,page:f.page||null,publish_date:f.date}).select().single();
+    if(im.error){await sb.storage.from(TB).remove([path]);throw im.error}
+    const tr=await sb.from('tenders').insert({image_id:im.data.id,name,source_kind:f.kind,source_code:f.code,source_paper:label,page:f.page||null,sub_page:f.sub||null,publish_date:f.date,status:'draft',written:false,entity:'',subject:''}).select(TBCOLS).single();
+    if(tr.error){await sb.from('tender_images').delete().eq('id',im.data.id);await sb.storage.from(TB).remove([path]);
+      throw tr.error.code==='23505'?new Error(`The name "${name}" already exists. Change the sub-page.`):tr.error}
+    return name;
+  }
+  async function t1DropImage(imageId){
+    if(!imageId)return;
+    const q=await sb.from('tender_images').select('image_path').eq('id',imageId).maybeSingle();
+    if(q.data&&q.data.image_path)await sb.storage.from(TB).remove([q.data.image_path]);
+    await sb.from('tender_images').delete().eq('id',imageId);delete tImgPath[imageId];
+  }
+  async function tAttach(r,file){ // put an image on an existing row (replaces the old one)
+    const blob=await tbShrink(file,false),ext=TTYPES[blob.type];if(!ext)throw new Error('Only JPG, PNG or WebP images are accepted.');
+    const d=new Date(),path=`${d.getUTCFullYear()}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${crypto.randomUUID()}.${ext}`;
+    const up=await sb.storage.from(TB).upload(path,blob,{contentType:blob.type,upsert:false});if(up.error)throw up.error;
+    const im=await sb.from('tender_images').insert({image_path:path,original_name:(file.name||'image').slice(0,120),size_bytes:blob.size,source_paper:r.source_paper||'',page:r.page||null,publish_date:r.publish_date||null}).select().single();
+    if(im.error){await sb.storage.from(TB).remove([path]);throw im.error}
+    const old=r.image_id,u=await sb.from('tenders').update({image_id:im.data.id,updated_at:new Date().toISOString()}).eq('id',r.id);
+    if(u.error){await sb.from('tender_images').delete().eq('id',im.data.id);await sb.storage.from(TB).remove([path]);throw u.error}
+    r.image_id=im.data.id;if(old)await t1DropImage(old);
+  }
+
+  // ---- Tab 1: the table ----
+  const t1Fld='w-full px-1.5 py-1.5 text-xs bg-transparent border-0 rounded focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-600';
+  function t1Row(r,i){
+    const id=esc(r.id),nk=r.source_kind==='newspaper',amber=on=>on?' !bg-amber-100':'';
+    const st=r.status==='approved'?pill('bg-emerald-100 text-emerald-800','Published'):r.written?pill('bg-blue-100 text-blue-800','Written'):pill('bg-gray-100 text-gray-700','To write');
+    return `<tr data-row="${id}" class="align-top bg-white">
+      <td class="border border-gray-300 text-center text-[11px] text-gray-400 px-1">${i}</td>
+      <td class="border border-gray-300 text-center p-1">${tThumbBtn(r)}</td>
+      <td class="border border-gray-300 p-0 min-w-[14rem]"><input data-t1="name" data-id="${id}" dir="ltr" value="${esc(r.name||'')}" maxlength="80" class="${t1Fld} font-mono"></td>
+      <td class="border border-gray-300 p-0 min-w-[6.5rem]"><select data-t1="kind" data-id="${id}" class="${t1Fld}"><option value=""></option>${T1KINDS.map(([k,l])=>`<option value="${k}" ${k===r.source_kind?'selected':''}>${l}</option>`).join('')}</select></td>
+      <td class="border border-gray-300 p-0 min-w-[7rem]">${nk?`<select data-t1="code" data-id="${id}" class="${t1Fld}">${T1PAPERS.map(([k,l])=>`<option value="${k}" ${k===r.source_code?'selected':''}>${l}</option>`).join('')}</select>`:'<span class="block px-2 py-1.5 text-xs text-gray-400">-</span>'}</td>
+      <td class="border border-gray-300 p-0 w-16"><input data-t1="page" data-id="${id}" value="${esc(r.page||'')}" placeholder="${NOPAGE}" maxlength="12" class="${t1Fld}"></td>
+      <td class="border border-gray-300 p-0 w-16"><input data-t1="sub" data-id="${id}" value="${esc(r.sub_page||'')}" placeholder="${NOSUB}" maxlength="12" class="${t1Fld}"></td>
+      <td class="border border-gray-300 p-0 w-28"><input data-t1="date" data-id="${id}" value="${esc(dmy(r.publish_date))}" placeholder="dd-mm-yy" inputmode="numeric" maxlength="10" class="${t1Fld}${amber(!r.publish_date)}"></td>
+      <td class="border border-gray-300 px-2 whitespace-nowrap">${st}</td>
+      <td class="border border-gray-300 px-1 whitespace-nowrap"><div class="flex items-center gap-1">
+        <button data-k="t1attach" data-id="${id}" class="h-8 px-2 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 text-[11px] font-bold whitespace-nowrap" title="${r.image_id?'Replace the image':'Attach an image'}"><i class="fas fa-image"></i> ${r.image_id?'Replace':'Attach'}</button>
+        <button data-k="t1del" data-id="${id}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete this row" title="Delete"><i class="fas fa-trash text-xs"></i></button></div></td></tr>`;
+  }
+  const t1Show=r=>{
+    if(t1Q.st==='noimg'&&r.image_id)return false;
+    if(t1Q.st==='towrite'&&r.written)return false;
+    if(t1Q.st==='written'&&!r.written)return false;
+    const q=tFold(t1Q.q);return !q||tFold((r.name||'')+' '+(r.entity||'')+' '+(r.subject||'')).includes(q);
+  };
+  function paintT1Rows(){
+    const box=$('t1-rows');if(!box)return;
+    const all=t1rows.filter(t1Show),list=all.slice(0,t1Cap);
+    box.innerHTML=list.map((r,i)=>t1Row(r,i+1)).join('')||`<tr><td colspan="10" class="text-center text-sm text-gray-500 p-6">${t1rows.length?'No row matches.':'No rows yet. Choose an image, add a row, or import a sheet.'}</td></tr>`;
+    const c=$('t1-count');if(c)c.textContent=`${all.length} row${all.length===1?'':'s'}`+(list.length<all.length?` (showing ${list.length})`:'');
+    const m=$('t1-more');if(m)m.classList.toggle('hidden',list.length>=all.length);
+    tThumbsLater();
+  }
+  function paintT1(){
+    const chip=(k,l)=>`<button data-k="t1st" data-v="${k}" class="text-xs font-bold px-3 py-1.5 rounded-lg ${t1Q.st===k?'bg-gray-900 text-white':'bg-gray-100 hover:bg-gray-200'}">${l}</button>`;
+    main().innerHTML=(t1Err?warn('<b>The tenders table could not be read.</b> Database message: <code>'+esc(t1Err)+'</code><br>Run <code>supabase-step18-tender-workflow.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
+      +`<div id="t1-bar" class="bg-white p-3 rounded-2xl border border-gray-200 space-y-2.5">${t1BarHtml()}</div>
+      <input id="t-file" type="file" accept="image/jpeg,image/png,image/webp" class="hidden"><input id="t-cam" type="file" accept="image/*" capture="environment" class="hidden">
+      <input id="t1-attach" type="file" accept="image/*" class="hidden"><input id="t1-bulkf" type="file" accept="image/*" multiple class="hidden"><input id="t1-imp" type="file" accept=".xlsx,.xls,.csv" class="hidden">
+      <div class="bg-white px-2.5 py-2 rounded-xl border border-gray-200 flex flex-wrap items-center gap-2">
+        <span id="t1-count" class="text-xs font-bold text-gray-600 whitespace-nowrap"></span>
+        <input id="t1-q" type="search" placeholder="Search name / text" aria-label="Search" value="${esc(t1Q.q)}" class="${inp} !w-44 !py-1.5">
+        <div class="flex gap-1">${chip('all','All')}${chip('noimg','No image')}${chip('towrite','To write')}${chip('written','Written')}</div></div>
+      <div class="bg-white border border-gray-300 rounded-xl overflow-auto" style="max-height:calc(100vh - 21rem)"><table class="border-collapse text-sm" style="min-width:100%"><thead><tr>
+        ${['#','Image','Name (unique)','Source','Newspaper','Page','Sub-page','Date (dd-mm-yy)','Next step',''].map(h=>`<th class="sticky top-0 z-10 bg-gray-100 border border-gray-300 px-2 py-1.5 text-xs font-bold whitespace-nowrap text-center">${h}</th>`).join('')}</tr></thead>
+        <tbody id="t1-rows"></tbody></table></div>
+      <div id="t1-more" class="hidden text-center"><button data-k="t1more" class="text-xs bg-white border border-gray-200 hover:bg-gray-50 font-bold px-4 py-2 rounded-xl">Show more rows</button></div>`;
+    paintT1Rows();
+  }
+  document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='t1-q'){t1Q.q=t.value;t1Cap=100;paintT1Rows()}});
+
+  async function t1SaveCell(el){
+    const r=t1rows.find(x=>x.id===el.dataset.id);if(!r)return;const f=el.dataset.t1,raw=el.value,nowIso=new Date().toISOString(),patch={};
+    const revert=()=>paintT1Rows();
+    if(f==='name'){const n=t1Slug(raw);if(!n){toast('The name cannot be empty.',false);return revert()}
+      if(n===r.name){el.value=n;return}try{await t1AssertFree(n,r.id)}catch(e){toast(e.message,false);return revert()}patch.name=n}
+    else if(f==='kind'){if(!raw)return revert();patch.source_kind=raw;patch.source_code=raw==='newspaper'?(T1PAPERS.some(p=>p[0]===r.source_code)?r.source_code:'ahram'):raw;patch.source_paper=t1Label(raw,patch.source_code)}
+    else if(f==='code'){patch.source_code=raw;patch.source_paper=t1Label('newspaper',raw)}
+    else if(f==='page'){patch.page=raw.trim()||null}
+    else if(f==='sub'){patch.sub_page=raw.trim()||null}
+    else if(f==='date'){const p=parseDmy(raw);if(raw.trim()&&!p){toast('Write the date as dd-mm-yy, for example 10-10-26',false);return revert()}patch.publish_date=p}
+    if(f!=='name'){ // the name follows the details, unless the admin gave it a name of their own
+      const oldAuto=t1RowName(r),next=Object.assign({},r,patch);
+      if(r.name===oldAuto){const nn=t1RowName(next);if(nn!==r.name){try{await t1AssertFree(nn,r.id)}catch(e){toast(e.message,false);return revert()}patch.name=nn}}}
+    patch.updated_at=nowIso;
+    const u=await sb.from('tenders').update(patch).eq('id',r.id);
+    if(u.error){toast(u.error.code==='23505'?'This name already exists.':u.error.message,false);return revert()}
+    Object.assign(r,patch);
+    if(r.image_id&&f!=='name')sb.from('tender_images').update({source_paper:r.source_paper||'',page:r.page||null,publish_date:r.publish_date||null,updated_at:nowIso}).eq('id',r.image_id).then(()=>{});
+    const tr=el.closest('tr'),i=tr?tr.querySelector('td').textContent:'';if(tr){tr.outerHTML=t1Row(r,i);tThumbsLater()}
+    toast('Saved');
+  }
+  document.addEventListener('change',e=>{const c=e.target&&e.target.closest&&e.target.closest('[data-t1]');if(c)t1SaveCell(c).catch(x=>toast(x.message,false))});
+
+  // ---- Tab 1: import rows from a sheet (appended; whatever is missing is filled with the details bar or left to type) ----
+  const T1COLS=[['name',/^(image\s*)?name\b|^الاسم|^اسم/i],['image',/image|file|photo|صورة|ملف/i],['session_date',/session|جلسة|موعد|opening|فتح/i],
+    ['publish_date',/publish|publication|^date|تاريخ النشر|^التاريخ$|نشر/i],['kind',/^source|المصدر/i],['paper',/newspaper|paper|جريدة|صحيفة/i],['sub',/sub|فرعي/i],['page',/^page|^ص$|صفحة/i],
+    ['entity',/entity|authority|الجهة/i],['subject',/subject|description|brief|الوصف|الموضوع/i],['governorate',/governorate|المحافظة/i],['price',/price|ثمن|كراس/i],['bond',/bond|insurance|التأمين/i]];
+  function t1SrcFrom(v){
+    const s=String(v||'').toLowerCase();if(!s.trim())return null;
+    if(/ahram|أهرام|اهرام/.test(s))return {kind:'newspaper',code:'ahram'};
+    if(/akhbar|أخبار|اخبار/.test(s))return {kind:'newspaper',code:'akhbar'};
+    if(/gom|جمهور/.test(s))return {kind:'newspaper',code:'gomohareya'};
+    if(/private|خاص/.test(s))return {kind:'private',code:'private'};
+    if(/manzoom|manzum|منظوم|منظومه/.test(s))return {kind:'manzooma',code:'manzooma'};
+    if(/news|جريد|صحيف/.test(s))return {kind:'newspaper',code:null};
+    return null;
+  }
+  function t1AnyDate(v){
+    if(typeof v==='number'&&v>20000&&v<80000)return new Date(Math.round((v-25569)*864e5)).toISOString().slice(0,10);
+    return parseDmy(v);
+  }
+  async function t1ImportFile(file){
+    await loadXlsx();
+    const wb=/\.csv$/i.test(file.name)?XLSX.read(await file.text(),{type:'string',raw:true}):XLSX.read(await file.arrayBuffer(),{type:'array'});
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''});
+    let h=-1,map={};
+    for(let i=0;i<Math.min(rows.length,10)&&h<0;i++){const m={};
+      rows[i].forEach((c,j)=>{const t=String(c).trim();if(!t)return;for(const [k,re] of T1COLS)if(!(k in m)&&re.test(t)){m[k]=j;break}});
+      if(Object.keys(m).length>=2&&['entity','subject','name','image','publish_date'].some(k=>k in m)){h=i;map=m}}
+    if(h<0)throw new Error('Could not find the columns. The first row should have headers such as Source, Page, Date, Entity, Description. Press Template to get an example.');
+    const used=await t1AllNames(),f=t1F,ok=[],bad=[];let defDate=0,defSrc=0,adjusted=0,withImg=0;
+    rows.slice(h+1).forEach((r,i)=>{
+      const line=h+i+2,raw=k=>k in map?r[map[k]]:'',txt=k=>String(raw(k)??'').trim();
+      if(!r.some(c=>String(c).trim()))return;
+      let kind=f.kind,code=f.code,fromSheet=false;const a=t1SrcFrom(txt('kind')),b=t1SrcFrom(txt('paper'));
+      if(a){kind=a.kind;code=a.code;fromSheet=true}if(b&&(b.kind==='newspaper')&&(!a||a.kind==='newspaper')){kind='newspaper';code=b.code||code;fromSheet=true}
+      if(kind==='newspaper'&&!T1PAPERS.some(p=>p[0]===code))code=T1PAPERS.some(p=>p[0]===f.code)?f.code:'ahram';
+      if(kind!=='newspaper')code=kind;
+      if(!fromSheet)defSrc++;
+      let pd=t1AnyDate(raw('publish_date'));if(!pd){pd=f.date;defDate++}
+      const sd=txt('session_date')?t1AnyDate(raw('session_date')):null;
+      if(txt('session_date')&&!sd){bad.push(`Row ${line}: session date "${txt('session_date')}" is not a date (use dd-mm-yy)`);return}
+      const page=tDigits(txt('page')),sub0=tDigits(txt('sub'));let sub=sub0;
+      let name=t1Slug(txt('name'));
+      if(name){if(used.has(name)){bad.push(`Row ${line}: the name "${name}" already exists`);return}}
+      else{name=t1Name({code,page,sub,date:pd});
+        if(used.has(name)){let n=/^\d+$/.test(sub0)?+sub0+1:1;while(used.has(t1Name({code,page,sub:String(n),date:pd})))n++;sub=String(n);name=t1Name({code,page,sub,date:pd});adjusted++}}
+      used.add(name);
+      const ent=tbVal('entity',txt('entity')).v,subj=tbVal('subject',txt('subject')).v,pr=tbVal('booklet_price_raw',txt('price')),bd=tbVal('bid_bond',txt('bond')).v;
+      const img=txt('image');if(img)withImg++;
+      ok.push({row:{name,source_kind:kind,source_code:code,source_paper:t1Label(kind,code),page:page||null,sub_page:sub||null,publish_date:pd,entity:ent||'',subject:subj||'',
+        governorate:txt('governorate')||null,session_date:sd,booklet_price_raw:pr.v,booklet_price:pr.x.booklet_price??null,bid_bond:bd||null,status:'draft',written:false},img:img?t1Slug(img.replace(/\.[^.]+$/,'')):''});
+    });
+    if(!ok.length)throw new Error('No row could be imported.'+(bad.length?' '+bad.slice(0,5).join('; '):''));
+    t1Pend=ok;
+    const noText=ok.filter(x=>!x.row.subject).length;
+    modal(`<h2 class="font-extrabold text-lg mb-2">Import ${ok.length} row${ok.length===1?'':'s'} from ${esc(file.name)}</h2>
+      <ul class="text-xs text-gray-700 space-y-1 list-disc ms-5">
+        <li>The rows are <b>added</b> after the existing ones. Nothing is overwritten.</li>
+        ${defSrc?`<li>${defSrc} row${defSrc===1?'':'s'} had no source: they use <b>${esc(t1Label(f.kind,f.code))}</b> from the details bar.</li>`:''}
+        ${defDate?`<li>${defDate} row${defDate===1?'':'s'} had no date: they use <b>${esc(dmy(f.date))}</b> from the details bar.</li>`:''}
+        ${adjusted?`<li>${adjusted} name${adjusted===1?'':'s'} already existed, so the sub-page was moved to the next free number.</li>`:''}
+        ${noText?`<li>${noText} row${noText===1?'':'s'} have no description yet: they go to tab 2 to be typed.</li>`:''}
+        ${withImg?`<li>${withImg} row${withImg===1?'':'s'} name an image file. After importing press <b>Attach images</b> and choose those files.</li>`:''}
+      </ul>
+      ${bad.length?`<p class="text-xs font-bold text-red-700 mt-2">${bad.length} row${bad.length===1?'':'s'} skipped:</p><ul class="text-[11px] text-red-700 list-disc ms-5 max-h-28 overflow-auto">${bad.slice(0,30).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+      <p class="text-[11px] text-gray-500 mt-2">First names: <span dir="ltr" class="font-mono">${esc(ok.slice(0,3).map(x=>x.row.name).join(', '))}${ok.length>3?', ...':''}</span></p>
+      <div class="flex justify-end gap-2 pt-3"><button data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button data-k="t1impgo" class="${btn1}">Add ${ok.length} row${ok.length===1?'':'s'}</button></div>`);
+  }
+  document.addEventListener('change',e=>{const t=e.target;if(!t)return;
+    if(t.id==='t1-imp'){const f=t.files[0];t.value='';if(f)t1ImportFile(f).catch(x=>toast(x.message,false))}
+    if(t.id==='t1-attach'){const f=t.files[0];t.value='';const r=t1rows.find(x=>x.id===t1AttachId);if(!f||!r)return;
+      toast('Attaching the image...');tAttach(r,f).then(async()=>{await loadT1();paintT1();toast('Image attached')}).catch(x=>toast(x.message,false))}
+    if(t.id==='t1-bulkf'){const fs=[...t.files];t.value='';if(fs.length)t1Bulk(fs).catch(x=>toast(x.message,false))}});
+  async function t1Bulk(files){
+    const key=n=>t1Slug(String(n).replace(/\.[^.]+$/,'')),by={};
+    t1rows.forEach(r=>{const k=key(r.name||'');if(k)by[k]=r;if(t1ImgFile[r.id])by[t1ImgFile[r.id]]=r});
+    const miss=[];let ok=0;
+    for(let i=0;i<files.length;i++){const f=files[i],r=by[key(f.name)];
+      if(!r){miss.push(f.name+' (no row with this name)');continue}
+      toast(`Attaching ${i+1} of ${files.length}...`);
+      try{await tAttach(r,f);ok++}catch(e){miss.push(f.name+' ('+e.message+')')}}
+    await loadT1();paintT1();
+    if(miss.length)modal(`<h2 class="font-extrabold text-lg mb-2">${ok} image${ok===1?'':'s'} attached</h2><p class="text-xs font-bold text-amber-800">${miss.length} not attached:</p><ul class="text-[11px] list-disc ms-5 max-h-48 overflow-auto">${miss.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="text-[11px] text-gray-500 mt-2">An image goes to the row whose name equals the file name (without .jpg), or to the file name written in the sheet. Or use Attach on a row.</p><div class="flex justify-end pt-3"><button data-k="mclose" class="${btn1}">Close</button></div>`);
+    else toast(`${ok} image${ok===1?'':'s'} attached`);
+  }
+
+  // ---- Tab 2 / 3: selection, OCR for one or many rows, hand-over between the tabs ----
+  const tbHotBtn=r=>`<button data-k="tbhot" data-id="${esc(r.id)}" ${r.status==='approved'?'':'disabled'} class="w-9 h-9 disabled:opacity-30" title="${r.status==='approved'?(r.hot_featured?'Shown in the Hot News slider. Press to remove':'Press to show in the Hot News slider'):'Approve the tender first'}" aria-label="Hot News slider"><i class="fas fa-star ${r.hot_featured?'text-amber-500':'text-gray-300'} text-lg"></i></button>`;
+  function tbSelCount(){const e=$('tb-selcount');if(e)e.textContent=tbSel.size?`${tbSel.size} selected`:'';document.querySelectorAll('[data-selbtn]').forEach(b=>b.disabled=!tbSel.size)}
+  document.addEventListener('change',e=>{const t=e.target;if(!t||!t.dataset)return;
+    if(t.dataset.sel!==undefined){t.checked?tbSel.add(t.dataset.sel):tbSel.delete(t.dataset.sel);tbSelCount()}
+    if(t.dataset.selall!==undefined){document.querySelectorAll('#tb-rows [data-sel]').forEach(c=>{c.checked=t.checked;t.checked?tbSel.add(c.dataset.sel):tbSel.delete(c.dataset.sel)});tbSelCount()}});
+  function tbOcrOpen(ids){
+    tbOcrIds=ids;
+    modal(`<h2 class="font-extrabold text-lg mb-1">Read ${ids.length} image${ids.length===1?'':'s'} (OCR)</h2>
+      <p class="text-[11px] text-gray-600 mb-2">The text of each image goes into that row's description. Check it afterwards: words not in the dictionary are underlined.</p>
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] font-bold">
+        <label class="flex items-center gap-1.5">Reader <select id="tbo-prov" class="border border-gray-300 rounded-lg text-xs p-1"><option value="ocrspace">OCR.space</option><option value="groq">Groq AI</option><option value="gemini">Gemini</option></select></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" id="tbo-fb" checked class="w-4 h-4"> Try another reader if it fails</label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" id="tbo-over" class="w-4 h-4"> Replace a description that is already typed</label></div>
+      <div id="tbo-log" class="mt-3 space-y-0.5 max-h-56 overflow-auto"></div>
+      <div class="flex justify-end gap-2 pt-3"><button data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Close</button><button id="tbo-go" data-k="tbocrgo" class="${btn1}"><i class="fas fa-play"></i> Start</button></div>`);
+  }
+  async function tbOcrRun(){
+    const prov=$('tbo-prov').value,fb=$('tbo-fb').checked,over=$('tbo-over').checked,log=$('tbo-log'),go=$('tbo-go');go.disabled=true;
+    let ok=0,fail=0,skip=0;const ids=tbOcrIds.slice();
+    for(let i=0;i<ids.length;i++){
+      const r=tbl.find(x=>x.id===ids[i]);if(!r||!r.image_id)continue;
+      const line=document.createElement('p');line.className='text-[11px]';line.dir='ltr';log.appendChild(line);log.scrollTop=log.scrollHeight;
+      if(String(r.subject||'').trim()&&!over){skip++;line.textContent=`${r.name}: skipped (already has text)`;line.className+=' text-gray-500';continue}
+      line.textContent=`${r.name}: reading... (${i+1} of ${ids.length})`;
+      try{const {text,provider}=await tbOcr(r.image_id,prov,fb,()=>{}),clean=tbCleanText(text);if(!clean)throw new Error('no text found');
+        const patch={subject:clean,raw_text:text,updated_at:new Date().toISOString()},u=await sb.from('tenders').update(patch).eq('id',r.id);if(u.error)throw u.error;
+        Object.assign(r,patch);ok++;line.textContent=`${r.name}: read with ${tPName(provider)}`;line.className+=' text-emerald-700';
+        const ta=document.querySelector(`#tb-rows tr[data-row="${CSS.escape(r.id)}"] textarea[data-tc="subject"]`);if(ta){ta.value=clean;autosize(ta);ta.classList.remove('!bg-amber-100');if(window.tbSpellOne)tbSpellOne(ta)}
+      }catch(e){fail++;line.textContent=`${r.name}: ${e.message}`;line.className+=' text-red-700'}
+    }
+    tProg.done('Reading finished');
+    const s=document.createElement('p');s.className='text-xs font-bold pt-1';s.textContent=`Done: ${ok} read, ${skip} skipped, ${fail} failed.`;log.appendChild(s);log.scrollTop=log.scrollHeight;go.disabled=false;
+  }
+  async function tbSetWritten(ids,to){
+    const rows=ids.map(id=>tbl.find(x=>x.id===id)).filter(Boolean),list=to?rows.filter(r=>tValid(r)&&(r.sector_ids||[]).length):rows,bad=rows.length-list.length;
+    if(!list.length)return toast(to?'Each row needs an entity, a description and a sector before it can move on.':'Select rows first.',false);
+    const now=new Date().toISOString(),patch=to?{written:true,written_at:now,written_by:(me&&me.id)||null,sectors_confirmed:true,updated_at:now}:{written:false,status:'draft',hot_featured:false,updated_at:now};
+    const u=await sb.from('tenders').update(patch).in('id',list.map(r=>r.id));if(u.error)throw u.error;
+    tbl=tbl.filter(r=>!list.includes(r));list.forEach(r=>tbSel.delete(r.id));paintTbRows();tbSelCount();if(window.kBadges)kBadges();
+    toast(to?`${list.length} row${list.length===1?'':'s'} sent to tab 3 (Review & publish)`+(bad?`. ${bad} not sent: entity, description and sector are required.`:''):`${list.length} row${list.length===1?'':'s'} sent back to tab 2`);
+  }
+  Object.assign(ACT,{
+    tpick(){if(tNeedDetails())return;$('t-file').click()},
+    tcam(){if(tNeedDetails())return;$('t-cam').click()},
+    t1savef(){t1Persist();t1Dirty=false;paintT1Bar();toast('Details saved for the next images')},
+    t1st(t){t1Q.st=t.dataset.v;t1Cap=100;paintT1()},
+    t1more(){t1Cap+=100;paintT1Rows()},
+    async t1add(){
+      if(tNeedDetails())return;const f=t1F,name=t1Name({code:f.code,page:f.page,sub:f.sub,date:f.date});await t1AssertFree(name);
+      const label=t1Label(f.kind,f.code),ins=await sb.from('tenders').insert({name,source_kind:f.kind,source_code:f.code,source_paper:label,page:f.page||null,sub_page:f.sub||null,publish_date:f.date,status:'draft',written:false,entity:'',subject:''}).select(TBCOLS).single();
+      if(ins.error)throw ins.error;if(/^\d+$/.test(String(f.sub).trim()))f.sub=String(+f.sub+1);t1Persist();
+      t1rows.unshift(ins.data);paintT1();toast('Row added: '+name)},
+    t1attach(t){t1AttachId=t.dataset.id;$('t1-attach').click()},
+    t1bulk(){$('t1-bulkf').click()},
+    t1import(){$('t1-imp').click()},
+    async t1impgo(){
+      const list=t1Pend||[];if(!list.length)return;const b=$('k-modal-box').querySelector('[data-k="t1impgo"]');if(b){b.disabled=true;b.textContent='Adding...'}
+      let n=0;const errs=[];
+      for(let i=0;i<list.length;i+=100){const ch=list.slice(i,i+100),ins=await sb.from('tenders').insert(ch.map(x=>x.row)).select('id,name');
+        if(ins.error){errs.push(ins.error.code==='23505'?'A name was added by someone else meanwhile. Import again.':ins.error.message);break}
+        n+=(ins.data||[]).length;(ins.data||[]).forEach(d=>{const x=ch.find(c=>c.row.name===d.name);if(x&&x.img)t1ImgFile[d.id]=x.img})}
+      t1Pend=null;closeM();await loadT1();paintT1();
+      const withImg=Object.keys(t1ImgFile).length;
+      toast(errs.length?`${n} added. ${errs[0]}`:`${n} row${n===1?'':'s'} added`+(withImg?'. Now press Attach images to add the picture files.':''),!errs.length);
+    },
+    t1tpl(){loadXlsx().then(()=>{const H=['Name (optional)','Source (newspaper / private / manzooma)','Newspaper (ahram / akhbar / gomohareya)','Page','Sub-page','Date (dd-mm-yy)','Entity','Description','Governorate','Session date (dd-mm-yy)','Booklet price','Bid bond','Image file (optional)'],
+      ws=XLSX.utils.aoa_to_sheet([H,['','newspaper','ahram',1,1,'10-10-26','Example entity','Example description','القاهرة','20-10-26','500','2%','ahram-p1-1-10-10-26.jpg'],['','private','','','','10-10-26','','','','','','','']]);
+      ws['!cols']=H.map(h=>({wch:Math.max(14,Math.min(40,h.length))}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Tenders');
+      const ns=XLSX.utils.aoa_to_sheet([['Notes'],['Every column is optional. Missing source and date use the details bar of tab 1; a missing page or sub-page is written as '+NOPAGE+' in the name.'],['Dates are written dd-mm-yy. Names must be unique; if a name is taken the sub-page moves to the next free number.'],['Rows are added after the existing ones. Pictures are attached afterwards with the Attach images button, by file name.']]);
+      XLSX.utils.book_append_sheet(wb,ns,'Notes');XLSX.writeFile(wb,'tenders-import-template.xlsx')}).catch(e=>toast(e.message,false))},
+    async t1del(t){const r=t1rows.find(x=>x.id===t.dataset.id);if(!r)return;
+      if(!confirm(`Delete this row (${r.name||'no name'})?${r.image_id?'\n\nIts image is deleted too.':''}\n\nThis cannot be undone.`))return;
+      const d=await sb.from('tenders').delete().eq('id',r.id);if(d.error)throw d.error;await t1DropImage(r.image_id);
+      t1rows=t1rows.filter(x=>x!==r);paintT1Rows();toast('Row deleted')},
+    async t1view(t){const r=t1rows.find(x=>x.id===t.dataset.id)||tbl.find(x=>x.id===t.dataset.id);if(!r||!r.image_id)return;
+      await tPaths([r.image_id]);const u=tUrl[tImgPath[r.image_id]];if(!u)return toast('The picture is no longer stored.',false);
+      modal(`<h2 class="font-extrabold text-lg mb-3 font-mono" dir="ltr">${esc(r.name||'')}</h2><a href="${esc(u)}" target="_blank" rel="noopener" title="Open full size"><img src="${esc(u)}" alt="Tender image" class="w-full max-h-[70vh] object-contain rounded-lg border bg-gray-50"></a><div class="flex justify-end pt-3"><button data-k="mclose" class="${btn1}">Close</button></div>`);
+      $('k-modal-box').classList.add('!max-w-3xl')},
+    tbadd(){toast('New rows are added in tab 1 (Read & name), so every row gets a unique name.',false)},
+    tbselunread(){tbSel.clear();tbl.filter(tbShow).forEach(r=>{if(r.image_id&&!String(r.subject||'').trim())tbSel.add(r.id)});
+      document.querySelectorAll('#tb-rows [data-sel]').forEach(c=>c.checked=tbSel.has(c.dataset.sel));tbSelCount();toast(tbSel.size?`${tbSel.size} row${tbSel.size===1?'':'s'} with an image and no text selected`:'Every row with an image already has text.',tbSel.size>0)},
+    tbocrsel(){const ids=[...tbSel].filter(id=>{const r=tbl.find(x=>x.id===id);return r&&r.image_id});if(!ids.length)return toast('Select rows that have an image.',false);tbOcrOpen(ids)},
+    tbocr1(t){tbOcrOpen([t.dataset.id])},
+    tbocrgo(){tbOcrRun().catch(e=>toast(e.message,false))},
+    async tbclassify(){
+      const todo=tbl.filter(r=>tbShow(r)&&!(r.sector_ids||[]).length&&tValid(r));
+      if(!todo.length)return toast('Every visible row with text already has a sector.',false);
+      const r=await tClassify(todo);paintTbRows();
+      toast(r.tried?`${r.hit} of ${r.tried} tender${r.tried===1?'':'s'} got sectors from the keywords. Check the sector chips, then press Done.`:'Nothing to classify.',r.hit>0)},
+    async tbhot(t){const r=tbl.find(x=>x.id===t.dataset.id);if(!r)return;const to=!r.hot_featured;
+      const u=await sb.from('tenders').update({hot_featured:to,updated_at:new Date().toISOString()}).eq('id',r.id);if(u.error)throw u.error;r.hot_featured=to;
+      t.outerHTML=tbHotBtn(r);toast(to?'Will be shown in the Hot News slider':'Removed from the Hot News slider')},
+    async tbapprovesel(){
+      const rows=[...tbSel].map(id=>tbl.find(x=>x.id===id)).filter(Boolean),ok=rows.filter(r=>r.status!=='approved'&&tValid(r)&&(r.sector_ids||[]).length);
+      if(!ok.length)return toast('Select drafts that have an entity, a description and a sector.',false);
+      if(!confirm(`Approve ${ok.length} tender${ok.length===1?'':'s'}? Subscribers of their sectors can then see them.`))return;
+      const u=await sb.from('tenders').update({status:'approved',sectors_confirmed:true,updated_at:new Date().toISOString()}).in('id',ok.map(r=>r.id));if(u.error)throw u.error;
+      ok.forEach(r=>{r.status='approved';r.sectors_confirmed=true});paintTbRows();if(window.kBadges)kBadges();toast(ok.length+' approved. Now send the notification update when you are ready.')},
+    async tbhotsel(){
+      const rows=[...tbSel].map(id=>tbl.find(x=>x.id===id)).filter(r=>r&&r.status==='approved');
+      if(!rows.length)return toast('Select approved tenders to show in the slider.',false);
+      const to=rows.some(r=>!r.hot_featured),u=await sb.from('tenders').update({hot_featured:to,updated_at:new Date().toISOString()}).in('id',rows.map(r=>r.id));if(u.error)throw u.error;
+      rows.forEach(r=>r.hot_featured=to);paintTbRows();toast(to?`${rows.length} added to the Hot News slider`:`${rows.length} removed from the Hot News slider`)},
+    tbwrite(t){return tbSetWritten([t.dataset.id],true)},
+    tbback(t){return tbSetWritten([t.dataset.id],false)},
+    tbwritesel(){return tbSetWritten([...tbSel],true)},
+    tbbacksel(){return tbSetWritten([...tbSel],false)}
+  });
 
   // Inline edits: leads (status, description), issue cells, filters, imports
   document.addEventListener('change',async e=>{
@@ -3254,7 +3679,7 @@ const K=(()=>{
   return {start,go};
 })();
 
-showPane(/type=recovery/.test(location.hash)?'clients':(['#leads','#clients','#issues','#tenders','#directory'].includes(location.hash.split('&')[0])?location.hash.slice(1):'content'));
+showPane(/type=recovery/.test(location.hash)?'clients':(['#leads','#clients','#issues','#tenders','#tenders1','#tenders2','#tenders3','#directory'].includes(location.hash.split('&')[0])?(location.hash.split('&')[0]==='#tenders'?'tenders1':location.hash.slice(1)):'content'));
 </script>
 </body>
 </html>
