@@ -408,7 +408,7 @@
       "text": "#3a4051"
     },
     "custom": [],
-    "sectionWidth": "86",
+    "sectionWidth": "63",
     "sections": {
       "home-testimonials": {
         "hidden": true
@@ -428,6 +428,10 @@
       },
       "about-team": {
         "hidden": true
+      },
+      "home-news": {
+        "mode": "image",
+        "overlay": 0
       }
     },
     "sectionWidthTablet": "83",
