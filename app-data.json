@@ -407,7 +407,24 @@
     },
     "custom": [],
     "sectionWidth": "85",
-    "sections": {},
+    "sections": {
+      "home-about": {
+        "mode": "image",
+        "overlay": 0,
+        "image": "mw0nqqhc-abstract-glass-window-roof-architecture-exterior.jpg",
+        "imageFx": {
+          "ov": {
+            "type": "matt",
+            "color": "#1760de",
+            "opacity": 70
+          },
+          "mask": {
+            "shape": "leaf",
+            "fit": "stretch"
+          }
+        }
+      }
+    },
     "sectionWidthTablet": "68",
     "brand": [
       {
