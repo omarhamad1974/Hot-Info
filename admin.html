@@ -32,10 +32,12 @@ details[open]>summary .chev{transform:rotate(90deg)}
       <!-- hidden for now: HOT Info Issues
       <button data-pane="issues" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-table"></i> HOT Info Issues</button>
       -->
-      <button data-pane="tenders" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-camera"></i> Tender images<span id="bd-tenders" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Images waiting for you"></span></button>
+      <button data-pane="tenders" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-gavel"></i> Tenders<span id="bd-tenders" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Images waiting for you"></span></button>
       <button data-pane="directory" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-address-book"></i> Directory<span id="bd-directory" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Entries waiting for approval"></span></button>
     </nav>
+    <!-- hidden for now: Search (remove these comment marks and the SEARCH_ON line in the script to bring it back)
     <button data-k="gsearch" class="text-xs font-bold px-2.5 py-1.5 rounded-lg text-gray-300 hover:bg-white/10 whitespace-nowrap" title="Search everything (Ctrl+K)" aria-label="Search everything"><i class="fas fa-magnifying-glass"></i><span class="hidden sm:inline"> Search</span></button>
+    -->
     <a href="index.html" target="_blank" rel="noopener" class="hidden sm:block text-[11px] text-gray-300 hover:text-white whitespace-nowrap"><i class="fas fa-arrow-up-right-from-square"></i> View site</a>
   </div>
   <p id="pane-hint" class="max-w-3xl mx-auto px-4 pb-1.5 text-[11px] text-gray-400 truncate"></p>
@@ -126,6 +128,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
 <script src="theme.js"></script>
 <script src="motion.js"></script>
 <script src="lang.js" data-passive></script>
+<script src="tender-dict.js"></script>
 <script>
 /* ============================ shared ============================ */
 const $=id=>document.getElementById(id);
@@ -141,7 +144,7 @@ function showPane(p){
   pane=p;history.replaceState(null,'','#'+p);
   $('pane-content').classList.toggle('hidden',p!=='content');$('pane-clients').classList.toggle('hidden',p==='content');
   document.querySelectorAll('.pane-btn').forEach(b=>{const on=b.dataset.pane===p;b.className='pane-btn text-xs font-bold px-3 py-1.5 rounded-lg '+(on?'bg-white text-gray-900':'text-gray-300 hover:bg-white/10')});
-  const hi=$('pane-hint');if(hi)hi.textContent=({content:'Edit the website text, photos, news, team and languages.',clients:'Manage users, their subscriptions to sectors, and the files in each sector.',leads:'People who may become subscribers.',issues:'The HOT Info issues table.',tenders:'Upload newspaper images, read them, check the tenders and tell users about new ones.',directory:'Companies, institutions and freelancers shown in the public Directory: approve, edit, import.'})[p]||'';
+  const hi=$('pane-hint');if(hi)hi.textContent=({content:'Edit the website text, photos, news, team and languages.',clients:'Manage users, their subscriptions to sectors, and the files in each sector.',leads:'People who may become subscribers.',issues:'The HOT Info issues table.',tenders:'Type the tenders in the table (or read them from a picture), choose their sectors and publish. Older tools: Newspaper images and By sector.',directory:'Companies, institutions and freelancers shown in the public Directory: approve, edit, import.'})[p]||'';
   if(p!=='content')K.go(p);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pane]');if(b)showPane(b.dataset.pane)});
@@ -208,7 +211,7 @@ function fld(base,[k,l,t],req=[]){
   else if(t==='plain')h=`<textarea data-p="${p}" ${xa} aria-label="${esc(l)}" rows="4" class="${inp}">${esc(v)}</textarea>`;
   else if(t==='lines')h=`<textarea data-p="${p}" ${xa} data-lines="1" aria-label="${esc(l)}" rows="4" class="${inp}">${esc(Array.isArray(v)?v.join('\n'):v)}</textarea>`;
   else if(t==='select'){const o=((D.newsCategories||[]).filter(Boolean).length?D.newsCategories.filter(Boolean):DEFCATS).slice(),cur=v||o[0];if(cur&&!o.includes(cur))o.push(cur);h=`<select data-p="${p}" ${xa} aria-label="${esc(l)}" class="${inp}">${o.map(x=>`<option ${x===cur?'selected':''}>${esc(x)}</option>`).join('')}</select>`}
-  else if(t==='img')h=`<div class="flex items-center gap-2"><img data-prev="${p}" src="${esc(imgSrc(v))}" alt="" onerror="this.style.visibility='hidden'" class="w-12 h-12 rounded-lg object-cover bg-gray-200 flex-shrink-0"><input data-p="${p}" ${xa} aria-label="${esc(l)}" value="${esc(v)}" list="assets" placeholder="File name in assets, or upload" class="${inp}"><label class="flex-shrink-0 text-xs bg-brand-50 text-brand-700 font-bold px-3 py-2.5 rounded-lg cursor-pointer hover:bg-brand-100" title="Upload an image"><i class="fas fa-upload"></i><input type="file" accept="image/*" data-up="${p}" class="hidden"></label></div>`;
+  else if(t==='img')h=`<div class="flex items-center gap-2"><img data-prev="${p}" src="${esc(imgSrc(v))}" alt="" onerror="this.style.visibility='hidden'" class="w-12 h-12 rounded-lg object-cover bg-gray-200 flex-shrink-0"><input data-p="${p}" ${xa} aria-label="${esc(l)}" value="${esc(v)}" list="assets" placeholder="File name in assets, or upload" class="${inp}"><label class="flex-shrink-0 text-xs bg-brand-50 text-brand-700 font-bold px-3 py-2.5 rounded-lg cursor-pointer hover:bg-brand-100" title="Upload an image"><i class="fas fa-upload"></i><input type="file" accept="image/*" data-up="${p}" class="hidden"></label></div>`+(lang!=='ar'&&FXPATH.test(p)?fxEditor(p):'');
   else h=`<input data-p="${p}" ${xa} aria-label="${esc(l)}" type="${t==='date'?'date':'text'}" value="${esc(v)}" class="${inp}">`;
   return `<div><span class="text-xs font-bold text-gray-700">${esc(l)}${star}</span>${ref?`<span class="block text-[11px] text-gray-500 mb-1 line-clamp-3" dir="ltr">${esc(ref)}</span>`:''}${h}</div>`;
 }
@@ -274,7 +277,7 @@ function cleanTheme(){ // before saving: drop backgrounds that are set back to "
     if(m==='color'||m==='image')Object.assign(keep,x);
     if(x.hidden===true)keep.hidden=true;else delete keep.hidden;
     for(const w of ['widthTablet','widthDesktop']){if(x[w]!==undefined&&x[w]!==''&&x[w]!==null)keep[w]=x[w];else delete keep[w]}
-    if(m!=='color'&&m!=='image')for(const f of ['mode','color','image','overlay','tone'])delete keep[f];
+    if(m!=='color'&&m!=='image')for(const f of ['mode','color','image','overlay','tone','imageFx'])delete keep[f];else if(m!=='image')delete keep.imageFx;
     if(Object.keys(keep).length)D.theme.sections[k]=keep;else delete D.theme.sections[k];
   }
 }
@@ -307,8 +310,102 @@ function palOptions(t,sel){
 }
 function bgStyle(t,s){
   if(s.mode==='color'){const c=TH.resolve(s.color,t);return c?`background:${c}`:''}
-  if(s.mode==='image'&&s.image){const ov=Math.min(85,Math.max(0,parseFloat(s.overlay)||0))/100,i=imgSrc(s.image);return `background:${ov?`linear-gradient(rgba(27,36,51,${ov}),rgba(27,36,51,${ov})),`:''}url('${i}') center/cover no-repeat`}
+  if(s.mode==='image'&&s.image){
+    const fx=s.imageFx||{},oi=KFX.ovInfo(fx.ov,t),lg=fx.ov?0:Math.min(85,Math.max(0,parseFloat(s.overlay)||0))/100,i=imgSrc(s.image);
+    const L=oi?oi.css+',':lg?`linear-gradient(rgba(27,36,51,${lg}),rgba(27,36,51,${lg})),`:'';
+    return `background:${L}url('${i}') center/cover no-repeat`;
+  }
   return '';
+}
+/* ---------- Image effects: color overlay and SVG mask ----------
+   Saved next to the photo as "<photo field>Fx" (a section background: theme.sections.<key>.imageFx) and drawn by KFX in theme.js.
+   {ov:{type:'matt'|'gradient',color,opacity,color2,opacity2,dir}, mask:{shape,fit,invert}} */
+const FXPATH=/^(?:(?:carousel|news|employees)\.\d+|theme\.sections\.[\w-]+)\.image$/;
+const FXOPEN=new Set(),FXMASKS={};              // FXMASKS: SVG files added in this session, so the preview works before the site is rebuilt
+const FXPH='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9db7e0"/><stop offset="1" stop-color="#e9d8b4"/></linearGradient></defs><rect width="160" height="90" fill="url(#g)"/><circle cx="118" cy="26" r="11" fill="#fff" fill-opacity=".8"/><path d="M0 90L45 42l28 30 22-20 65 38z" fill="#173a7a" fill-opacity=".55"/></svg>');
+KFX.setFileUrl(n=>FXMASKS[n]||imgSrc(n));
+const fxGet=base=>{const o=get(D,base);return o&&typeof o==='object'&&!Array.isArray(o)?o:{}};
+const fxNum=(v,d)=>{v=parseFloat(v);return isFinite(v)?Math.min(100,Math.max(0,Math.round(v))):d};
+const fxBase=path=>path.slice(0,path.indexOf('Fx')+2);            // news.0.imageFx.ov.type -> news.0.imageFx
+const fxImgPath=path=>path.slice(0,path.indexOf('Fx'));            // news.0.imageFx.ov.type -> news.0.image
+function fxEditor(p){return `<div data-fx="${p}" class="mt-2">${fxInner(p)}</div>`}
+function fxPrevHtml(p){
+  const v=get(D,p),f=fxGet(p+'Fx');
+  return KFX.img({fx:f,T:D.theme,src:esc(v?imgSrc(v):FXPH),attrs:'alt="" onerror="this.onerror=null;this.src=FXPH"',cls:'w-full h-full object-cover'});
+}
+function fxPreview(p){const el=document.querySelector(`[data-fxprev="${p}"]`);if(el)el.innerHTML=fxPrevHtml(p)}
+function fxRefresh(path){const p=fxImgPath(path),el=document.querySelector(`[data-fx="${p}"]`);if(el)el.innerHTML=fxInner(p)}
+function fxInner(p){
+  const base=p+'Fx',f=fxGet(base),ov=f.ov||{},mk=f.mask||{},t=theme(),id=base.replace(/\W/g,'_');
+  const type=ov.type==='matt'||ov.type==='gradient'?ov.type:'none',shape=mk.shape||'',small='block text-[11px] font-bold text-gray-600';
+  const col=(path,sel,label)=>`<div class="flex items-end gap-2"><label class="${small} flex-1">${label}<select data-fxcol="${path}" class="${inp} mt-1">${palOptions(t,sel)}</select></label>${TH.HEX.test(sel)?`<input type="color" data-p="${path}" value="${esc(sel)}" aria-label="Custom color" class="w-11 h-11 p-0 border border-gray-300 rounded-lg bg-white cursor-pointer flex-shrink-0">`:''}</div>`;
+  const rng=(path,val,label,k)=>`<label class="${small}">${label}: <span id="fxo-${id}-${k}">${val}</span>%<input type="range" min="0" max="100" step="5" data-p="${path}" data-out="fxo-${id}-${k}" data-pct="1" value="${val}" class="mt-1 w-full"></label>`;
+  let ovh='';
+  if(type!=='none'){
+    const c1=ov.color||'brand:4';
+    ovh=col(`${base}.ov.color`,c1,type==='gradient'?'Color at the start':'Color')+rng(`${base}.ov.opacity`,fxNum(ov.opacity,type==='gradient'?70:40),type==='gradient'?'Intensity at the start':'Intensity (opacity)','a');
+    if(type==='gradient')ovh+=`<label class="${small}">Direction<select data-p="${base}.ov.dir" class="${inp} mt-1">${KFX.DIRS.map(([v,n])=>`<option value="${v}" ${(ov.dir||'to bottom')===v?'selected':''}>${n}</option>`).join('')}</select></label>`
+      +col(`${base}.ov.color2`,ov.color2||c1,'Color at the end')+rng(`${base}.ov.opacity2`,fxNum(ov.opacity2,0),'Intensity at the end','b');
+  }
+  const cell=(key,label,inner)=>`<button type="button" data-act="fx-shape" data-b="${base}" data-v="${esc(key)}" title="${esc(label)}" aria-label="${esc(label)}" aria-pressed="${shape===key}" class="w-12 h-12 rounded-lg border ${shape===key?'border-brand-600 bg-brand-50 ring-2 ring-brand-600':'border-gray-300 bg-white hover:bg-gray-50'} flex items-center justify-center overflow-hidden">${inner}</button>`;
+  const shapes=cell('','No shape','<i class="fas fa-ban text-gray-400"></i>')
+    +KFX.MASKS.map(m=>cell(m[0],m[1],`<svg viewBox="${m[4]||'0 0 100 100'}" preserveAspectRatio="none" class="w-8 h-8 text-brand-700" fill="currentColor" aria-hidden="true">${m[3]}</svg>`)).join('')
+    +ASSETS.filter(n=>/^mask-[\w.\-]+\.svg$/i.test(n)).map(n=>cell('file:'+n,'My shape: '+n.replace(/^mask-[a-z0-9]+-/,''),`<img src="${esc(FXMASKS[n]||imgSrc(n))}" alt="" class="w-8 h-8 object-contain">`)).join('');
+  const def=KFX.MASKS.find(m=>m[0]===shape),fit=mk.fit||(def?def[2]:'contain');
+  const mkh=shape?`<div class="grid sm:grid-cols-2 gap-2 items-end"><label class="${small}">Fit<select data-p="${base}.mask.fit" class="${inp} mt-1">${[['contain','Whole shape, keep its proportions'],['cover','Fill the frame, keep proportions (edges may be cut)'],['stretch','Stretch to the frame']].map(([v,n])=>`<option value="${v}" ${fit===v?'selected':''}>${n}</option>`).join('')}</select></label>
+    <label class="flex items-center gap-2 text-xs font-bold pb-2"><input type="checkbox" data-fxchk="${base}.mask.invert" ${mk.invert?'checked':''}> Cut the shape out (invert)</label></div>`:'';
+  const chips=[type!=='none'?(type==='matt'?'Matt overlay':'Gradient overlay'):'',shape?(def?def[1]:'My shape'):''].filter(Boolean);
+  const checker='background:repeating-conic-gradient(#e5e7eb 0% 25%,#fff 0% 50%) 50%/14px 14px';
+  return `<details data-fxd="${base}" ${FXOPEN.has(base)?'open':''} class="rounded-xl border border-gray-200 bg-gray-50"><summary class="flex items-center gap-2 px-3 py-2 cursor-pointer text-xs font-bold"><i class="fas fa-chevron-right chev text-[10px] text-gray-400"></i><i class="fas fa-wand-magic-sparkles text-brand-600"></i><span class="flex-1">Image effects: color overlay and shape</span>${chips.length?`<span class="text-[11px] font-bold px-2 py-1 rounded-lg bg-brand-50 text-brand-700">${esc(chips.join(' · '))}</span>`:'<span class="text-[11px] text-gray-400">None</span>'}</summary>
+  <div class="p-3 space-y-4 border-t border-gray-200">
+    <div class="flex items-start gap-3"><div data-fxprev="${p}" class="rounded-lg border border-gray-200 overflow-hidden flex-shrink-0 ${/^employees\./.test(p)?'w-24 h-24':'w-44 h-28'}" style="${checker}">${fxPrevHtml(p)}</div><p class="text-[11px] text-gray-500">Preview. On the website the same effect is used wherever this picture appears (slide, news card, article, related news, team card). The shape adapts to the picture's frame.</p></div>
+    <div class="space-y-2"><p class="text-xs font-extrabold">Color overlay</p>
+      <label class="${small}">Type<select data-p="${base}.ov.type" data-fxr="1" class="${inp} mt-1">${[['none','None'],['matt','Matt (one flat color)'],['gradient','Gradient (fades from one color to another)']].map(([v,n])=>`<option value="${v}" ${type===v?'selected':''}>${n}</option>`).join('')}</select></label>${ovh}</div>
+    <div class="space-y-2"><p class="text-xs font-extrabold">Shape (SVG mask)</p><p class="text-[11px] text-gray-500">The picture shows only inside the shape.</p>
+      <div class="flex flex-wrap gap-1.5">${shapes}</div>
+      <label class="inline-flex items-center gap-1.5 text-xs bg-brand-50 text-brand-700 font-bold px-3 py-2 rounded-lg cursor-pointer hover:bg-brand-100"><i class="fas fa-upload"></i> Upload my own SVG<input type="file" accept=".svg,image/svg+xml" data-fxsvg="${base}" class="hidden"></label>
+      <p class="text-[11px] text-gray-500">Use a filled shape: filled parts show the picture, empty or transparent parts hide it.</p>${mkh}</div>
+    <button type="button" data-act="fx-reset" data-b="${base}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-rotate-left"></i> Remove all effects from this picture</button>
+  </div></details>`;
+}
+// first choice of a type: sensible starting values
+function fxSeed(base){
+  const f=fxGet(base);if(!f.ov)return;const o=f.ov;
+  if(o.type==='matt'||o.type==='gradient'){if(!o.color)o.color='brand:4';if(o.type==='matt'&&o.opacity==null)o.opacity=40}
+  if(o.type==='gradient'){if(o.opacity==null||o.opacity==='')o.opacity=70;if(!o.color2)o.color2=o.color;if(o.opacity2==null)o.opacity2=0;if(!o.dir)o.dir='to top'}
+}
+async function fxUploadSvg(file,base){
+  if(file.size>2e5)return toast('The SVG is over 200 KB. Please simplify it first.',false);
+  let txt='';try{txt=await file.text()}catch{return toast('The file could not be read.',false)}
+  const doc=new DOMParser().parseFromString(txt,'image/svg+xml'),svg=doc.documentElement;
+  if(!svg||svg.nodeName.toLowerCase()!=='svg'||doc.querySelector('parsererror'))return toast('This is not a valid SVG file.',false);
+  doc.querySelectorAll('script,foreignObject,iframe,object,embed').forEach(n=>n.remove());
+  doc.querySelectorAll('*').forEach(n=>[...n.attributes].forEach(a=>{if(/^on/i.test(a.name)||/^\s*javascript:/i.test(a.value))n.removeAttribute(a.name)}));
+  if(!svg.getAttribute('viewBox')){const w=parseFloat(svg.getAttribute('width')),h=parseFloat(svg.getAttribute('height'));if(w>0&&h>0)svg.setAttribute('viewBox',`0 0 ${w} ${h}`);else return toast('This SVG has no size (viewBox). Open it in a vector editor and save it again.',false)}
+  svg.removeAttribute('width');svg.removeAttribute('height');svg.setAttribute('preserveAspectRatio','none');   // lets the "Stretch to the frame" fit work
+  const out=new XMLSerializer().serializeToString(svg),name='mask-'+Date.now().toString(36)+'-'+file.name.replace(/\.svg$/i,'').replace(/[^\w\-]/g,'-')+'.svg';
+  toast('Uploading shape...');
+  try{
+    await api('assets/'+name,{method:'PUT',body:{message:'Upload SVG shape via admin page',content:b64(new TextEncoder().encode(out)),branch:S.b}});
+    ASSETS.push(name);FXMASKS[name]=KFX.encSvg(out);
+    set(D,base+'.mask.shape','file:'+name);mark();FXOPEN.add(base);fxRefresh(base+'.');toast('Shape uploaded.');
+  }catch(e){toast(e.message,false)}
+}
+function cleanFx(){      // before saving: keep only the effects that are switched on
+  const one=(host,key)=>{
+    const f=host[key];if(f===undefined)return;
+    if(!f||typeof f!=='object'||Array.isArray(f)){delete host[key];return}
+    const ov=f.ov||{},mk=f.mask||{},out={};
+    if(ov.type==='matt'||ov.type==='gradient'){
+      const o={type:ov.type,color:ov.color||'brand:4',opacity:fxNum(ov.opacity,ov.type==='gradient'?70:40)};
+      if(ov.type==='gradient'){o.color2=ov.color2||o.color;o.opacity2=fxNum(ov.opacity2,0);o.dir=ov.dir||'to top'}
+      out.ov=o;
+    }
+    if(mk.shape){out.mask={shape:mk.shape};if(mk.fit)out.mask.fit=mk.fit;if(mk.invert)out.mask.invert=true}
+    if(Object.keys(out).length)host[key]=out;else delete host[key];
+  };
+  for(const k of ['carousel','news','employees'])(D[k]||[]).forEach(x=>{if(x&&typeof x==='object')one(x,'imageFx')});
+  Object.values((D.theme&&D.theme.sections)||{}).forEach(x=>{if(x&&typeof x==='object')one(x,'imageFx')});
 }
 function viewBg(){
   const t=theme();
@@ -318,7 +415,9 @@ function viewBg(){
     <label class="block text-xs font-bold mt-3">Desktop: <span id="sw-out">${esc(t.sectionWidth)}%</span><input type="range" min="50" max="100" step="1" data-p="theme.sectionWidth" data-out="sw-out" value="${esc(t.sectionWidth)}" aria-label="Section width on desktop" class="w-full mt-1"></label>
   </div>`
   +TH.SECTIONS.map(([key,label])=>{
-    const s=t.sections[key]||{},mode=s.mode==='color'||s.mode==='image'?s.mode:'default',pre=bgStyle(t,s);
+    const s=t.sections[key]||{},mode=s.mode==='color'||s.mode==='image'?s.mode:'default';
+    if(s.mode==='image'&&!s.imageFx&&parseFloat(s.overlay)>0){s.imageFx={ov:{type:'matt',color:'role:ink',opacity:Math.round(parseFloat(s.overlay))}};delete s.overlay}   // the old darken slider becomes a matt overlay
+    const pre=bgStyle(t,s);
     const base=`theme.sections.${key}.`;
     let body=secExtra(key,s)+`<label class="block text-xs font-bold">Background<select data-p="${base}mode" data-rr="1" data-sec="${key}" class="${inp} mt-1">${BGMODES.map(([v,n])=>`<option value="${v}" ${v===mode?'selected':''}>${n}</option>`).join('')}</select></label>`;
     if(mode==='color'){
@@ -326,8 +425,7 @@ function viewBg(){
       body+=`<div class="flex items-end gap-2"><label class="block text-xs font-bold flex-1">Color<select data-bgsel="${key}" class="${inp} mt-1">${palOptions(t,sel)}</select></label>${TH.HEX.test(sel)?`<input type="color" data-p="${base}color" value="${esc(sel)}" aria-label="Custom color" class="w-11 h-11 p-0 border border-gray-300 rounded-lg bg-white cursor-pointer flex-shrink-0">`:''}</div>`;
     }
     if(mode==='image'){
-      body+=fld(base,['image','Photo (file name in assets, or upload)','img'])
-        +`<label class="block text-xs font-bold">Darken the photo: <span id="ov-${key}">${esc(s.overlay||0)}</span>%<input type="range" min="0" max="85" step="5" data-p="${base}overlay" data-out="ov-${key}" data-pct="1" value="${esc(s.overlay||0)}" class="mt-1 w-full"></label>`;
+      body+=fld(base,['image','Photo (file name in assets, or upload)','img']);
     }
     if(mode!=='default')body+=`<label class="block text-xs font-bold">Text color on this section<select data-p="${base}tone" class="${inp} mt-1">${TONES.map(([v,n])=>`<option value="${v}" ${(s.tone||'auto')===v?'selected':''}>${n}</option>`).join('')}</select></label>`
       +`<div class="h-12 rounded-xl border border-gray-200" style="${pre}" role="img" aria-label="Preview of the background"></div>`;
@@ -561,7 +659,7 @@ function menuAct(a,t){
   if(a==='menu-del'){if(confirm('Delete this menu item?')){items().splice(+t.dataset.i,1);mark();view()}return true}
   return false;
 }
-document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.bg){d.open?bgOpen.add(d.dataset.bg):bgOpen.delete(d.dataset.bg)}},true);
+document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.bg){d.open?bgOpen.add(d.dataset.bg):bgOpen.delete(d.dataset.bg)}if(d&&d.dataset&&d.dataset.fxd){d.open?FXOPEN.add(d.dataset.fxd):FXOPEN.delete(d.dataset.fxd)}},true);
 
 /* Markdown import: keeps only the structure (title, subtitles, paragraphs, bullets, bold).
    Fonts, colours and sizes always come from the site, so nothing visual is imported. */
@@ -728,7 +826,7 @@ function viewUi(){
 async function save(){
   if(lang==='ar')return saveAr();
   const err=validate();if(err)return toast(err,false);
-  cleanTheme();
+  cleanFx();cleanTheme();
   $('save').disabled=true;$('state').textContent='Saving...';
   try{
     const j=await api(S.p,{method:'PUT',body:{message:'Update content via admin page',content:b64(new TextEncoder().encode(JSON.stringify(D,null,2)+'\n')),sha,branch:S.b}});
@@ -788,7 +886,8 @@ document.addEventListener('input',e=>{
   const p=e.target.dataset.p;if(!p||!D)return;
   e.target.classList.remove('bad');
   set(D,p,e.target.dataset.lines?e.target.value.split('\n').map(x=>x.trim()).filter(Boolean):e.target.value);mark();
-  if(p.endsWith('image')){const im=document.querySelector(`[data-prev="${p}"]`);if(im){im.style.visibility='';im.src=imgSrc(e.target.value)}}
+  if(p.endsWith('image')){const im=document.querySelector(`[data-prev="${p}"]`);if(im){im.style.visibility='';im.src=imgSrc(e.target.value)}if(FXPATH.test(p))fxPreview(p)}
+  if(p.indexOf('Fx.')>0)fxPreview(fxImgPath(p));
   if(/\.(title|country|name)$/.test(p)){const sm=e.target.closest('details')?.querySelector('summary span');if(sm)sm.textContent=e.target.value||'Untitled'}
 });
 document.addEventListener('change',e=>{
@@ -797,6 +896,11 @@ document.addEventListener('change',e=>{
     else{r.disabled=false;set(D,c.dataset.wdef,r.value);if(o)o.textContent=r.value+'%'}
     mark();return}
   if(e.target.dataset&&e.target.dataset.md){const f=e.target.files&&e.target.files[0];if(f)importMd(f,e.target.dataset.md);e.target.value='';return}
+  const dd=e.target.dataset||{};
+  if(dd.fxsvg){const f=e.target.files&&e.target.files[0];if(f&&D)fxUploadSvg(f,dd.fxsvg);e.target.value='';return}
+  if(D&&dd.fxcol){if(e.target.value==='__custom')set(D,dd.fxcol,TH.resolve(get(D,dd.fxcol),D.theme)||'#cccccc');else set(D,dd.fxcol,e.target.value);mark();fxRefresh(dd.fxcol);return}
+  if(D&&dd.fxchk){set(D,dd.fxchk,e.target.checked);mark();fxPreview(fxImgPath(dd.fxchk));return}
+  if(D&&dd.fxr){fxSeed(fxBase(dd.p));mark();fxRefresh(dd.p);return}
   if(brandChange(e)||menuChange(e))return;
   const bs=e.target.dataset.bgsel;
   if(bs&&D){const s=theme().sections[bs]=theme().sections[bs]||{};
@@ -822,6 +926,8 @@ document.addEventListener('click',e=>{
   else if(a==='preset'){const pr=PRESETS.find(x=>x[0]===t.dataset.k);if(pr&&confirm(`Use the "${pr[1]}" palette? It replaces the site colors above (your own colors are kept).`)){Object.assign(theme().colors,pr[2]);mark();view()}}
   else if(a==='cc-add'){theme().custom.push({id:'c'+Date.now().toString(36),name:'',hex:'#8aa6d6'});mark();view()}
   else if(a==='cc-del'){const c=theme().custom[i];if(c&&confirm(`Delete "${c.name||c.hex}"? Sections that use it go back to their normal background.`)){theme().custom.splice(i,1);mark();view()}}
+  else if(a==='fx-shape'){const b=t.dataset.b;set(D,b+'.mask.shape',t.dataset.v);mark();fxRefresh(b+'.');}
+  else if(a==='fx-reset'){const b=t.dataset.b;if(confirm('Remove the color overlay and the shape from this picture?')){set(D,b,{});mark();fxRefresh(b+'.')}}
   else if(a==='lang')switchLang(t.dataset.l);
   else if(a==='fmt')fmt(t.dataset.k,t.dataset.t);
   else if(a==='save')save();
@@ -919,7 +1025,7 @@ const K=(()=>{
       await sb.auth.signOut();return;
     }
     me=user;err('');
-    $('k-login').classList.add('hidden');$('k-app').classList.remove('hidden');$('k-who').textContent='Signed in as '+user.email+' \u00b7 page version 01-Nov-k';
+    $('k-login').classList.add('hidden');$('k-app').classList.remove('hidden');$('k-who').textContent='Signed in as '+user.email+' \u00b7 page version 03-Nov-b';
     cur=null;path=[];home();badges();
   }
 
@@ -1003,14 +1109,14 @@ const K=(()=>{
   const label=r=>((profiles[r.id]||{}).full_name||r.email);
   const badge=r=>!r.account?pill('bg-gray-100 text-gray-600','Folder only')
     :r.confirmed?pill('bg-emerald-50 text-emerald-700','Account active'):pill('bg-amber-100 text-amber-800','Invite pending');
-  const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues',tenders:'Tender images',directory:'Directory'};
+  const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues',tenders:'Tenders',directory:'Directory'};
   const setW=w=>{main().className=w==='wide'?'p-3 space-y-3':w==='mid'?'max-w-6xl mx-auto p-4 space-y-3':'max-w-3xl mx-auto p-4 space-y-3'};
   async function home(){
     cur=null;path=[];$('k-title').textContent=TITLES[tabK]||'Admin';main().innerHTML=LOADING;
-    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await loadTenderImages();else if(tabK==='directory')await loadDirectory();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
+    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await(tView==='table'?loadTableView():loadTenderImages());else if(tabK==='directory')await loadDirectory();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
     paintHome();
   }
-  const paintHome=()=>{setW(tabK==='issues'?'wide':(tabK==='leads'||tabK==='tenders'||tabK==='directory')?'mid':'narrow');tabK==='directory'?paintDirectory():tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
+  const paintHome=()=>{setW(tabK==='issues'||(tabK==='tenders'&&tView==='table')?'wide':(tabK==='leads'||tabK==='tenders'||tabK==='directory')?'mid':'narrow');tabK==='directory'?paintDirectory():tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
   function go(p){ // called by the top bar: leads | clients | issues | tenders
     tabK=p==='clients'?(['overview','clients','sectors'].includes(tabK)?tabK:'overview'):p;
     if(!started||!sb)start();else if(me)home();
@@ -1756,7 +1862,7 @@ const K=(()=>{
   // Images are cropped offline and uploaded as they are (JPG, PNG or WebP, max 1 MB: the OCR.space free limit).
   // The private "tender-images" bucket stores them; source paper, page and publish date are entered once per image.
   const TB='tender-images',TMAXB=1024*1024,TTYPES={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
-  let timgs=[],timgErr=false,tUse=null,tUseDay=null,TR=null,trows=[],trErr=false,tCnt={},tUrl={},tMonth=0,TF={source:'',page:'',date:''},tPapers=[],tView='images',tRV='cards',tStage='',tPipe=null,tRecentBy={},tWarnOnly=false,tEnt=[],tEntErr=false,trMsg='',tSect=[],tKw=[],tKwErr=false,tSV=[],tSVErr=false,tOpen=new Set(['_none']),TS={by:'session_date',from:'',to:'',status:'all'};
+  let timgs=[],timgErr=false,tUse=null,tUseDay=null,TR=null,trows=[],trErr=false,tCnt={},tUrl={},tMonth=0,TF={source:'',page:'',date:''},tPapers=[],tView='table',tbl=[],tbErr='',tbF={q:'',st:'all'},tbCap=100,tbLast={publish_date:'',governorate:''},tRV='cards',tStage='',tPipe=null,tRecentBy={},tWarnOnly=false,tEnt=[],tEntErr=false,trMsg='',tSect=[],tKw=[],tKwErr=false,tSV=[],tSVErr=false,tOpen=new Set(['_none']),TS={by:'session_date',from:'',to:'',status:'all'};
   const TST={uploaded:['bg-gray-100 text-gray-700','Uploaded'],text_read:['bg-blue-100 text-blue-800','Text read'],parsed:['bg-amber-100 text-amber-800','Needs review'],approved:['bg-emerald-100 text-emerald-800','Approved']};
   const tPName=p=>({ocrspace:'OCR.space',gemini:'Gemini',groq:'Groq AI'}[p]||'an earlier reading');
   const tBump=p=>{[tUse,tUseDay].forEach(o=>{if(o)o[p]=(o[p]||0)+1})};
@@ -1813,25 +1919,24 @@ const K=(()=>{
       +((tPipe.a+tPipe.b)>0?`<div class="flex flex-wrap items-center gap-2 pt-1"><button data-k="tbatch" class="${btn1}"><i class="fas fa-bolt"></i> Read text + add all waiting tenders (${tPipe.a+tPipe.b})</button><span class="text-[11px] text-gray-500">Does steps 1 and 2 for every image that is waiting, one after the other. You check the new tenders afterwards.</span></div>`:'');
   }
   function paintTenders(){
+    setW(tView==='table'?'wide':'mid');
     if(TR&&tById(TR))return paintReview();TR=null;
+    if(tView==='table')return paintTable();
     if(tView==='sector')return paintSectorView();
     const lab='text-[11px] font-bold';
     main().innerHTML=tNav()+tPipeBar()+tMeters()+(timgErr?warn('<b>Tender images is not set up yet.</b> Run <code>supabase-step3-tender-images.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
     +`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3">
-      <p class="text-xs font-bold">1. Newspaper details <span class="font-normal text-gray-500">(kept for the next image)</span></p>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-        <label class="${lab}">Source paper<input data-tf="source" list="t-papers" maxlength="80" value="${esc(TF.source)}" autocomplete="off" placeholder="e.g. Al-Ahram" class="${mt}"></label>
-        <label class="${lab}">Page<input data-tf="page" maxlength="12" inputmode="numeric" value="${esc(TF.page)}" class="${mt}"></label>
-        <label class="${lab}">Publish date<input data-tf="date" type="date" value="${esc(TF.date)}" class="${mt}"></label>
+      <p class="text-xs font-bold">Add a newspaper image <span class="font-normal text-gray-500">(newspaper, page and date are kept for the next image)</span></p>
+      <div class="flex flex-wrap items-end gap-2">
+        <label class="${lab} flex-1 min-w-[9rem]">Source paper<input data-tf="source" list="t-papers" maxlength="80" value="${esc(TF.source)}" autocomplete="off" placeholder="e.g. Al-Ahram" class="${mt} !py-1.5"></label>
+        <label class="${lab} w-16">Page<input data-tf="page" maxlength="12" inputmode="numeric" value="${esc(TF.page)}" class="${mt} !py-1.5"></label>
+        <label class="${lab} w-36">Publish date<input data-tf="date" type="date" value="${esc(TF.date)}" class="${mt} !py-1.5"></label>
+        <button data-k="tpick" class="${btn1} !py-2"><i class="fas fa-image"></i> Choose image</button>
+        <button data-k="tcam" class="${btn1} !py-2"><i class="fas fa-camera"></i> Take photo</button>
+        <button data-k="tkwopen" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl whitespace-nowrap"><i class="fas fa-key"></i> Keywords</button>
+        <button data-k="tentman" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl whitespace-nowrap"><i class="fas fa-building-columns"></i> Entities</button>
       </div>
       <datalist id="t-papers">${tPapers.map(p=>`<option value="${esc(p)}">`).join('')}</datalist>
-      <p class="text-xs font-bold">2. Add the image</p>
-      <div class="flex flex-wrap gap-2">
-        <button data-k="tpick" class="${btn1}"><i class="fas fa-image"></i> Choose image</button>
-        <button data-k="tcam" class="${btn1}"><i class="fas fa-camera"></i> Take photo</button>
-        <button data-k="tkwopen" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-key"></i> Keywords</button>
-        <button data-k="tentman" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-building-columns"></i> Entities</button>
-      </div>
       <input id="t-file" type="file" accept="image/jpeg,image/png,image/webp" class="hidden">
       <input id="t-cam" type="file" accept="image/*" capture="environment" class="hidden">
       <p class="text-[11px] text-gray-500">JPG, PNG or WebP, up to 1 MB. After you pick or take a photo you can crop it, rotate it and make it easier to read. If you change nothing, it is uploaded exactly as it is. This month: <b>${tMonth}</b> of about 1,000 images.${tUse?` Text readings this month: OCR.space <b>${tUse.ocrspace}</b> of 25,000, Groq AI <b>${tUse.groq||0}</b>, Gemini <b>${tUse.gemini}</b>.`:''}</p>
@@ -2091,7 +2196,7 @@ const K=(()=>{
     async tentfix(t){const r=tFind(t.dataset.id);if(!r)return;const m=tEntMatch(r.entity);if(!m||m.kind!=='near')return;
       const words=String(r.entity).trim().split(/\s+/),v=[m.name,...words.slice(m.k)].join(' ');
       const u=await sb.from('tenders').update({entity:v,updated_at:new Date().toISOString()}).eq('id',r.id);if(u.error)throw u.error;
-      r.entity=v;const ta=document.querySelector(`textarea[data-id="${r.id}"][data-tc="entity"]`);if(ta){ta.value=v;autosize(ta)}tEntRefresh(r.id);toast('Entity corrected')}
+      r.entity=v;const ta=document.querySelector(`[data-id="${r.id}"][data-tc="entity"]`);if(ta){ta.value=v;if(ta.tagName==='TEXTAREA')autosize(ta)}tEntRefresh(r.id);toast('Entity corrected')}
   });
   // ---- Phase 4: text -> rows, review table, approval ----
   const AD='٠١٢٣٤٥٦٧٨٩',PD='۰۱۲۳۴۵۶۷۸۹';
@@ -2230,7 +2335,7 @@ const K=(()=>{
     }
   }
   async function tSaveCell(el){
-    const r=trows.find(x=>x.id===el.dataset.id);if(!r)return;const f=el.dataset.tc;let v=el.value.trim();
+    const r=trows.find(x=>x.id===el.dataset.id)||tbl.find(x=>x.id===el.dataset.id);if(!r)return;if(r._new)return tbInsert(r,el);const f=el.dataset.tc;let v=el.value.trim();
     if(f==='booklet_price_raw')v=tDigits(v)||null;
     else if(f==='session_date'||f==='session_time')v=v||null;
     else if(f==='entity'||f==='subject')v=tDigits(v);
@@ -2246,7 +2351,7 @@ const K=(()=>{
     if(f==='session_date')el.classList.toggle('!bg-amber-100',!v&&!!r.session_date_raw&&!/لم\s*يذكر/.test(r.session_date_raw));
     if(f==='entity'||f==='subject')el.classList.toggle('!bg-amber-100',!v);
     if(f==='entity')tEntRefresh(r.id);
-    if(patch.status==='draft'){const tr=el.closest('[data-row]'),b=tr&&tr.querySelector('[data-k="tok"]');tRowStyle(el,r);b&&(b.outerHTML=tOkBtn(r));await tImgStatus()}
+    if(patch.status==='draft'){const tr=el.closest('[data-row]'),b=tr&&tr.querySelector('[data-k="tok"]');tRowStyle(el,r);b&&(b.outerHTML=tOkBtn(r));const tb2=tr&&tr.querySelector('[data-k="tbok"]');if(tb2){tb2.outerHTML=tbOkBtn(r);tr.classList.add('bg-white')}await tImgStatus()}
     tSum();
   }
   const tDbg=d=>d?`<p class="text-[11px] text-gray-600 bg-gray-50 border border-gray-200 rounded-lg p-2">Parser <b>${esc(d.parser)}</b>${d.model?' ('+esc(d.model)+')':''} &middot; ${d.chars} characters${d.chunks?' in '+d.chunks+' part'+(d.chunks===1?'':'s'):''} &middot; the model found <b>${d.ai_rows??'-'}</b>${d.per_chunk&&d.per_chunk.length>1?' ('+d.per_chunk.join(' + ')+')':''} &middot; kept <b>${d.kept??'-'}</b>${d.saved!=null?' &middot; saved <b>'+d.saved+'</b>':''}${d.ms?' &middot; '+(d.ms/1000).toFixed(1)+' s':''}</p>`:'';
@@ -2434,7 +2539,309 @@ const K=(()=>{
   const tSectBtns=r=>`<button data-k="tsect" data-id="${esc(r.id)}" class="w-7 h-7 rounded-lg bg-gray-100" aria-label="Edit sectors" title="Edit sectors"><i class="fas fa-pen text-[10px]"></i></button>`
     +((r.sector_ids||[]).length&&!r.sectors_confirmed?` <button data-k="tsconf" data-id="${esc(r.id)}" class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700" aria-label="Confirm sectors" title="Confirm these sectors"><i class="fas fa-check text-[10px]"></i></button>`:'');
   const tSectCell=r=>`<td class="border border-gray-300 px-1.5 py-1 min-w-[10rem]"><div class="flex flex-wrap gap-1 items-center">${tChips(r)} ${tSectBtns(r)}</div></td>`;
-  const tFind=id=>trows.find(x=>x.id===id)||tSV.find(x=>x.id===id);
+  const tFind=id=>trows.find(x=>x.id===id)||tSV.find(x=>x.id===id)||tbl.find(x=>x.id===id);
+  // =====================================================================================================
+  // Tenders table (phase T1): a spreadsheet-like table for typing tenders in Arabic. Same `tenders` table as the other screens.
+  // =====================================================================================================
+  const GOVS=['القاهرة','الجيزة','الإسكندرية','القليوبية','الشرقية','الدقهلية','البحيرة','المنوفية','الغربية','كفر الشيخ','دمياط','بورسعيد','الإسماعيلية','السويس','شمال سيناء','جنوب سيناء','الفيوم','بني سويف','المنيا','أسيوط','سوهاج','قنا','الأقصر','أسوان','البحر الأحمر','الوادي الجديد','مطروح','جميع المحافظات'];
+  const TBCOLS='id,image_id,entity,subject,governorate,publish_date,session_date,booklet_price_raw,booklet_price,bid_bond,status,sector_ids,sectors_confirmed,created_at';
+  const TBW={entity:'min-w-[14rem] w-[14rem]',gov:'min-w-[9rem] w-[9rem]',pub:'min-w-[9rem] w-[9rem]',subject:'min-w-[26rem] w-[26rem]',ses:'min-w-[9rem] w-[9rem]',price:'min-w-[8rem] w-[8rem]',bond:'min-w-[7rem] w-[7rem]'};
+  async function loadTable(){
+    const r=await sb.from('tenders').select(TBCOLS).order('created_at',{ascending:false}).limit(400);
+    tbErr=r.error?r.error.message:'';const keep=tbl.filter(x=>x._new);tbl=r.error?[]:keep.concat(r.data||[]);
+    const f=tbl.find(x=>!x._new&&x.publish_date);if(f&&!tbLast.publish_date){tbLast.publish_date=f.publish_date;tbLast.governorate=f.governorate||''}
+  }
+  async function loadTableView(){await Promise.all([loadTable(),loadSectorData()]);try{await tPipeLoad()}catch(_){}tbDictLoad()}
+  const tbLive=r=>r.status==='approved'&&(r.sector_ids||[]).length>0&&!!r.sectors_confirmed;
+  const tbShow=r=>{
+    if(r._new)return true;
+    if(tbF.st==='draft'&&r.status==='approved')return false;
+    if(tbF.st==='approved'&&r.status!=='approved')return false;
+    if(tbF.st==='nosector'&&!(r.status==='approved'&&!tbLive(r)))return false;
+    const q=tFold(tbF.q);return !q||tFold((r.entity||'')+' '+(r.subject||'')+' '+(r.governorate||'')).includes(q);
+  };
+  const tbOkBtn=r=>{
+    const ok=r.status==='approved',live=tbLive(r),ic=!ok?'fa-circle text-gray-300':live?'fa-circle-check text-emerald-600':'fa-circle-exclamation text-amber-500';
+    const tt=r._new?'Fill in the row first':!ok?'Draft. Press to publish':live?'Published. Press to take it back to draft':'Published, but subscribers cannot see it until a sector is chosen and confirmed';
+    return `<button data-k="tbok" data-id="${esc(r.id)}" ${r._new?'disabled':''} class="w-9 h-9 disabled:opacity-30" aria-label="${tt}" title="${tt}"><i class="fas ${ic} text-lg"></i></button>`;
+  };
+  const tbSectCell=r=>r._new?'<div class="text-[11px] text-gray-400 px-2 py-2">&nbsp;</div>':`<div class="flex flex-wrap gap-1 items-center px-1.5 py-1">${tChips(r)} ${tSectBtns(r)}</div>`;
+  const tbActs=r=>`<div class="flex items-center gap-1"><button data-k="tbimg" data-id="${esc(r.id)}" class="h-8 px-2 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 text-[11px] font-bold whitespace-nowrap" title="Read from image: choose or take a photo; the text goes into the description" lang="ar"><i class="fas fa-camera"></i> قراءة من صورة</button>`
+    +(r.image_id?`<button data-k="tbview" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg bg-gray-100" aria-label="View the picture" title="View the picture this row was read from"><i class="fas fa-image text-xs"></i></button>`:'')
+    +`<button data-k="tbdel" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete this row" title="Delete"><i class="fas fa-trash text-xs"></i></button></div>`;
+  function tbRow(r,i){
+    const am=on=>on?' !bg-amber-100':'',id=esc(r.id);
+    return `<tr data-row="${id}" class="align-top ${r.status==='approved'?'bg-emerald-50':'bg-white'}">
+      <td class="border border-gray-300 text-center text-[11px] text-gray-400 px-1" data-n>${i}</td>
+      <td class="border border-gray-300 p-0 ${TBW.entity}"><input data-tc="entity" data-id="${id}" list="t-ents" autocomplete="off" dir="rtl" lang="ar" value="${esc(r.entity||'')}" class="${TC}${am(!r.entity&&r.status==='approved')}"><div data-entchip="${id}" class="px-2 pb-1">${tEntChip(r)}</div></td>
+      <td class="border border-gray-300 p-0 ${TBW.gov}"><select data-tc="governorate" data-id="${id}" dir="rtl" class="${TC}"><option value=""></option>${GOVS.map(g=>`<option ${g===r.governorate?'selected':''}>${esc(g)}</option>`).join('')}${r.governorate&&!GOVS.includes(r.governorate)?`<option selected>${esc(r.governorate)}</option>`:''}</select></td>
+      <td class="border border-gray-300 p-0 ${TBW.pub}"><input data-tc="publish_date" data-id="${id}" type="date" value="${esc(r.publish_date||'')}" class="${TC}"></td>
+      <td class="border border-gray-300 p-0 relative ${TBW.subject}"><div data-hl aria-hidden="true" dir="rtl" lang="ar" class="absolute inset-0 px-2 py-1.5 text-sm whitespace-pre-wrap break-words pointer-events-none text-transparent overflow-hidden"></div><textarea data-tc="subject" data-id="${id}" dir="rtl" lang="ar" rows="1" spellcheck="false" class="${TC} relative focus:!bg-transparent${am(!r.subject&&r.status==='approved')}">${esc(r.subject||'')}</textarea><div data-unk dir="rtl" lang="ar" class="px-2 pb-1 flex flex-wrap gap-1 items-center"></div></td>
+      <td class="border border-gray-300 p-0 ${TBW.ses}"><input data-tc="session_date" data-id="${id}" type="date" value="${esc(r.session_date||'')}" class="${TC}"></td>
+      <td class="border border-gray-300 p-0 ${TBW.price}"><textarea data-tc="booklet_price_raw" data-id="${id}" dir="rtl" lang="ar" rows="1" class="${TC}">${esc(r.booklet_price_raw||'')}</textarea></td>
+      <td class="border border-gray-300 p-0 ${TBW.bond}"><textarea data-tc="bid_bond" data-id="${id}" dir="rtl" lang="ar" rows="1" class="${TC}">${esc(r.bid_bond||'')}</textarea></td>
+      <td class="border border-gray-300 min-w-[9rem]" data-sc>${tbSectCell(r)}</td>
+      <td class="border border-gray-300 text-center" data-ok>${tbOkBtn(r)}</td>
+      <td class="border border-gray-300 px-1 whitespace-nowrap" data-acts>${tbActs(r)}</td></tr>`;
+  }
+  function paintTbRows(){
+    const box=$('tb-rows');if(!box)return;
+    const all=tbl.filter(tbShow),list=all.slice(0,tbCap+tbl.filter(x=>x._new).length);
+    box.innerHTML=list.map((r,i)=>tbRow(r,i+1)).join('')||`<tr><td colspan="11" class="text-center text-sm text-gray-500 p-6">${tbl.length?'No tender matches this search.':'No tenders yet. Press Add row.'}</td></tr>`;
+    box.querySelectorAll('textarea[data-tc]').forEach(autosize);
+    const c=$('tb-count');if(c)c.textContent=`${all.length} tender${all.length===1?'':'s'}`+(list.length<all.length?` (showing ${list.length})`:'');
+    const m=$('tb-more');if(m)m.classList.toggle('hidden',list.length>=all.length);
+    if(window.tbSpellAll)tbSpellAll();
+  }
+  function paintTable(){
+    const chip=(k,l)=>`<button data-k="tbst" data-v="${k}" class="text-xs font-bold px-3 py-1.5 rounded-lg ${tbF.st===k?'bg-gray-900 text-white':'bg-gray-100 hover:bg-gray-200'}">${l}</button>`;
+    main().innerHTML=tNav()
+      +(tbErr?warn('<b>The tenders table could not be read.</b> Database message: <code>'+esc(tbErr)+'</code><br>If it mentions the column <b>governorate</b>, run <code>supabase-step15-tenders-table.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
+      +`<div class="bg-white px-2.5 py-2 rounded-xl border border-gray-200 flex flex-wrap items-center gap-2">
+        <span id="tb-count" class="text-xs font-bold text-gray-600 whitespace-nowrap"></span>
+        <input id="tb-q" type="search" dir="rtl" lang="ar" placeholder="بحث / Search" aria-label="Search tenders" value="${esc(tbF.q)}" class="${inp} !w-44 !py-1.5">
+        <div class="flex gap-1">${chip('all','All')}${chip('draft','Drafts')}${chip('approved','Published')}${chip('nosector','Needs sector')}</div>
+        <div class="ml-auto flex flex-wrap items-center gap-2"><button data-k="tdict" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg" title="Arabic dictionary used to underline unknown words"><i class="fas fa-spell-check"></i> Dictionary</button><button data-k="tentman" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-building-columns"></i> Entities</button>
+        <button data-k="tbadd" class="${btn1} !py-1.5" title="Ctrl+Enter"><i class="fas fa-plus"></i> Add row</button></div></div>
+      <details class="text-[11px] text-gray-600"><summary class="cursor-pointer font-bold">How to enter tenders (3 steps)</summary><ol class="list-decimal ms-5 mt-1 space-y-0.5"><li><b>Type or read:</b> fill the cells like a Word table (<b>Tab</b> = next cell, <b>Enter</b> = down, <b>Ctrl+Enter</b> = new row), or press <b>قراءة من صورة</b> on the row to read the description from a photo.</li><li><b>Check:</b> words underlined in red are not in the Arabic dictionary. Click one to add it or ignore it. Cells save when you leave them.</li><li><b>Publish:</b> choose the sector, then press the circle. Subscribers see it once it is published and its sector is confirmed.</li></ol></details>
+      <datalist id="t-ents">${tEnt.map(e=>`<option value="${esc(e.name)}">`).join('')}</datalist>
+      <div class="bg-white border border-gray-300 rounded-xl overflow-auto" style="max-height:calc(100vh - 17rem)"><table dir="rtl" class="border-collapse text-sm" style="min-width:100%"><thead><tr>
+        ${[['','#'],['الجهة المعلنة','Entity'],['المحافظة','Governorate'],['تاريخ النشر','Published'],['الوصف','Description'],['موعد الجلسة','Session date'],['ثمن الكراسة','Booklet price'],['التأمين','Bid bond'],['القطاع','Sector'],['نشر','Publish'],['','']].map(([a,e])=>`<th class="sticky top-0 z-10 bg-gray-100 border border-gray-300 px-2 py-1.5 text-xs font-bold whitespace-nowrap text-center">${a}${a?'<span class="block font-normal text-[10px] text-gray-500" dir="ltr">'+e+'</span>':''}</th>`).join('')}</tr></thead>
+        <tbody id="tb-rows"></tbody></table></div>
+      <div id="tb-more" class="hidden text-center"><button data-k="tbmore" class="text-xs bg-white border border-gray-200 hover:bg-gray-50 font-bold px-4 py-2 rounded-xl">Show more rows</button></div>`;
+    paintTbRows();
+  }
+  // normalised database values for one cell (same rules as the review table)
+  function tbVal(f,raw){
+    let v=String(raw??'').trim();const x={};
+    if(f==='booklet_price_raw'){v=tDigits(v)||null;x.booklet_price=v&&/مجان/.test(v)?0:(v&&!/لم\s*يذكر/.test(v)?tPrice(v):null)}
+    else if(f==='session_date'||f==='publish_date')v=v||null;
+    else if(f==='entity'||f==='subject')v=tDigits(v);
+    else if(f==='bid_bond')v=tDigits(v)||null;
+    else v=v||null;
+    return {v,x};
+  }
+  async function tbInsert(r,el,force){   // the first entry of a new row: it is saved as a draft once it has an entity or a description
+    const tr=el.closest('tr'),vals={};
+    tr.querySelectorAll('[data-tc]').forEach(i=>{vals[i.dataset.tc]=i.value});
+    const pay={status:'draft',sector_ids:[],sectors_confirmed:false};
+    for(const f of ['entity','subject','governorate','publish_date','session_date','booklet_price_raw','bid_bond']){const n=tbVal(f,vals[f]);pay[f]=n.v;Object.assign(pay,n.x)}
+    Object.assign(r,pay);
+    if(!force&&!String(pay.entity||'').trim()&&!String(pay.subject||'').trim())return null;     // nothing worth saving yet
+    const ins=await sb.from('tenders').insert({entity:pay.entity||'',subject:pay.subject||'',governorate:pay.governorate,publish_date:pay.publish_date,session_date:pay.session_date,booklet_price_raw:pay.booklet_price_raw,booklet_price:pay.booklet_price??null,bid_bond:pay.bid_bond,status:'draft'}).select(TBCOLS).single();
+    if(ins.error){toast(ins.error.message,false);return null}
+    const i=tbl.indexOf(r);if(i>=0)tbl[i]=ins.data;
+    tbLast.publish_date=ins.data.publish_date||tbLast.publish_date;tbLast.governorate=ins.data.governorate||'';
+    const d=ins.data;tr.dataset.row=d.id;tr.querySelectorAll('[data-id]').forEach(e=>e.dataset.id=d.id);
+    const ec=tr.querySelector('[data-entchip]');if(ec){ec.dataset.entchip=d.id;ec.innerHTML=tEntChip(d)}
+    tr.querySelector('[data-sc]').innerHTML=tbSectCell(d);tr.querySelector('[data-ok]').innerHTML=tbOkBtn(d);tr.querySelector('[data-acts]').innerHTML=tbActs(d);
+    return d;
+  }
+  Object.assign(ACT,{
+    tbadd(){
+      const blank=tbl.find(x=>x._new&&!String(x.entity||'').trim()&&!String(x.subject||'').trim());
+      if(!blank){tbl.unshift({id:'n'+Date.now(),_new:true,entity:'',subject:'',governorate:tbLast.governorate||'',publish_date:tbLast.publish_date||today(),session_date:null,booklet_price_raw:'',bid_bond:'',status:'draft',sector_ids:[],sectors_confirmed:false});paintTbRows()}
+      const f=document.querySelector('#tb-rows tr [data-tc="entity"]');if(f){f.focus();f.closest('tr').scrollIntoView({block:'nearest'})}
+    },
+    tbmore(){tbCap+=100;paintTbRows()},
+    tbst(t){tbF.st=t.dataset.v;tbCap=100;paintTable()},
+    async tbok(t){const r=tbl.find(x=>x.id===t.dataset.id);if(!r||r._new)return;
+      const to=r.status==='approved'?'draft':'approved';
+      if(to==='approved'&&!tValid(r))return toast('Entity and description are required before publishing.',false);
+      const u=await sb.from('tenders').update({status:to,updated_at:new Date().toISOString()}).eq('id',r.id);if(u.error)throw u.error;
+      r.status=to;const tr=t.closest('tr');tr.classList.toggle('bg-emerald-50',to==='approved');tr.classList.toggle('bg-white',to!=='approved');t.outerHTML=tbOkBtn(r);
+      if(to==='approved'&&!(r.sector_ids||[]).length){toast('Published. Now choose its sector so subscribers can see it.');ACT.tsect({dataset:{id:r.id}})}},
+    async tbdel(t){const r=tbl.find(x=>x.id===t.dataset.id);if(!r)return;
+      if(!r._new){if(!confirm('Delete this tender?'))return;const d=await sb.from('tenders').delete().eq('id',r.id);if(d.error)throw d.error}
+      tbl=tbl.filter(x=>x!==r);paintTbRows()}
+  });
+  document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='tb-q'){tbF.q=t.value;tbCap=100;paintTbRows()}});
+  document.addEventListener('keydown',e=>{
+    const el=e.target;if(!el||!el.closest||!el.closest('#tb-rows'))return;
+    if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();el.blur();ACT.tbadd();return}
+    if(e.key!=='Enter'||e.shiftKey||el.tagName==='TEXTAREA'||el.tagName==='SELECT')return;      // Enter in a one-line cell: save and go down
+    e.preventDefault();const td=el.closest('td'),tr=td.parentElement,nx=tr.nextElementSibling,i=[...tr.children].indexOf(td);
+    el.blur();const n=nx&&nx.children[i]&&nx.children[i].querySelector('[data-tc]');if(n)n.focus();
+  });
+
+  // =====================================================================================================
+  // Phase T2: "Read from image" on every row of the tenders table.
+  // Choose / take a photo -> shrunk to fit 1 MB -> stored in tender-images -> ocr-tender reads it (OCR.space, then Groq, then Gemini)
+  // -> the text goes into this row's Description (raw reading kept in tenders.raw_text, picture linked by tenders.image_id).
+  // =====================================================================================================
+  let tbImgId=null;
+  async function tbEnsure(id){ // a row that was never saved is saved first (as a draft) so the picture can be linked to it
+    const r=tbl.find(x=>x.id===id);if(!r)throw new Error('This row is no longer in the table.');
+    if(!r._new)return r;
+    const tr=document.querySelector(`#tb-rows tr[data-row="${CSS.escape(id)}"]`),el=tr&&tr.querySelector('[data-tc]');
+    const d=await tbInsert(r,el,true);if(!d)throw new Error('The row could not be saved, so the picture was not read.');return d;
+  }
+  async function tbShrink(file,auto){ // same limit and same cleaning as the Newspaper images screen
+    if(!auto&&TTYPES[file.type]&&file.size<=TMAXB-4096)return file;
+    const bmp=await tLoadBitmap(file),base=tFit(bmp,3000);
+    for(const k of [1,.85,.7,.55,.4]){
+      const cv=tCv(base.width*k,base.height*k);cv.getContext('2d').drawImage(base,0,0,cv.width,cv.height);if(auto)tProcess(cv,{sharp:false,bw:false,auto:true,contrast:0});
+      for(const q of [.9,.8,.7,.6]){const b=await new Promise(r=>cv.toBlob(r,'image/jpeg',q));if(b&&b.size<=TMAXB-4096)return b}
+    }
+    throw new Error('This picture could not be made small enough (1 MB). Try a closer photo.');
+  }
+  async function tbStore(blob,file,r){
+    const ext=TTYPES[blob.type];if(!ext)throw new Error('Only JPG, PNG or WebP pictures are accepted.');
+    const d=new Date(),path=`${d.getUTCFullYear()}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${crypto.randomUUID()}.${ext}`;
+    const up=await sb.storage.from(TB).upload(path,blob,{contentType:blob.type,upsert:false});if(up.error)throw up.error;
+    const ins=await sb.from('tender_images').insert({image_path:path,original_name:(file.name||'photo').slice(0,120),size_bytes:blob.size,source_paper:'Tenders table',page:null,publish_date:r.publish_date||today()}).select().single();
+    if(ins.error){await sb.storage.from(TB).remove([path]);throw ins.error}
+    return ins.data;
+  }
+  async function tbOcr(imageId,first,fallback,say){
+    const order=fallback?[first,...['ocrspace','groq','gemini'].filter(p=>p!==first)]:[first],errs=[];
+    for(let i=0;i<order.length;i++){const p=order[i];
+      try{say(i?`Trying ${tPName(p)}...`:`Reading with ${tPName(p)}... 10 to 30 seconds.`);tProg.set(3,3,'Reading the text with '+tPName(p),25);
+        const r=await tFn({action:'read',image_id:imageId,provider:p,engine:'1'});
+        if(r&&typeof r.text==='string'&&r.text.trim()){tBump(p);return {text:r.text,provider:p}}
+        errs.push(tPName(p)+': no text came back')}
+      catch(e){errs.push(tPName(p)+': '+e.message)}}
+    throw new Error(errs.join(' | ')+(errs.some(e=>/OCR.space/.test(e))?'. If OCR.space is blocked, use Newspaper images > Read text > "Try from this browser".':''));
+  }
+  const tbCleanText=t=>tDigits(String(t||'').replace(/\r/g,'').replace(/[ \t]+/g,' ').replace(/\s*\n\s*/g,' ').replace(/\s{2,}/g,' ').trim());
+  async function tbRead(file){
+    const id=tbImgId,say=m=>{const e=$('tb-msg');if(e)e.innerHTML=m};
+    const busy=on=>document.querySelectorAll('#k-modal-box button,#k-modal-box select,#k-modal-box input[type=checkbox]').forEach(b=>b.disabled=on);
+    busy(true);
+    try{
+      const prov=$('tb-prov').value,fb=$('tb-fb').checked,auto=$('tb-auto').checked;
+      say('Preparing the picture...');tProg.set(1,3,'Preparing the picture',4);
+      const blob=await tbShrink(file,auto);
+      const r0=await tbEnsure(id);
+      say('Uploading the picture ('+sizeOf(blob.size)+')...');tProg.set(2,3,'Uploading the picture',5);
+      const img=await tbStore(blob,file,r0);
+      const {text,provider}=await tbOcr(img.id,prov,fb,say);
+      const r=tbl.find(x=>x.id===r0.id)||r0,clean=tbCleanText(text);
+      if(!clean)throw new Error('The reader found no text in this picture.');
+      let subject=clean;
+      if(String(r.subject||'').trim()&&!confirm('This row already has a description.\n\nOK = replace it with the text read from the picture.\nCancel = add the new text after the old one.'))subject=String(r.subject).trim()+' '+clean;
+      const patch={subject,raw_text:text,image_id:img.id,updated_at:new Date().toISOString()};
+      const u=await sb.from('tenders').update(patch).eq('id',r.id);if(u.error)throw u.error;
+      Object.assign(r,patch);
+      const tr=document.querySelector(`#tb-rows tr[data-row="${CSS.escape(r.id)}"]`);
+      if(tr){const ta=tr.querySelector('textarea[data-tc="subject"]');if(ta){ta.value=subject;autosize(ta);ta.classList.remove('!bg-amber-100');if(window.tbSpellOne)tbSpellOne(ta)}
+        const ac=tr.querySelector('[data-acts]');if(ac)ac.innerHTML=tbActs(r);tr.scrollIntoView({block:'nearest'})}
+      tProg.done('Text read and placed in the row');closeM();
+      toast(`Read with ${tPName(provider)} (${clean.length.toLocaleString()} characters). Check the Arabic against the picture and fix any mistakes.`);
+    }catch(e){tProg.done('Reading failed',true);say(esc(e.message),true);const m=$('tb-msg');if(m)m.className='text-[11px] text-red-700 font-bold mt-1';busy(false)}
+  }
+  Object.assign(ACT,{
+    tbimg(t){const r=tbl.find(x=>x.id===t.dataset.id);if(!r)return;tbImgId=r.id;
+      modal(`<h2 class="font-extrabold text-lg mb-1" lang="ar" dir="rtl">قراءة من صورة <span class="text-sm font-normal text-gray-500" dir="ltr">Read from image</span></h2>
+        <ol class="text-[11px] text-gray-600 list-decimal ms-5 mb-3 space-y-0.5"><li>Choose a picture or take a photo of the tender.</li><li>The text is read automatically and put in this row's description.</li><li>Check it: words not found in the Arabic dictionary are underlined. Edit anything that is wrong.</li></ol>
+        <div class="flex flex-wrap gap-2"><button data-k="tbpick" class="${btn1}"><i class="fas fa-image"></i> Choose image</button><button data-k="tbcam" class="${btn1}"><i class="fas fa-camera"></i> Take photo</button></div>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] font-bold mt-3">
+          <label class="flex items-center gap-1.5">Reader <select id="tb-prov" class="border border-gray-300 rounded-lg text-xs p-1"><option value="ocrspace">OCR.space</option><option value="groq">Groq AI</option><option value="gemini">Gemini</option></select></label>
+          <label class="flex items-center gap-1.5"><input type="checkbox" id="tb-fb" checked class="w-4 h-4"> Try another reader if it fails</label>
+          <label class="flex items-center gap-1.5"><input type="checkbox" id="tb-auto" class="w-4 h-4"> Brighten paper (for photos)</label></div>
+        <input id="tb-file" type="file" accept="image/*" class="hidden"><input id="tb-cam" type="file" accept="image/*" capture="environment" class="hidden">
+        <div id="t-prog" class="mt-2"></div><p id="tb-msg" class="text-[11px] text-gray-600 min-h-[1rem] mt-1"></p>
+        <div class="flex justify-end pt-3"><button data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl">Close</button></div>`)},
+    tbpick(){$('tb-file').click()},
+    tbcam(){$('tb-cam').click()},
+    async tbview(t){const r=tbl.find(x=>x.id===t.dataset.id);if(!r||!r.image_id)return;
+      const q=await sb.from('tender_images').select('image_path').eq('id',r.image_id).maybeSingle();
+      if(q.error)throw q.error;if(!q.data||!q.data.image_path)return toast('The picture is no longer stored.',false);
+      const s=await sb.storage.from(TB).createSignedUrl(q.data.image_path,3600);if(s.error)throw s.error;
+      modal(`<h2 class="font-extrabold text-lg mb-3" lang="ar" dir="rtl">الصورة المقروءة</h2><a href="${esc(s.data.signedUrl)}" target="_blank" rel="noopener" title="Open full size"><img src="${esc(s.data.signedUrl)}" alt="Tender picture" class="w-full max-h-[70vh] object-contain rounded-lg border bg-gray-50"></a><div class="flex justify-end pt-3"><button data-k="mclose" class="${btn1}">Close</button></div>`);
+      $('k-modal-box').classList.add('!max-w-3xl')}
+  });
+  document.addEventListener('change',e=>{const t=e.target;if(!t||(t.id!=='tb-file'&&t.id!=='tb-cam'))return;const f=t.files[0];t.value='';if(f)tbRead(f)});
+
+
+  // =====================================================================================================
+  // Phase T3: words outside the Arabic dictionary are underlined in the Description (tender-dict.js does the checking).
+  // Dictionary = built-in tender vocabulary + words of PUBLISHED tenders + entity names + words you add/ignore + an uploaded word list.
+  // =====================================================================================================
+  const DICT={d:null,ready:false,added:new Set(),ignored:new Set(),up:0,learned:0,err:'',loading:null,cur:''};
+  const dLS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem('khip-dict-'+k)||'[]');localStorage.setItem('khip-dict-'+k,JSON.stringify(v))}catch(_){return []}};
+  function tbDictLoad(){
+    if(DICT.loading)return DICT.loading;
+    DICT.loading=(async()=>{
+      const d=KDict.create();d.add(KDict.seed());DICT.added=new Set();DICT.ignored=new Set();DICT.up=0;DICT.learned=0;DICT.err='';
+      const [w,c,p]=await Promise.all([
+        sb.from('tender_words').select('word,kind').limit(20000),
+        sb.from('tender_dict_chunks').select('n,words').order('n'),
+        sb.from('tenders').select('subject,entity').eq('status','approved').order('updated_at',{ascending:false}).limit(3000)]);
+      if(w.error||c.error){DICT.err=(w.error||c.error).message;dLS('added').forEach(x=>DICT.added.add(x));dLS('ignored').forEach(x=>DICT.ignored.add(x))}
+      else{(w.data||[]).forEach(x=>(x.kind==='ignored'?DICT.ignored:DICT.added).add(x.word));
+        (c.data||[]).forEach(x=>{const a=String(x.words||'').split(' ').filter(Boolean);DICT.up+=a.length;d.add(a)})}
+      if(!p.error){const ws=new Set();(p.data||[]).forEach(r=>KDict.tokens((r.subject||'')+' '+(r.entity||'')).forEach(t=>ws.add(t.n)));DICT.learned=ws.size;d.add([...ws])}
+      d.add([...DICT.added]);d.add([...DICT.ignored]);
+      tEnt.forEach(e=>d.add(KDict.tokens(e.name).map(t=>t.n)));
+      DICT.d=d;DICT.ready=true;tbSpellAll();
+    })().catch(e=>{DICT.err=e.message}).finally(()=>{DICT.loading=null});
+    return DICT.loading;
+  }
+  function tbSpellOne(ta){
+    const td=ta.closest('td'),hl=td&&td.querySelector('[data-hl]'),ch=td&&td.querySelector('[data-unk]');if(!hl)return;
+    if(!DICT.ready){hl.innerHTML='';if(ch)ch.innerHTML='';return}
+    const text=ta.value,unk=DICT.d.unknown(text);let h='',last=0;
+    for(const t of unk){h+=esc(text.slice(last,t.i))+'<u style="text-decoration:underline wavy #dc2626;text-underline-offset:4px;text-decoration-thickness:1.5px">'+esc(t.w)+'</u>';last=t.i+t.w.length}
+    hl.innerHTML=h+esc(text.slice(last))+'​';
+    const seen=new Map();unk.forEach(t=>{if(!seen.has(t.n))seen.set(t.n,t.w)});const u=[...seen.values()];
+    if(ch)ch.innerHTML=u.length?`<span class="text-[10px] font-bold text-red-700">كلمات غير معروفة (${u.length}):</span>`+u.slice(0,10).map(w=>`<button type="button" data-k="tword" data-w="${esc(w)}" class="text-[11px] leading-4 bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 rounded px-1.5" title="Add to dictionary or ignore">${esc(w)}</button>`).join('')+(u.length>10?`<span class="text-[10px] text-gray-500">+${u.length-10}</span>`:''):'';
+  }
+  function tbSpellAll(){document.querySelectorAll('#tb-rows textarea[data-tc="subject"]').forEach(tbSpellOne)}
+  window.tbSpellOne=tbSpellOne;window.tbSpellAll=tbSpellAll;
+  async function tbWordSave(w,kind){
+    const n=KDict.fold(w);DICT.d.add([w]);(kind==='ignored'?DICT.ignored:DICT.added).add(n);
+    const r=await sb.from('tender_words').upsert({word:n,kind},{onConflict:'word'});
+    if(r.error){dLS('added',[...DICT.added]);dLS('ignored',[...DICT.ignored]);toast('Saved in this browser only. Run supabase-step16-tender-words.sql to keep it on the server.',false)}
+    tbSpellAll();
+  }
+  const tdCount=(n,l)=>`<div class="rounded-lg bg-gray-50 border border-gray-200 px-2 py-1.5"><p class="text-base font-extrabold tabular-nums">${(n||0).toLocaleString()}</p><p class="text-[10px] text-gray-600">${l}</p></div>`;
+  function tdictModal(msg){
+    modal(`<h2 class="font-extrabold text-lg mb-1">Arabic dictionary</h2>
+      <p class="text-[11px] text-gray-600 mb-2">Words in a description that are not in this dictionary are underlined in red. A word also counts as known when it is a known word plus a common prefix or ending (والتوريد, للمناقصة, مناقصاتها...).</p>
+      ${DICT.err?`<p class="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-2 mb-2">Run <code>supabase-step16-tender-words.sql</code> in the Supabase SQL Editor to keep added words and an uploaded dictionary on the server (now: ${DICT.ready?'this browser only':'not loaded'}). <span class="text-gray-500">${esc(DICT.err)}</span></p>`:''}
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">${tdCount(KDict.seed().length,'built-in tender words')}${tdCount(DICT.learned,'from published tenders')}${tdCount(DICT.up,'uploaded word list')}${tdCount(DICT.added.size,'added by you')}${tdCount(DICT.ignored.size,'ignored')}</div>
+      <div class="mt-3 space-y-2">
+        <p class="text-xs font-bold">Upload an Arabic word list <span class="font-normal text-gray-500">(plain text, one word per line, or a Hunspell <b>ar.dic</b> file; UTF-8, up to 12 MB)</span></p>
+        <div class="flex flex-wrap items-center gap-2"><input id="td-file" type="file" accept=".txt,.dic,.csv,.tsv,.list,text/plain" class="text-xs"><button data-k="tdupload" class="${btn1}"><i class="fas fa-upload"></i> Upload</button>${DICT.up?`<button data-k="tdclear" class="text-xs bg-red-50 text-red-700 hover:bg-red-100 font-bold px-3 py-2.5 rounded-xl">Remove uploaded list</button>`:''}</div>
+        <p id="td-msg" class="text-[11px] text-gray-600 min-h-[1rem]">${msg||''}</p>
+        ${DICT.added.size?`<p class="text-xs font-bold pt-1">Words you added <span class="font-normal text-gray-500">(click to remove)</span></p><div class="flex flex-wrap gap-1 max-h-32 overflow-auto" dir="rtl" lang="ar">${[...DICT.added].sort().slice(0,300).map(w=>`<button data-k="tdrm" data-w="${esc(w)}" class="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-red-50 hover:text-red-700 rounded px-1.5">${esc(w)} &times;</button>`).join('')}</div>`:''}
+      </div>
+      <div class="flex justify-end pt-3"><button data-k="mclose" class="${btn1}">Close</button></div>`);
+    $('k-modal-box').classList.add('!max-w-xl');
+  }
+  async function tdParse(file){
+    if(file.size>12*1048576)throw new Error('This file is over 12 MB.');
+    const txt=await file.text(),set=new Set();
+    for(const line of txt.split(/\r?\n/)){const w=line.trim().split(/[\/\s,;\t]/)[0];if(!w||/^\d+$/.test(w))continue;
+      const tk=KDict.tokens(w);if(tk.length===1&&tk[0].w===w&&tk[0].n.length>=2)set.add(tk[0].n)}
+    return [...set];
+  }
+  Object.assign(ACT,{
+    async tdict(){tdictModal(DICT.ready?'':'Loading...');if(!DICT.ready){await tbDictLoad();tdictModal()}},
+    tword(t){const w=t.dataset.w;DICT.cur=w;
+      const ta=document.querySelector('#tb-rows textarea[data-tc="subject"]:focus'),n=0;
+      modal(`<h2 class="font-extrabold text-lg mb-1">Unknown word</h2><p dir="rtl" lang="ar" class="text-2xl font-bold text-center my-3">${esc(w)}</p>
+        <p class="text-[11px] text-gray-600">This word is not in the Arabic dictionary. If it is spelled correctly, add it. Add = it is never underlined again. Ignore = same, but kept apart as "not a real dictionary word" (names, abbreviations). If it is a typing mistake, close this window and correct it in the description.</p>
+        <div class="flex flex-wrap justify-end gap-2 pt-3"><button data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button data-k="twordi" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Ignore</button><button data-k="tworda" class="${btn1}">Add to dictionary</button></div>`)},
+    async tworda(){const w=DICT.cur;closeM();await tbWordSave(w,'added');toast('Added to the dictionary')},
+    async twordi(){const w=DICT.cur;closeM();await tbWordSave(w,'ignored');toast('Ignored from now on')},
+    async tdrm(t){const n=t.dataset.w,r=await sb.from('tender_words').delete().eq('word',n);if(r.error)throw r.error;DICT.added.delete(n);DICT.loading=null;await tbDictLoad();tdictModal('Removed.')},
+    async tdupload(){const f=$('td-file')&&$('td-file').files[0],say=m=>{const e=$('td-msg');if(e)e.innerHTML=m};if(!f)return say('Choose a file first.');
+      if(DICT.err)return say('Run supabase-step16-tender-words.sql first (see the note above).');
+      try{say('Reading the file...');const words=await tdParse(f);if(words.length<50)throw new Error('Only '+words.length+' Arabic words were found. Is this the right file?');
+        const chunks=[];let cur=[],len=0;for(const w of words){cur.push(w);len+=w.length+1;if(len>=200000){chunks.push(cur.join(' '));cur=[];len=0}}if(cur.length)chunks.push(cur.join(' '));
+        say(`Saving ${words.length.toLocaleString()} words in ${chunks.length} part${chunks.length===1?'':'s'}...`);
+        const del=await sb.from('tender_dict_chunks').delete().gte('n',0);if(del.error)throw del.error;
+        for(let i=0;i<chunks.length;i+=5){const ins=await sb.from('tender_dict_chunks').insert(chunks.slice(i,i+5).map((words,k)=>({n:i+k,words})));if(ins.error)throw ins.error;say(`Saved ${Math.min(chunks.length,i+5)} of ${chunks.length} parts...`)}
+        DICT.loading=null;await tbDictLoad();tdictModal(`Done: ${words.length.toLocaleString()} words uploaded. Underlines are updated.`)}
+      catch(e){say('<span class="text-red-700 font-bold">'+esc(e.message)+'</span>')}},
+    async tdclear(){if(!confirm('Remove the uploaded word list? Your added words stay.'))return;const r=await sb.from('tender_dict_chunks').delete().gte('n',0);if(r.error)throw r.error;DICT.loading=null;await tbDictLoad();tdictModal('Removed.')}
+  });
+  document.addEventListener('input',e=>{const t=e.target;if(t&&t.matches&&t.matches('#tb-rows textarea[data-tc="subject"]')){clearTimeout(t._sp);t._sp=setTimeout(()=>tbSpellOne(t),200)}});
+  document.addEventListener('dblclick',e=>{const t=e.target;if(!t||!t.matches||!t.matches('#tb-rows textarea[data-tc="subject"]')||!DICT.ready)return;
+    const s=t.selectionStart,tk=KDict.tokens(t.value).find(k=>s>=k.i&&s<=k.i+k.w.length);if(tk&&!DICT.d.has(tk.w))ACT.tword({dataset:{w:tk.w}})});
+
   // ---- Tender notification update: tells subscribed users how many new tenders were added in their sectors ----
   let tBc={last:null,pending:null,err:false};
   const tWhen=iso=>new Date(iso).toLocaleString('en-GB',{timeZone:'Africa/Cairo',day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -2446,8 +2853,8 @@ const K=(()=>{
     if(last)q=q.gt('released_at',last);
     const c=await q;tBc={last,pending:c.error?null:(c.count||0),err:!!c.error};
   }
-  const tNav=()=>`<div class="flex flex-wrap items-center gap-2"><div class="flex gap-1.5">${[['images','Images','fa-camera'],['sector','By sector','fa-layer-group']].map(([k,l,i])=>`<button data-k="tmode" data-v="${k}" class="text-xs font-bold px-4 py-2 rounded-xl ${k===tView?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>
-    <div class="ml-auto flex flex-wrap items-center gap-2 justify-end"><span class="text-[11px] text-gray-500 text-right">${tBc.err?'Notifications are not set up yet':`${tBc.last?'Last update sent '+esc(tWhen(tBc.last)):'No update sent yet'}${tBc.pending!=null?` &middot; <b>${tBc.pending}</b> new tender${tBc.pending===1?'':'s'} since`:''}`}</span>
+  const tNav=()=>`<div class="flex flex-wrap items-center gap-2"><div class="flex gap-1.5">${[['table','Tenders table','fa-table'],['images','Newspaper images','fa-camera'],['sector','By sector','fa-layer-group']].map(([k,l,i])=>`<button data-k="tmode" data-v="${k}" class="text-xs font-bold px-3 py-1.5 rounded-lg ${k===tView?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>
+    <div class="ml-auto flex flex-wrap items-center gap-2 justify-end"><span class="text-[11px] text-gray-500 text-right ${tView==='table'?'hidden':''}">${tBc.err?'Notifications are not set up yet':`${tBc.last?'Last update sent '+esc(tWhen(tBc.last)):'No update sent yet'}${tBc.pending!=null?` &middot; <b>${tBc.pending}</b> new tender${tBc.pending===1?'':'s'} since`:''}`}</span>
     <button data-k="tnotify" class="${btn1}" title="Shows users a notification with the number of new tenders in their sectors"><i class="fas fa-bell"></i> Send tender notification update</button></div></div>`;
   function tDefaults(){
     if(TS.from)return;const d=new Date(today()+'T00:00:00Z'),y=d.getUTCFullYear(),m=d.getUTCMonth();
@@ -2618,7 +3025,9 @@ const K=(()=>{
       TR=null;main().innerHTML=LOADING;
       if(k==='sectors'){tView='sector';TS.status='approved';TS.by='publish_date';TS.from='2000-01-01';TS.to='2100-12-31';tOpen.add('_none');await loadSectorData();await loadSectorView();await tPipeLoad();paintTenders();return}
       tView='images';tStage=(tStage===k?'':k);await loadTenderImages();paintTenders()},
-    async tmode(t){tView=t.dataset.v;if(tView==='sector'){main().innerHTML=LOADING;await loadSectorData();await loadSectorView();await tPipeLoad()}else{TR=null}paintTenders()},
+    async tmode(t){tView=t.dataset.v;TR=null;main().innerHTML=LOADING;
+      if(tView==='sector'){await loadSectorData();await loadSectorView();await tPipeLoad()}else if(tView==='table')await loadTableView();else await loadTenderImages();
+      paintTenders()},
     async tclassify(){const r=await tClassify(trows);paintReview();toast(r.tried?`${r.hit} of ${r.tried} tender${r.tried===1?'':'s'} got suggested sectors. Please confirm them.`:'Every row already has a sector.',r.tried?r.hit>0:true)},
     async tclassifyall(){if(!tSV.filter(r=>!(r.sector_ids||[]).length).length)return toast('Nothing to classify in this period.',false);
       const r=await tClassify(tSV);paintSectorView();toast(`${r.hit} of ${r.tried} tender${r.tried===1?'':'s'} got suggested sectors. Please confirm them.`,r.hit>0)},
@@ -2720,7 +3129,8 @@ const K=(()=>{
       else if(kind==='dir'){dF={q:v||'',status:'all',sector:'',type:''};showPane('directory')}
       else if(kind==='tender'){if(!id)return toast('This tender has no image attached.',false);TR=id;tView='images';tStage='';showPane('tenders')}}
   });
-  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&me){e.preventDefault();ACT.gsearch()}});
+  const SEARCH_ON=false; // global Search is hidden for now: set to true and un-comment the Search button in the top bar
+  document.addEventListener('keydown',e=>{if(SEARCH_ON&&(e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&me){e.preventDefault();ACT.gsearch()}});
   document.addEventListener('click',async e=>{
     const t=e.target.closest('[data-k]');if(!t||!sb)return;const k=t.dataset.k,n=t.dataset.n,em=t.dataset.e;
     try{

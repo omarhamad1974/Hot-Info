@@ -233,3 +233,9 @@ To remove an admin: `delete from public.admins where lower(email) = lower('colle
 
 ## Tenders page and notification update (step 11)
 See README, "Tenders page for users and the notification update". Order of work for each batch: upload the images, read and review the rows, approve them, classify and **confirm the sectors**, then press **Send tender notification update** (Tender images tab).
+
+
+## Tenders table (admin > Tenders)
+1. **Type or read.** Fill the cells like a Word table (Tab = next cell, Enter = down, Ctrl+Enter = new row). Entity comes from your entity list, dates from the calendar, governorate from a list. Or press **قراءة من صورة** on the row, choose or take a photo, and the description is filled in for you.
+2. **Check.** Words underlined in red are not in the Arabic dictionary: click one to add or ignore it. Use the **Dictionary** button to upload a big Arabic word list once.
+3. **Publish.** Choose the sector, then press the circle. The front page shows the first 50 words, the entity and the date; **More** opens the whole tender.

@@ -144,3 +144,11 @@ Run `supabase-step11-tender-notifications.sql` once in the Supabase SQL Editor (
 
 ## Update 2026-10-31
 See `FIX-STEPS.md`. The AI is now Groq (free) first, Gemini only as a backup. Secrets: `GROQ_API_KEY`, optional `GROQ_MODEL`, `GROQ_VISION_MODEL`, `GEMINI_API_KEY`.
+
+
+## Update 2026-11-02: image effects
+See `IMAGE-EFFECTS-STEPS.md`. Every carousel, news, team and section photo can get a color overlay (matt or gradient, brand colors or any color, adjustable intensity) and an SVG shape (17 built-in shapes or your own uploaded SVG). Files: `theme.js`, `admin.html`, `index.html`, `about.html`, `scripts/validate.js`.
+
+
+## Update 2026-11-03: Tenders tab (phase T1)
+See `TENDERS-PLAN.md` (all phases) . The top-bar tab **Tender images** is now **Tenders** and opens a spreadsheet-like table for typing tenders in Arabic: entity (type-ahead from the Entities list), governorate (list), publishing and session dates (calendar), description, booklet price, bid bond, sector and a Publish circle. The older screens are next to it: **Newspaper images** and **By sector**. Run `supabase-step15-tenders-table.sql` once (adds the governorate column). Files: `admin.html`, `supabase-step15-tenders-table.sql`.

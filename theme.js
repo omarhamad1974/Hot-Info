@@ -1,7 +1,8 @@
 /* KHIP theme: site colours, section backgrounds and section width.
    Loaded in <head> on every public page. The values come from "theme" in app-data.json
    (edit them in admin.html, tabs Colors and Backgrounds). With no "theme" block the defaults
-   below apply, and they are the colours the site always used. */
+   below apply, and they are the colours the site always used.
+   It also holds KFX, the image effects (colour overlay and SVG mask) used by every page that shows a photo. */
 (function(){
   const CACHE='khip-data-v3';
   // Default palette = the colours the site used before the palette existed.
@@ -76,6 +77,75 @@
     return null;
   }
   const imgUrl=u=>/^(https?:\/\/|\.\/|\/|data:image)/.test(u)?u:'./assets/'+u;
+  /* ---------- Image effects: colour overlay + SVG mask ----------
+     Saved beside any image as "<field>Fx" (a section background: "imageFx"):
+       {ov:{type:'matt'|'gradient', color, opacity, color2, opacity2, dir}, mask:{shape, fit, invert}}
+     colours are brand:N / role:x / custom:id / #hex; opacity is 0 to 100;
+     shape is one of MASKS below, or "file:<name>.svg" (an SVG uploaded to assets/).
+     Nothing is changed for an image that has no effect: it keeps its original markup. */
+  // [key, label, default fit, svg shapes, viewBox]. Only the shape's opaque area shows the photo.
+  const MASKS=[
+    ['circle','Circle','contain','<circle cx="50" cy="50" r="50"/>'],
+    ['squircle','Soft square','contain','<path d="M50 0C88 0 100 12 100 50S88 100 50 100 0 88 0 50 12 0 50 0Z"/>'],
+    ['hexagon','Hexagon','contain','<path d="M25 4h50l25 46-25 46H25L0 50z"/>'],
+    ['blob1','Blob 1','contain','<path d="M91.5 47.4C92.3 56.3 88 72.8 80.9 79.1C73.8 85.3 58.8 83.8 48.9 84.9C39.1 86 27.7 91.3 21.7 85.9C15.6 80.4 12.2 63.4 12.8 52.2C13.3 40.9 18.2 25.2 24.9 18.1C31.7 11 44.7 8.3 53.3 9.5C61.9 10.7 70 19 76.4 25.3C82.7 31.7 90.8 38.4 91.5 47.4Z"/>'],
+    ['blob2','Blob 2','contain','<path d="M91.8 49.5C91.8 58.6 82.6 74.3 75.6 81.4C68.6 88.5 58.7 92.3 49.9 92.2C41.2 92.2 30.7 88.5 23.2 81.2C15.7 74 5.4 57.8 4.9 48.6C4.5 39.3 13.7 33 20.5 25.7C27.2 18.4 36.4 4.7 45.6 4.9C54.7 5 67.9 19.3 75.6 26.7C83.3 34.1 91.8 40.4 91.8 49.5Z"/>'],
+    ['blob3','Blob 3','contain','<path d="M93.8 51.6C93.4 60.4 79.5 71.4 73 78.7C66.5 86 63 95.3 54.7 95.3C46.5 95.3 30.3 86.8 23.4 78.8C16.5 70.8 13.4 57.3 13.5 47.2C13.6 37.2 18.8 25.7 24.1 18.4C29.3 11.1 36.7 2.2 45.2 3.4C53.7 4.6 67.2 17.6 75.3 25.6C83.4 33.6 94.2 42.7 93.8 51.6Z"/>'],
+    ['arch','Arch','stretch','<path d="M0 100V50C0 22 22 0 50 0S100 22 100 50V100Z"/>'],
+    ['leaf','Leaf','stretch','<path d="M0 0H62C84 0 100 16 100 38V100H38C16 100 0 84 0 62Z"/>'],
+    ['cut','Cut corners','stretch','<path d="M10 0H90L100 14V86L90 100H10L0 86V14Z"/>'],
+    ['wave-b','Wave (bottom)','stretch','<path d="M0 0H100V86C88 96 76 96 64 88S40 78 28 86S8 96 0 90Z"/>'],
+    ['wave-t','Wave (top)','stretch','<path transform="translate(0 100) scale(1 -1)" d="M0 0H100V86C88 96 76 96 64 88S40 78 28 86S8 96 0 90Z"/>'],
+    ['curve-out','Curve out (bottom)','stretch','<path d="M0 0H100V78Q50 108 0 78Z"/>'],
+    ['curve-in','Curve in (bottom)','stretch','<path d="M0 0H100V100Q50 70 0 100Z"/>'],
+    ['diag-b','Diagonal (bottom)','stretch','<path d="M0 0H100V84L0 100Z"/>'],
+    ['diag-t','Diagonal (top)','stretch','<path d="M0 16L100 0V100H0Z"/>'],
+    ['slant','Slanted sides','stretch','<path d="M10 0H100L90 100H0Z"/>']
+  ];
+  const MASK_BY={};MASKS.forEach(m=>{MASK_BY[m[0]]=m});
+  const DIRS=[['to bottom','Top to bottom'],['to top','Bottom to top'],['to right','Left to right'],['to left','Right to left'],['to bottom right','Top-left to bottom-right'],['to bottom left','Top-right to bottom-left'],['to top right','Bottom-left to top-right'],['to top left','Bottom-right to top-left'],['radial','Center to edges']];
+  const clamp=(v,a,b)=>Math.min(b,Math.max(a,v)),num=(v,d)=>{v=parseFloat(v);return isFinite(v)?v:d};
+  const rgba=(h,a)=>{const [r,g,b]=parts(h);return `rgba(${r},${g},${b},${+a.toFixed(3)})`};
+  const encSvg=t=>'data:image/svg+xml,'+encodeURIComponent(t).replace(/'/g,'%27').replace(/\(/g,'%28').replace(/\)/g,'%29');
+  const svgOf=m=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${m[4]||'0 0 100 100'}" preserveAspectRatio="none">${m[3]}</svg>`;
+  let fileUrl=n=>'./assets/'+n;                      // the admin page replaces this to preview files not yet published
+  // overlay -> {css (a background value), a (average opacity 0 to 1), c (main colour)} or null when there is no overlay
+  function ovInfo(ov,T){
+    if(!ov||(ov.type!=='matt'&&ov.type!=='gradient'))return null;
+    const c1=resolve(ov.color,T)||palette(T).ink,a1=clamp(num(ov.opacity,40),0,100)/100;
+    if(ov.type==='matt')return a1>0?{css:`linear-gradient(${rgba(c1,a1)},${rgba(c1,a1)})`,a:a1,c:c1}:null;
+    const c2=resolve(ov.color2,T)||c1,a2=clamp(num(ov.opacity2,0),0,100)/100;
+    if(a1<=0&&a2<=0)return null;
+    const d=DIRS.some(x=>x[0]===ov.dir)?ov.dir:'to bottom',g=rgba(c1,a1)+','+rgba(c2,a2);
+    return {css:d==='radial'?`radial-gradient(circle at center,${g})`:`linear-gradient(${d},${g})`,a:(a1+a2)/2,c:a1>=a2?c1:c2};
+  }
+  // mask -> CSS declarations (empty when there is no mask)
+  function maskCss(m){
+    if(!m||!m.shape)return '';
+    const sh=String(m.shape),p=MASK_BY[sh];let u='';
+    if(p)u=encSvg(svgOf(p));
+    else if(sh.indexOf('file:')===0){const n=sh.slice(5);if(!/^[\w.\-]+\.svg$/i.test(n))return '';u=String(fileUrl(n)).replace(/'/g,'%27')}
+    else return '';
+    const fit={contain:'contain',cover:'cover',stretch:'100% 100%'}[m.fit]||{contain:'contain',cover:'cover',stretch:'100% 100%'}[p?p[2]:'contain'];
+    let im=`url('${u}')`,sz=fit,ps='center',rp='no-repeat';
+    if(m.invert){im+=',linear-gradient(#000,#000)';sz+=',100% 100%';ps+=',center';rp+=',no-repeat'}   // the shape is cut out instead
+    return `-webkit-mask-image:${im};mask-image:${im};-webkit-mask-size:${sz};mask-size:${sz};-webkit-mask-position:${ps};mask-position:${ps};-webkit-mask-repeat:${rp};mask-repeat:${rp};`+(m.invert?'-webkit-mask-composite:xor;mask-composite:exclude;':'');
+  }
+  // One <img>. cls = the classes the plain image had (size, margins, rounding, object-fit, opacity).
+  // With no effect the result is exactly the old <img>; with an effect it is a wrapper that holds the image and the overlay.
+  function fxImg(o){
+    const fx=o.fx||{},oi=ovInfo(fx.ov,o.T),mk=maskCss(fx.mask),cls=String(o.cls||''),at=o.attrs||'';
+    if(!oi&&!mk)return `<img src="${o.src}" ${at} class="${cls}">`;
+    const tk=cls.split(/\s+/).filter(Boolean),onImg=/^(?:[\w-]+:)*(?:opacity-|object-)/,round=/^(?:[\w-]+:)*rounded/;
+    const wrap=tk.filter(x=>!onImg.test(x)&&!(mk&&round.test(x))).join(' '),inner=tk.filter(x=>onImg.test(x)).join(' ');
+    return `<span class="kfx ${wrap}"${mk?` style="${mk}"`:''}><img src="${o.src}" ${at} class="${inner}">${oi?`<span class="kfx-ov" style="background:${oi.css}"></span>`:''}</span>`;
+  }
+  (function(){
+    if(document.getElementById('kfx-css'))return;
+    const st=document.createElement('style');st.id='kfx-css';
+    st.textContent='.kfx{position:relative;display:block;overflow:hidden}.kfx>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}.kfx-ov{position:absolute;inset:0;display:block;pointer-events:none}.kfx-sec{position:relative;isolation:isolate}.kfx-bg{position:absolute;inset:0;z-index:-1;pointer-events:none}';
+    (document.head||document.documentElement).appendChild(st);
+  })();
   function vars(T){
     const c=palette(T),r=document.documentElement.style;
     for(const k in c)r.setProperty(vname(k),parts(c[k]).join(' '));
@@ -87,7 +157,8 @@
     const S=(T||{}).sections||{},ink=palette(T).ink;
     document.querySelectorAll('[data-sec]').forEach(el=>{
       ['background-color','background-image','background-size','background-position','background-repeat'].forEach(p=>el.style.removeProperty(p));
-      el.classList.remove('sec-light');
+      el.classList.remove('sec-light','kfx-sec');
+      const oldLayer=el.querySelector(':scope>.kfx-bg');if(oldLayer)oldLayer.remove();
       const s0=S[el.dataset.sec]||{},pw=v=>{v=parseFloat(v);return isFinite(v)?Math.min(100,Math.max(40,v))/100:null};
       el.toggleAttribute('data-off',s0.hidden===true);                       // hidden from the admin page
       if(el.id)document.querySelectorAll('a[href="#'+el.id+'"],[data-go="'+el.id+'"]').forEach(a=>{a.toggleAttribute('data-off',s0.hidden===true)});
@@ -102,11 +173,17 @@
         el.style.backgroundColor=c;light=tone==='light'||(tone==='auto'&&lum(c)<.4);
       }else{
         if(!s.image)return;
-        const ov=Math.min(85,Math.max(0,parseFloat(s.overlay)||0))/100,layers=[];
-        if(ov>0){const [r,g,b]=parts(ink);layers.push(`linear-gradient(rgba(${r},${g},${b},${ov}),rgba(${r},${g},${b},${ov}))`)}
+        const fx=s.imageFx||{},oi=ovInfo(fx.ov,T),mk=maskCss(fx.mask),lg=fx.ov?0:Math.min(85,Math.max(0,parseFloat(s.overlay)||0))/100,layers=[];
+        if(oi)layers.push(oi.css);                                            // the overlay chosen in the admin (matt or gradient)
+        else if(lg>0){const [r,g,b]=parts(ink);layers.push(`linear-gradient(rgba(${r},${g},${b},${lg}),rgba(${r},${g},${b},${lg}))`)}   // older "darken" slider
         layers.push(`url("${imgUrl(String(s.image)).replace(/"/g,'%22')}")`);
-        el.style.backgroundImage=layers.join(',');el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.style.backgroundRepeat='no-repeat';
-        light=tone==='light'||(tone==='auto'&&ov>=.4);
+        const bg=layers.join(',');
+        if(mk){                                                               // a mask must not hide the text: the picture goes on its own layer behind the content
+          const L=document.createElement('div');L.className='kfx-bg';L.setAttribute('aria-hidden','true');
+          L.style.cssText=`background-image:${bg};background-size:cover;background-position:center;background-repeat:no-repeat;${mk}`;
+          el.insertBefore(L,el.firstChild);el.classList.add('kfx-sec');
+        }else{el.style.backgroundImage=bg;el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.style.backgroundRepeat='no-repeat'}
+        light=tone==='light'||(tone==='auto'&&(oi?oi.a>=.4&&lum(oi.c)<.45:lg>=.4));
         if(light)el.style.backgroundColor=ink;
       }
       el.classList.toggle('sec-light',light);
@@ -145,6 +222,7 @@
   function apply(D){const T=(D&&D.theme)||{};vars(T);paint(T);fonts(T)}
   const NOWIDTH=['patents-contact','trademarks-contact','translation-contact'];     // blocks inside another section: no width of their own
   window.KTHEME={DEFAULTS,ROLES,SECTIONS,HEX,resolve,lum,palette,apply,BRAND_DEFAULTS,brandPal,FONTS,FONT_KEYS,cssName,NOWIDTH};
+  window.KFX={MASKS,DIRS,img:fxImg,ovInfo,maskCss,svgOf,encSvg,setFileUrl:f=>{fileUrl=f}};
   // The admin page uses the definitions only; it must not recolour itself.
   if(/admin\.html$/.test(location.pathname))return;
   let cached=null;try{cached=JSON.parse(localStorage.getItem(CACHE))}catch{}

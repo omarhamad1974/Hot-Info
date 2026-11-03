@@ -94,6 +94,8 @@ const ICONS=[[/patent/i,'ph-lightbulb'],[/trade\s?mark/i,'ph-seal-check'],[/tran
 const icon=x=>/^ph-/.test(x.icon||'')?esc(x.icon.replace(/^ph-light\s*/,'')):(ICONS.find(([r])=>r.test(x.title||''))||[0,'ph-seal-check'])[1];
 const show=(id,on)=>$(id).classList.toggle('hidden',!on);
 const imgErr='onerror="this.onerror=null;this.src=FALLBACK_IMG"';
+// A picture with its optional colour overlay and SVG mask (set in the admin, see theme.js > KFX). With no effect it is a plain <img>.
+const fxImg=(x,cls,lazy)=>KFX.img({fx:x.imageFx,T:D.theme,src:img(x.image),attrs:`${lazy?'loading="lazy" ':''}${imgErr} alt=""`,cls});
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let D={},hot=[],hotLoaded=false,slide=0,timer=null,lastFocus=null;
 
@@ -116,7 +118,7 @@ function render(){
   carousel(D.carousel||[]);
   hotInit();
   list('services',D.services,(x,i)=>`<div class="fu" style="--d:${(i%3)*.12}s"><div class="card h-full p-5 md:p-7 flex md:flex-col gap-4 md:gap-5 items-start"><div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ${icon(x)} text-2xl md:text-3xl"></i></div><div class="flex flex-col flex-1"><h3 class="font-display text-2xl font-semibold text-title">${esc(x.title)}</h3><p class="text-sm leading-relaxed mt-1.5 line-clamp-5 md:line-clamp-3">${KRich.plain(x.description)}</p><button data-act="service" data-i="${i}" class="mt-4 self-start text-sm border border-ink/30 hover:bg-ink hover:text-white px-6 py-1.5 rounded-full transition">${KLang.t('more')}</button></div></div></div>`);
-  list('news',D.news,x=>`<button data-act="news" data-id="${esc(x.id)}" class="ncard card w-[17rem] sm:w-80 text-start overflow-hidden"><img loading="lazy" src="${img(x.image)}" ${imgErr} alt="" class="w-full h-40 object-cover"><div class="p-5"><span class="cat-tag">${esc(cat(x))}</span>${x.date?`<span class="text-xs text-stone-500 ms-2">${esc(x.date)}</span>`:''}<h3 class="font-display text-xl font-semibold text-title leading-snug line-clamp-2 mt-1.5">${esc(x.title)}</h3><p class="text-sm mt-2 line-clamp-3">${KRich.plain(x.excerpt)}</p></div></button>`);
+  list('news',D.news,x=>`<button data-act="news" data-id="${esc(x.id)}" class="ncard card w-[17rem] sm:w-80 text-start overflow-hidden">${fxImg(x,'w-full h-40 object-cover',1)}<div class="p-5"><span class="cat-tag">${esc(cat(x))}</span>${x.date?`<span class="text-xs text-stone-500 ms-2">${esc(x.date)}</span>`:''}<h3 class="font-display text-xl font-semibold text-title leading-snug line-clamp-2 mt-1.5">${esc(x.title)}</h3><p class="text-sm mt-2 line-clamp-3">${KRich.plain(x.excerpt)}</p></div></button>`);
   news();
   list('testimonials',D.testimonials,(x,i)=>`<div class="tcard${i?'':' on'} text-center flex flex-col items-center justify-center"><p class="font-display text-lg md:text-xl lg:text-2xl leading-snug text-ink">${esc(x.text)}</p><h4 class="mt-5 font-medium text-title">${esc(x.name)}</h4><span class="text-sm text-stone-500">${esc(x.role)}</span></div>`);
   auto($('news-list'));
@@ -184,7 +186,7 @@ function setN(i){
 function carousel(slides){
   clearInterval(timer);slide=0;const c=$('carousel');
   c.parentElement.classList.toggle('hidden',!slides.length);
-  c.innerHTML=slides.map((s,i)=>`<div class="slide absolute inset-0 ${i?'':'on'}"><img src="${img(s.image)}" ${imgErr} alt="" class="w-full h-full object-cover opacity-80"><div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent p-6 md:p-12 flex flex-col justify-end text-white"><h2 class="font-display text-3xl md:text-5xl font-medium leading-tight max-w-2xl">${esc(s.title)}</h2><p class="text-sm md:text-base text-stone-200 mt-2 max-w-xl">${esc(s.subtitle)}</p></div></div>`).join('');
+  c.innerHTML=slides.map((s,i)=>`<div class="slide absolute inset-0 ${i?'':'on'}">${fxImg(s,'w-full h-full object-cover opacity-80')}<div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent p-6 md:p-12 flex flex-col justify-end text-white"><h2 class="font-display text-3xl md:text-5xl font-medium leading-tight max-w-2xl">${esc(s.title)}</h2><p class="text-sm md:text-base text-stone-200 mt-2 max-w-xl">${esc(s.subtitle)}</p></div></div>`).join('');
   if(slides.length>1){
     const go=()=>{clearInterval(timer);if(!REDUCED)timer=setInterval(()=>setSlide((slide+1)%slides.length),10000)};go();
     c.onmouseenter=()=>clearInterval(timer);c.onmouseleave=go;
@@ -199,17 +201,38 @@ function setSlide(i){
 
 // HOT News: sectors that have active tenders (description + publishing entity only; see supabase-step13-hot-news.sql)
 const hotName=x=>KLang.rtl&&x.name_ar?x.name_ar:x.name;
+// Front-page tender preview: at most 50 words, the publishing entity and the publishing date; "More" opens the whole tender (hot_tender)
+const hotWords=(s,n=50)=>{const w=String(s||'').trim().split(/\s+/);return w.length>n?w.slice(0,n).join(' ')+'\u2026':w.join(' ')};
+const hotDate=d=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(d||''));if(!m)return String(d||'');try{return new Date(Date.UTC(+m[1],+m[2]-1,+m[3])).toLocaleDateString(KLang.rtl?'ar-EG':'en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})}catch{return m[0]}};
+function hotView(t,full){
+  const row=(ic,l,v)=>v?`<div class="flex items-start gap-2 text-sm"><i class="ph-light ${ic} text-lg text-brand-600 flex-shrink-0 mt-0.5"></i><div class="min-w-0"><p class="text-xs text-stone-500">${esc(KLang.t(l))}</p><p dir="auto" class="font-semibold">${esc(v)}</p></div></div>`:'';
+  return `<h3 id="m-title" dir="auto" class="font-display text-2xl md:text-3xl font-semibold text-title pe-10 leading-tight">${esc(t.entity||KLang.t('hot_entity'))}</h3>`
+    +`<div class="grid sm:grid-cols-2 gap-3">${row('ph-calendar-blank','hot_pub',t.publish_date?hotDate(t.publish_date):'')}${row('ph-map-pin','hot_gov',t.governorate)}${row('ph-gavel','hot_session',t.session_date?hotDate(t.session_date):'')}</div>`
+    +`<p dir="auto" class="leading-relaxed whitespace-pre-line">${esc(t.subject||'')}</p>${full?'':'<p class="text-xs text-stone-400">\u2026</p>'}`
+    +`<p class="text-xs text-stone-500">${esc(KLang.t('hot_sub_only'))}</p><a href="tenders.html" class="inline-flex items-center gap-2 bg-ink hover:bg-stone-800 text-white text-sm px-6 py-2.5 rounded-full transition self-start"><i class="ph-light ph-gavel"></i>${esc(KLang.t('hot_cta'))}</a>`;
+}
+async function openTender(id){
+  const t=hot.flatMap(x=>x.tenders||[]).find(x=>String(x.id)===String(id));if(!t)return;
+  openModal(hotView(t,false));
+  try{
+    const C=window.KHIP_SUPABASE,r=await fetch(C.url+'/rest/v1/rpc/hot_tender',{method:'POST',headers:{apikey:C.anonKey,Authorization:'Bearer '+C.anonKey,'Content-Type':'application/json'},body:JSON.stringify({p_id:id})});
+    if(!r.ok)throw new Error('HTTP '+r.status);const f=await r.json();
+    if(!f){$('m-body').innerHTML=`<p class="text-sm">${esc(KLang.t('hot_gone'))}</p>`;return}
+    $('m-body').innerHTML=hotView(f,true);
+  }catch(e){console.warn('Tender detail not loaded',e);$('m-body').innerHTML=hotView(t,true)}
+}
+
 async function hotInit(){
   if(hotLoaded){hotPaint();return}
   hotLoaded=true;
-  try{const c=JSON.parse(sessionStorage.getItem('khip-hot-v1'));if(Array.isArray(c)){hot=c;hotPaint()}}catch{}
+  try{const c=JSON.parse(sessionStorage.getItem('khip-hot-v2'));if(Array.isArray(c)){hot=c;hotPaint()}}catch{}
   try{
     if(!window.KHIP_SUPABASE)await new Promise((ok,no)=>{const e=document.createElement('script');e.src='supabase-config.js';e.onload=ok;e.onerror=no;document.head.appendChild(e)});
     const C=window.KHIP_SUPABASE;if(!C||/YOUR-/.test(C.url||''))return;
     const per=Math.min(12,Math.max(1,parseInt((D.hot||{}).perSector)||6));
     const r=await fetch(C.url+'/rest/v1/rpc/hot_news',{method:'POST',headers:{apikey:C.anonKey,Authorization:'Bearer '+C.anonKey,'Content-Type':'application/json'},body:JSON.stringify({p_per:per})});
     if(!r.ok)throw new Error('HTTP '+r.status);
-    hot=await r.json();try{sessionStorage.setItem('khip-hot-v1',JSON.stringify(hot))}catch{}
+    hot=await r.json();try{sessionStorage.setItem('khip-hot-v2',JSON.stringify(hot))}catch{}
   }catch(e){console.warn('HOT News not loaded',e)}
   hotPaint();
 }
@@ -228,7 +251,7 @@ function pick(i){
   const c=$('jur-card');c.style.transition='opacity .3s ease,transform .3s ease';c.style.opacity=0;c.style.transform='translateX('+(-24*(KLang.rtl?-1:1))+'px)';
   setTimeout(()=>{
     c.innerHTML=`<div class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ph-fire text-2xl"></i></span><div class="min-w-0"><h3 class="font-display text-[1.4rem] leading-tight font-semibold text-title">${esc(hotName(j))}</h3><p class="text-xs text-stone-500">${esc(j.count===1?KLang.t('hot_n1'):KLang.t('hot_n',{x:j.count}))}</p></div></div>`
-      +`<ul class="mt-4 divide-y divide-stone-200">${j.tenders.map(t=>`<li class="py-3"><p dir="auto" class="text-sm md:text-base leading-relaxed text-ink line-clamp-3 md:line-clamp-4">${esc(t.subject)}</p>${t.entity?`<p dir="auto" class="mt-1 text-xs text-stone-500 flex items-center gap-1.5"><i class="ph-light ph-buildings flex-shrink-0"></i><span class="min-w-0">${esc(t.entity)}</span></p>`:''}</li>`).join('')}</ul>`
+      +`<ul class="mt-4 divide-y divide-stone-200">${j.tenders.map(t=>`<li class="py-3"><p dir="auto" class="text-sm md:text-base leading-relaxed text-ink">${esc(hotWords(t.subject))}</p><div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500">${t.entity?`<span dir="auto" class="flex items-center gap-1.5 min-w-0"><i class="ph-light ph-buildings flex-shrink-0"></i><span class="min-w-0">${esc(t.entity)}</span></span>`:''}${t.publish_date?`<span class="flex items-center gap-1.5"><i class="ph-light ph-calendar-blank flex-shrink-0"></i>${esc(hotDate(t.publish_date))}</span>`:''}<button data-act="tender" data-id="${esc(t.id)}" class="ms-auto inline-flex items-center gap-1 text-brand-600 hover:underline font-semibold">${esc(KLang.t('hot_more'))}<i class="ph-light ${KLang.rtl?'ph-arrow-left':'ph-arrow-right'}"></i></button></div></li>`).join('')}</ul>`
       +`<div class="mt-5 flex flex-wrap items-center gap-3"><a href="tenders.html" class="inline-flex items-center gap-2 bg-ink hover:bg-stone-800 text-white text-sm px-6 py-2.5 rounded-full transition"><i class="ph-light ph-gavel"></i>${esc(KLang.t('hot_cta'))}</a><span class="text-xs text-stone-500">${esc(KLang.t('hot_note'))}</span></div>`;
     c.style.transition='none';c.style.transform='translateX('+(24*(KLang.rtl?-1:1))+'px)';void c.offsetWidth;
     c.style.minHeight=Math.max(parseFloat(c.style.minHeight)||0,c.scrollHeight)+'px';c.style.transition='opacity .6s ease,transform .7s cubic-bezier(.16,1,.3,1)';c.style.opacity=1;c.style.transform='none';
@@ -255,7 +278,7 @@ function closeModal(){
 function openNews(id){
   const a=(D.news||[]).find(n=>String(n.id)===String(id));if(!a)return;
   history.replaceState(null,'','#news-'+a.id);
-  openModal(`<h3 id="m-title" class="font-display text-3xl font-semibold text-title pe-10 leading-tight">${esc(a.title)}</h3><div><span class="cat-tag">${esc(cat(a))}</span>${a.date?`<span class="text-xs text-stone-500 ms-2">${esc(a.date)}</span>`:''}</div><img src="${img(a.image)}" ${imgErr} alt="" class="w-full h-52 md:h-72 rounded-2xl object-cover"><div class="leading-relaxed">${KRich.rich(a.text||a.excerpt)}</div><button data-act="share" data-id="${esc(a.id)}" class="text-sm bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-full transition"><i class="ph-light ph-link"></i> ${KLang.t('copy_link')}</button>${related(a)}`);
+  openModal(`<h3 id="m-title" class="font-display text-3xl font-semibold text-title pe-10 leading-tight">${esc(a.title)}</h3><div><span class="cat-tag">${esc(cat(a))}</span>${a.date?`<span class="text-xs text-stone-500 ms-2">${esc(a.date)}</span>`:''}</div>${fxImg(a,'w-full h-52 md:h-72 rounded-2xl object-cover')}<div class="leading-relaxed">${KRich.rich(a.text||a.excerpt)}</div><button data-act="share" data-id="${esc(a.id)}" class="text-sm bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-full transition"><i class="ph-light ph-link"></i> ${KLang.t('copy_link')}</button>${related(a)}`);
   relStart();
 }
 // Related news: same category, shown under the article, slides by itself every 5 seconds
@@ -263,7 +286,7 @@ const cat=x=>String(x.category||'').trim()||KLang.t('general');
 function related(a){
   const r=(D.news||[]).filter(n=>String(n.id)!==String(a.id)&&cat(n)===cat(a));
   if(!r.length)return '';
-  return `<div id="rel" class="border-t border-stone-200 pt-5"><h4 class="font-display text-2xl font-semibold text-title mb-3">${KLang.t('related')}</h4><div id="rel-track" class="rel-track">${r.map(n=>`<button data-act="news" data-id="${esc(n.id)}" class="rel-card card text-start overflow-hidden"><img loading="lazy" src="${img(n.image)}" ${imgErr} alt="" class="w-full h-28 object-cover"><div class="p-3"><h5 class="font-display text-lg font-semibold text-title leading-snug line-clamp-2">${esc(n.title)}</h5>${n.date?`<span class="text-xs text-stone-500">${esc(n.date)}</span>`:''}</div></button>`).join('')}</div></div>`;
+  return `<div id="rel" class="border-t border-stone-200 pt-5"><h4 class="font-display text-2xl font-semibold text-title mb-3">${KLang.t('related')}</h4><div id="rel-track" class="rel-track">${r.map(n=>`<button data-act="news" data-id="${esc(n.id)}" class="rel-card card text-start overflow-hidden">${fxImg(n,'w-full h-28 object-cover',1)}<div class="p-3"><h5 class="font-display text-lg font-semibold text-title leading-snug line-clamp-2">${esc(n.title)}</h5>${n.date?`<span class="text-xs text-stone-500">${esc(n.date)}</span>`:''}</div></button>`).join('')}</div></div>`;
 }
 let relT=0,relHold=false;
 function relStart(){
@@ -287,7 +310,7 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('[data-act]');if(!t)return;
   const {act,i,id,q}=t.dataset;
   if(act==='close'){if(e.target===t||t.tagName==='BUTTON')closeModal()}
-  else if(act==='jur')pick(+i);else if(act==='news')openNews(id);
+  else if(act==='jur')pick(+i);else if(act==='news')openNews(id);else if(act==='tender')openTender(id);
   else if(act==='service')openService(+i);else if(act==='tslide')setT(+i);else if(act==='nslide')setN(+i);else if(act==='inquire')KHIP.wa(KLang.t('wa_service',{x:q}));
   else if(act==='retry')load();
   else if(act==='share'){const u=location.origin+location.pathname+'#news-'+id;(navigator.share?navigator.share({url:u}):navigator.clipboard.writeText(u)).then(()=>t.textContent=KLang.t('link_copied')).catch(()=>{})}

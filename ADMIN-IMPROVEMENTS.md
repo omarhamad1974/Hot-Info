@@ -17,6 +17,8 @@ Keep this file. If a session ends, give it (with the zip) to Claude and say "con
 | 11 | Search across everything | DONE (this zip) |
 | 12 | 30-day bin for deletes, Excel export buttons | Excel export DONE (this zip); bin dropped (not wanted) |
 | 13 | One-line hint per tab | DONE (this zip) |
+| 17 | Tenders tab: spreadsheet-like table for typing Arabic tenders (phases T1 to T5, see TENDERS-PLAN.md) | T1 DONE (build 03-Nov-a) |
+| 16 | Image effects: color overlay (matt or gradient) and SVG shape on carousel, news, team and section photos | DONE (this zip, build 02-Nov-a, see IMAGE-EFFECTS-STEPS.md) |
 
 ## 1. The counters (Tenders, Images and By sector screens)
 Five boxes under the Tenders buttons, left to right = the order of the work:
@@ -95,3 +97,10 @@ New **Search** button in the dark top bar (or press **Ctrl+K**). Type 2 or more 
 - **Tender images**: newspaper name. Click = opens its review screen.
 - **Directory**: name, Arabic name, city, email, WhatsApp. Click = opens the Directory tab filtered to it.
 Users are searched among the users already loaded; the rest are searched in the database (up to 8 per group). No SQL to run. Only admin.html changed. Build 01-Nov-k.
+
+## 16. Tenders redesign, phases T0, T2, T3, T4 (see TENDERS-PLAN.md)
+- Search hidden for now; Tenders table is full width and compact; the newspaper-image form fits on fewer lines.
+- Each table row: **قراءة من صورة** (choose or take a photo, text goes into the description), a picture button to see the source picture.
+- Unknown Arabic words are underlined; **Dictionary** button (upload a word list, see counts, remove added words).
+- Front page: 50-word preview + entity + date + **More**.
+SQL to run: `supabase-step16-tender-words.sql`, `supabase-step17-hot-news-more.sql`. Files: admin.html, index.html, lang.js, tender-dict.js. Build 03-Nov-b.
