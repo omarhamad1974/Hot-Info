@@ -420,7 +420,7 @@
           },
           "mask": {
             "shape": "leaf",
-            "fit": "stretch"
+            "fit": "cover"
           }
         }
       }
