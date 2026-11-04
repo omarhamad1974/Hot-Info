@@ -416,11 +416,11 @@
           "ov": {
             "type": "matt",
             "color": "#1760de",
-            "opacity": 70
+            "opacity": 90
           },
           "mask": {
-            "shape": "leaf",
-            "fit": "cover"
+            "shape": "wave-b",
+            "fit": "contain"
           }
         }
       }
