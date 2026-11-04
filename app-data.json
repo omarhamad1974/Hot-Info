@@ -429,8 +429,7 @@
       "home-carousel": {
         "widthTablet": "100",
         "widthDesktop": "100",
-        "overlapMobile": "50",
-        "overlapOrder": "behind"
+        "overlapMobile": "50"
       }
     },
     "sectionWidthTablet": "66",
