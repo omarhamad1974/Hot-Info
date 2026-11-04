@@ -413,7 +413,7 @@
         "overlay": 0,
         "imageFx": {
           "mask": {
-            "shape": "file:mask-mw26zxnu-85674.svg",
+            "shape": "wave-t",
             "fit": "cover",
             "size": 135,
             "feather": 87
