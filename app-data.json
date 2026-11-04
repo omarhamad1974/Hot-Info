@@ -419,7 +419,8 @@
           },
           "mask": {
             "shape": "file:mask-mw26zxnu-85674.svg",
-            "feather": 76
+            "fit": "stretch",
+            "feather": 74
           }
         },
         "image": "mw26v05d-85673.png"
