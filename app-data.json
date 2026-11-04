@@ -406,7 +406,7 @@
       "text": "#3a4051"
     },
     "custom": [],
-    "sectionWidth": "85",
+    "sectionWidth": "57",
     "sections": {
       "home-about": {
         "mode": "image",
@@ -422,10 +422,18 @@
             "shape": "leaf",
             "fit": "cover"
           }
-        }
+        },
+        "overlapMobile": "50",
+        "overlapOrder": "behind"
+      },
+      "home-carousel": {
+        "widthTablet": "100",
+        "widthDesktop": "100",
+        "overlapMobile": "50",
+        "overlapOrder": "behind"
       }
     },
-    "sectionWidthTablet": "68",
+    "sectionWidthTablet": "66",
     "brand": [
       {
         "name": "Primary",
