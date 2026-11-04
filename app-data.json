@@ -409,8 +409,6 @@
     "sectionWidth": "57",
     "sections": {
       "home-about": {
-        "overlapMobile": "50",
-        "overlapOrder": "behind",
         "mode": "image",
         "overlay": 0,
         "imageFx": {
