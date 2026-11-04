@@ -2631,7 +2631,7 @@ const K=(()=>{
         <input id="tb-q" type="search" dir="rtl" lang="ar" placeholder="بحث / Search" aria-label="Search tenders" value="${esc(tbF.q)}" class="${inp} !w-44 !py-1.5">
         <div class="flex gap-1">${chips}</div>
         <div class="ml-auto flex flex-wrap items-center gap-2">
-          ${w?`<button data-k="tbadd" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Add an empty row to type in"><i class="fas fa-plus"></i> Add typed row</button><button data-k="tbselunread" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Select the rows that have an image but no text yet"><i class="fas fa-check-double"></i> Select unread</button>${sb2('tbocrsel','fa-wand-magic-sparkles','Read selected (OCR)','Read the text of the selected images')}${sb2('tbwritesel','fa-check','Done (selected)','Send the selected rows to Classification')}`
+          ${w?`<button data-k="tbadd" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Add an empty row to type in"><i class="fas fa-plus"></i> Add typed row</button><button data-k="tbselunread" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Select the rows that have an image but no text yet"><i class="fas fa-check-double"></i> Select unread</button>${sb2('tbocrsel','fa-wand-magic-sparkles','Read selected (OCR)','Read the text of the selected images')}${sb2('tbbulkset','fa-calendar-check','Set date / governorate (selected)','Give the selected rows the same publishing date and/or governorate')}${sb2('tbdelsel','fa-trash','Delete selected','Delete the selected rows and their images')}${sb2('tbwritesel','fa-check','Done (selected)','Send the selected rows to Classification')}`
             :`<button data-k="tbclassify" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Suggest sectors from the keywords for the visible rows that have none"><i class="fas fa-tags"></i> Auto-classify</button>${sb2('tbapprovesel','fa-circle-check','Approve selected','Approve the selected tenders')}${sb2('tbconfsel','fa-check-double','Confirm sectors (selected)','Confirm the sectors of the selected tenders (they need at least one sector)')}${sb2('tbbacksel','fa-rotate-left','Back to Input','Send the selected rows back to Input')}`}
           <button data-k="tdict" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg" title="Arabic dictionary used to underline unknown words"><i class="fas fa-spell-check"></i> Dictionary</button>
           <button data-k="tentman" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-building-columns"></i> Entities</button>
@@ -2684,7 +2684,7 @@ const K=(()=>{
       const to=r.status==='approved'?'draft':'approved';
       if(to==='approved'&&!tValid(r))return toast('Entity and description are required before publishing.',false);
       const u=await sb.from('tenders').update({status:to,...(to==='draft'?{hot_featured:false}:{}),updated_at:new Date().toISOString()}).eq('id',r.id);if(u.error)throw u.error;
-      r.status=to;if(to==='draft')r.hot_featured=false;const tr=t.closest('tr');tr.classList.toggle('bg-emerald-50',to==='approved');tr.classList.toggle('bg-white',to!=='approved');const hc=tr.querySelector('[data-hot]');if(hc)hc.innerHTML=tbHotBtn(r);t.outerHTML=tbOkBtn(r);
+      r.status=to;if(to==='draft')r.hot_featured=false;const tr=t.closest('tr');tr.classList.toggle('bg-emerald-50',to==='approved');tr.classList.toggle('bg-white',to!=='approved');t.outerHTML=tbOkBtn(r);
       if(to==='approved'&&!(r.sector_ids||[]).length){toast('Published. Now choose its sector so subscribers can see it.');ACT.tsect({dataset:{id:r.id}})}},
     async tbdel(t){const r=tbl.find(x=>x.id===t.dataset.id);if(!r)return;
       if(!r._new){if(!confirm('Delete this tender?'))return;const d=await sb.from('tenders').delete().eq('id',r.id);if(d.error)throw d.error;await t1DropImage(r.image_id)}
@@ -3420,7 +3420,6 @@ const K=(()=>{
   }
 
   // ---- Tab 2 / 3: selection, OCR for one or many rows, hand-over between the tabs ----
-  const tbHotBtn=r=>`<button data-k="tbhot" data-id="${esc(r.id)}" ${r.status==='approved'?'':'disabled'} class="w-9 h-9 disabled:opacity-30" title="${r.status==='approved'?(r.hot_featured?'Shown in the Hot News slider. Press to remove':'Press to show in the Hot News slider'):'Approve the tender first'}" aria-label="Hot News slider"><i class="fas fa-star ${r.hot_featured?'text-amber-500':'text-gray-300'} text-lg"></i></button>`;
   function tbSelCount(){const e=$('tb-selcount');if(e)e.textContent=tbSel.size?`${tbSel.size} selected`:'';document.querySelectorAll('[data-selbtn]').forEach(b=>b.disabled=!tbSel.size)}
   document.addEventListener('change',e=>{const t=e.target;if(!t||!t.dataset)return;
     if(t.dataset.sel!==undefined){t.checked?tbSel.add(t.dataset.sel):tbSel.delete(t.dataset.sel);tbSelCount()}
@@ -3509,9 +3508,6 @@ const K=(()=>{
       if(!todo.length)return toast('Every visible row with text already has a sector.',false);
       const r=await tClassify(todo);paintTbRows();
       toast(r.tried?`${r.hit} of ${r.tried} tender${r.tried===1?'':'s'} got sectors from the keywords. Check the sector chips, then confirm them.`:'Nothing to classify.',r.hit>0)},
-    async tbhot(t){const r=tbl.find(x=>x.id===t.dataset.id);if(!r)return;const to=!r.hot_featured;
-      const u=await sb.from('tenders').update({hot_featured:to,updated_at:new Date().toISOString()}).eq('id',r.id);if(u.error)throw u.error;r.hot_featured=to;
-      t.outerHTML=tbHotBtn(r);toast(to?'Will be shown in the Hot News slider':'Removed from the Hot News slider')},
     async tbapprovesel(){
       const rows=[...tbSel].map(id=>tbl.find(x=>x.id===id)).filter(Boolean),ok=rows.filter(r=>r.status!=='approved'&&tValid(r)&&(r.sector_ids||[]).length);
       if(!ok.length)return toast('Select drafts that have an entity, a description and a sector.',false);
@@ -3523,11 +3519,24 @@ const K=(()=>{
       if(!l.length)return toast('Select tenders that have a sector that is not confirmed yet.',false);
       const u=await sb.from('tenders').update({sectors_confirmed:true,updated_at:new Date().toISOString()}).in('id',l.map(r=>r.id));if(u.error)throw u.error;
       l.forEach(r=>{r.sectors_confirmed=true});paintTbRows();toast(l.length+' confirmed');if(window.kBadges)kBadges()},
-    async tbhotsel(){
-      const rows=[...tbSel].map(id=>tbl.find(x=>x.id===id)).filter(r=>r&&r.status==='approved');
-      if(!rows.length)return toast('Select approved tenders to show in the slider.',false);
-      const to=rows.some(r=>!r.hot_featured),u=await sb.from('tenders').update({hot_featured:to,updated_at:new Date().toISOString()}).in('id',rows.map(r=>r.id));if(u.error)throw u.error;
-      rows.forEach(r=>r.hot_featured=to);paintTbRows();toast(to?`${rows.length} added to the Hot News slider`:`${rows.length} removed from the Hot News slider`)},
+    tbbulkset(){
+      if(!tbSel.size)return toast('Select rows first (tick the boxes).',false);
+      modal(`<h2 class="font-extrabold text-lg mb-1">Set for ${tbSel.size} selected row${tbSel.size===1?'':'s'}</h2><p class="text-xs text-gray-600 mb-3">Fill only what you want to change. Empty = leave as it is.</p>
+        <label class="block text-xs font-bold mb-2">Publishing date<input id="bk-date" type="date" class="${inp} mt-1"></label>
+        <label class="block text-xs font-bold mb-3">Governorate<select id="bk-gov" dir="rtl" class="${inp} mt-1"><option value=""></option>${GOVS.map(g=>`<option>${esc(g)}</option>`).join('')}</select></label>
+        <div class="flex justify-end gap-2"><button data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button data-k="tbbulkgo" class="text-xs bg-brand-600 hover:bg-brand-700 text-white font-bold px-4 py-2.5 rounded-xl">Apply</button></div>`)},
+    async tbbulkgo(){
+      const d=($('bk-date')||{}).value||'',g=($('bk-gov')||{}).value||'',patch={};if(d)patch.publish_date=d;if(g)patch.governorate=g;
+      if(!d&&!g)return toast('Choose a date or a governorate.',false);
+      const rows=[...tbSel].map(id=>tbl.find(x=>x.id===id)).filter(Boolean),saved=rows.filter(r=>!r._new);
+      if(saved.length){const u=await sb.from('tenders').update(Object.assign({updated_at:new Date().toISOString()},patch)).in('id',saved.map(r=>r.id));if(u.error)throw u.error}
+      rows.forEach(r=>Object.assign(r,patch));closeM();paintTbRows();toast(rows.length+' row'+(rows.length===1?'':'s')+' updated')},
+    async tbdelsel(){
+      const rows=[...tbSel].map(id=>tbl.find(x=>x.id===id)).filter(Boolean);if(!rows.length)return toast('Select rows first (tick the boxes).',false);
+      if(!confirm(`Delete ${rows.length} row${rows.length===1?'':'s'} and their images? This cannot be undone.`))return;
+      const saved=rows.filter(r=>!r._new);
+      if(saved.length){const d=await sb.from('tenders').delete().in('id',saved.map(r=>r.id));if(d.error)throw d.error;for(const r of saved)await t1DropImage(r.image_id)}
+      tbl=tbl.filter(x=>!rows.includes(x));tbSel.clear();paintTbRows();if(window.kBadges)kBadges();toast(rows.length+' deleted')},
     tbwrite(t){return tbSetWritten([t.dataset.id],true)},
     tbback(t){return tbSetWritten([t.dataset.id],false)},
     tbwritesel(){return tbSetWritten([...tbSel],true)},
@@ -3721,14 +3730,6 @@ const K=(()=>{
       const m=tbl.find(x=>x.id===id);if(m)m.hot_featured=on;setPaintLists();toast(on?'Featured on the website':'Removed from featured')},
     setopencontent(){showPane('content')}
   });
-  // ---- (old placeholder, no longer used) ----
-  function paintTPlaceholder(){
-    const s=tStep===5;
-    main().innerHTML=`<div class="bg-white rounded-2xl border border-gray-200 p-6 text-center space-y-2"><i class="fas ${s?'fa-sliders':'fa-file-export'} text-3xl text-gray-400"></i>
-      <h2 class="font-extrabold">${s?'Settings (featured on the website)':'Generate tenders file'}</h2>
-      <p class="text-sm text-gray-600">${s?'Coming in Phase 2. For now the Hot News slider star is in tab 2 (Classification &amp; notification).':'Coming in Phase 3: PDF, Excel or Word, default = tenders published today, with a date range.'}</p></div>`;
-  }
-
   // ---- events ----
   Object.assign(ACT,{
     gsearch(){if(!me)return;modal(`<h2 class="font-extrabold text-lg mb-2">Search everything</h2>

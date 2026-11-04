@@ -152,3 +152,7 @@ See `IMAGE-EFFECTS-STEPS.md`. Every carousel, news, team and section photo can g
 
 ## Update 2026-11-03: Tenders tab (phase T1)
 See `TENDERS-PLAN.md` (all phases) . The top-bar tab **Tender images** is now **Tenders** and opens a spreadsheet-like table for typing tenders in Arabic: entity (type-ahead from the Entities list), governorate (list), publishing and session dates (calendar), description, booklet price, bid bond, sector and a Publish circle. The older screens are next to it: **Newspaper images** and **By sector**. Run `supabase-step15-tenders-table.sql` once (adds the governorate column). Files: `admin.html`, `supabase-step15-tenders-table.sql`.
+
+## Update 2026-11-04: Tenders redesign (four tabs)
+Tenders in the admin are now four tabs: 1 Input tender (scan + read in one table, column cutter, Excel import by template, bulk date/governorate/delete), 2 Classification & notification, 3 Settings (Hot News slider), 4 Generate file (Excel, Word, PDF by publishing-date range). No automatic filling or text-to-cell mapping. Also new: section overlap and order (Sections tab, `SECTIONS-OVERLAP-STEPS.md`) and mask size, feather and rotation (`IMAGE-EFFECTS-STEPS.md`). Files: `admin.html`, `theme.js`, `scripts/validate.js`. No new SQL (needs the step 9 and step 18 SQL already run). Manual: `MANUAL.md`, "Tenders".
+

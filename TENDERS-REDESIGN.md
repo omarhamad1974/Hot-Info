@@ -26,4 +26,7 @@ Each phase is added on top of the previous one; the newest zip always has everyt
 - Tab 4. Date range (default today) on the PUBLISHING date, status filter (All / Approved / Drafts), column checkboxes, quick ranges (Today, Yesterday, Last 7 days, This month), live preview.
 - Excel (.xlsx, right-to-left sheet), Word (.doc, HTML that Word opens, landscape, RTL), PDF (print window: choose Save as PDF; keeps Arabic shaping correct).
 - Flat table, one row per tender, sorted by publishing date; no sector, no grouping. admin.html only, no SQL.
-## Phase 4 (next): Cleanup (remove old screens), bulk actions, manual and README
+## Phase 4 (DONE): Cleanup, bulk actions, docs
+- Input tab bulk: Set date / governorate (selected), Delete selected (with images). Old slider-star code and the placeholder screen removed.
+- MANUAL.md ("Tenders") and README updated.
+- NOT removed: the old "Read & name" screen and the Newspaper images / read-text pipeline are still in admin.html but unreachable from the menu (kept because they could not be tested in a browser here). They can be stripped later in a separate, testable step.

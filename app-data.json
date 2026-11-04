@@ -406,28 +406,26 @@
       "text": "#3a4051"
     },
     "custom": [],
-    "sectionWidth": "57",
+    "sectionWidth": "85",
     "sections": {
       "home-about": {
         "mode": "image",
         "overlay": 0,
+        "image": "mw0nqqhc-abstract-glass-window-roof-architecture-exterior.jpg",
         "imageFx": {
+          "ov": {
+            "type": "matt",
+            "color": "#1760de",
+            "opacity": 70
+          },
           "mask": {
-            "shape": "wave-t",
-            "fit": "cover",
-            "size": 135,
-            "feather": 87
+            "shape": "leaf",
+            "fit": "cover"
           }
-        },
-        "image": "mw26v05d-85673.png"
-      },
-      "home-carousel": {
-        "widthTablet": "100",
-        "widthDesktop": "88",
-        "overlapMobile": "50"
+        }
       }
     },
-    "sectionWidthTablet": "53",
+    "sectionWidthTablet": "68",
     "brand": [
       {
         "name": "Primary",

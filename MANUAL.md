@@ -235,7 +235,18 @@ To remove an admin: `delete from public.admins where lower(email) = lower('colle
 See README, "Tenders page for users and the notification update". Order of work for each batch: upload the images, read and review the rows, approve them, classify and **confirm the sectors**, then press **Send tender notification update** (Tender images tab).
 
 
-## Tenders table (admin > Tenders)
-1. **Type or read.** Fill the cells like a Word table (Tab = next cell, Enter = down, Ctrl+Enter = new row). Entity comes from your entity list, dates from the calendar, governorate from a list. Or press **قراءة من صورة** on the row, choose or take a photo, and the description is filled in for you.
-2. **Check.** Words underlined in red are not in the Arabic dictionary: click one to add or ignore it. Use the **Dictionary** button to upload a big Arabic word list once.
-3. **Publish.** Choose the sector, then press the circle. The front page shows the first 50 words, the entity and the date; **More** opens the whole tender.
+## Tenders (admin > top bar, four tabs)
+**1 · Input tender** (scan and read in one table)
+1. Add rows: **Choose image** / **Take photo** (set the details bar first), **Add typed row**, or **Import sheet** (use the **Template** button; every column is optional, empty cells stay empty, nothing is filled in automatically).
+2. Several columns in the picture? Set **Columns** (1 to 4) under the image, press **Lines** to place the cut lines, then press **قراءة**. Columns are read right to left. The text goes only into the Description; you type or paste the rest.
+3. Fill the cells like a Word table (Tab = next cell, Enter = down, Ctrl+Enter = new row). Words underlined in red are not in the Arabic dictionary.
+4. Select rows (tick the boxes) for: **Read selected (OCR)**, **Set date / governorate**, **Delete selected**, **Done (selected)**.
+5. **Done** sends the row to Classification. It needs an entity and a description.
+
+**2 · Classification & notification**: choose the sectors (**Auto-classify** suggests them from keywords), **Confirm sectors**, approve (the circle), then **Send tender notification update**. Filters: Waiting approval, Approved, Needs sector.
+
+**3 · Settings**: the tenders featured in the website's Hot News slider (add with search, remove). A sector with featured tenders shows only those; a sector with none shows its latest. "Tenders per sector" is edited in the website content (button on this tab).
+
+**4 · Generate file**: pick a publishing-date range (default today), a status and the columns, then download **Excel**, **Word** or **PDF** (PDF: choose Save as PDF in the print window). One flat table, no sector, no grouping.
+
+See TENDERS-REDESIGN.md for the design decisions.
