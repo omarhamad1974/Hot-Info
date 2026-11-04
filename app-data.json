@@ -414,11 +414,16 @@
         "mode": "image",
         "overlay": 0,
         "imageFx": {
+          "ov": {
+            "type": "matt",
+            "color": "role:accent",
+            "opacity": 40
+          },
           "mask": {
             "shape": "wave-t"
           }
         },
-        "image": "mw26q9sa-85673.png"
+        "image": "mw26v05d-85673.png"
       },
       "home-carousel": {
         "widthTablet": "100",
