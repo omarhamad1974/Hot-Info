@@ -31,6 +31,7 @@ function checkFx(where,fx){
     else if(!FXMASKS.has(sh))errs.push(`${where}.mask.shape: unknown shape "${sh}"`);
     if(m.fit!==undefined&&!['contain','cover','stretch'].includes(m.fit))errs.push(`${where}.mask.fit: must be contain, cover or stretch`);
     if(m.invert!==undefined&&typeof m.invert!=='boolean')errs.push(`${where}.mask.invert: must be true or false`);
+    for(const [k,a,b] of [['size',10,300],['feather',0,100],['rotate',-180,180]])if(m[k]!==undefined&&!(typeof m[k]==='number'&&m[k]>=a&&m[k]<=b))errs.push(`${where}.mask.${k}: must be a number from ${a} to ${b}`);
   }
 }
 for(const [k,fields] of Object.entries(need)){
