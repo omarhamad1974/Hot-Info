@@ -414,15 +414,16 @@
         "imageFx": {
           "mask": {
             "shape": "file:mask-mw26zxnu-85674.svg",
-            "fit": "stretch",
-            "feather": 74
+            "fit": "cover",
+            "size": 135,
+            "feather": 87
           }
         },
         "image": "mw26v05d-85673.png"
       },
       "home-carousel": {
         "widthTablet": "100",
-        "widthDesktop": "100",
+        "widthDesktop": "88",
         "overlapMobile": "50"
       }
     },
