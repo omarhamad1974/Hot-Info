@@ -409,20 +409,6 @@
     "sectionWidth": "57",
     "sections": {
       "home-about": {
-        "mode": "image",
-        "overlay": 0,
-        "image": "mw0nqqhc-abstract-glass-window-roof-architecture-exterior.jpg",
-        "imageFx": {
-          "ov": {
-            "type": "matt",
-            "color": "#1760de",
-            "opacity": 70
-          },
-          "mask": {
-            "shape": "leaf",
-            "fit": "cover"
-          }
-        },
         "overlapMobile": "50",
         "overlapOrder": "behind"
       },
