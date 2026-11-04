@@ -415,7 +415,7 @@
           "ov": {
             "type": "matt",
             "color": "role:accent",
-            "opacity": 40
+            "opacity": 65
           },
           "mask": {
             "shape": "file:mask-mw26zxnu-85674.svg",
