@@ -107,7 +107,33 @@
   const clamp=(v,a,b)=>Math.min(b,Math.max(a,v)),num=(v,d)=>{v=parseFloat(v);return isFinite(v)?v:d};
   const rgba=(h,a)=>{const [r,g,b]=parts(h);return `rgba(${r},${g},${b},${+a.toFixed(3)})`};
   const encSvg=t=>'data:image/svg+xml,'+encodeURIComponent(t).replace(/'/g,'%27').replace(/\(/g,'%28').replace(/\)/g,'%29');
-  const svgOf=m=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${m[4]||'0 0 100 100'}" preserveAspectRatio="none">${m[3]}</svg>`;
+  // one mask SVG. o = {size:%, rotate:deg, feather:0-100}: size and rotation turn the shape around the centre of its box,
+  // feather blurs its edge (the picture fades out softly). With no options the markup is exactly the old one.
+  function buildSvg(vb,inner,o){
+    o=o||{};const q=String(vb).trim().split(/[\s,]+/).map(Number),x=q[0]||0,y=q[1]||0,w=q[2]||100,h=q[3]||100,cx=x+w/2,cy=y+h/2;
+    const s=clamp(num(o.size,100),10,300)/100,r=clamp(num(o.rotate,0),-180,180),f=clamp(num(o.feather,0),0,100)*0.12*(w/100);
+    const g=(s!==1||r!==0)?`<g transform="translate(${+cx.toFixed(3)} ${+cy.toFixed(3)}) rotate(${r}) scale(${+s.toFixed(3)}) translate(${+(-cx).toFixed(3)} ${+(-cy).toFixed(3)})">${inner}</g>`:inner;
+    const body=f>0?`<defs><filter id="kfxf" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="${+f.toFixed(3)}"/></filter></defs><g filter="url(#kfxf)">${g}</g>`:g;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" preserveAspectRatio="none">${body}</svg>`;
+  }
+  const svgOf=(m,o)=>buildSvg(m[4]||'0 0 100 100',m[3],o);
+  // uploaded SVG shapes: the file text is fetched once (same site) so it can be turned and softened too
+  const fileText={},filePend={};
+  function fileSvg(t,o){
+    try{const d=new DOMParser().parseFromString(t,'image/svg+xml'),r=d.documentElement;
+      if(!r||String(r.nodeName).toLowerCase()!=='svg'||d.getElementsByTagName('parsererror').length)return null;
+      let vb=r.getAttribute('viewBox');if(!vb)vb=`0 0 ${parseFloat(r.getAttribute('width'))||100} ${parseFloat(r.getAttribute('height'))||100}`;
+      const ser=new XMLSerializer();let inner='';for(const c of Array.from(r.childNodes))inner+=ser.serializeToString(c);
+      return buildSvg(vb,inner,o)}catch(_){return null}
+  }
+  function fileFetch(n){
+    if(filePend[n]||typeof fetch!=='function')return;
+    filePend[n]=fetch(fileUrl(n)).then(r=>r.ok?r.text():'').then(t=>{if(!t)return;fileText[n]=t;
+      document.querySelectorAll('[style*="--kfx-p:'+n+'|"]').forEach(el=>{
+        const a=(el.style.getPropertyValue('--kfx-p')||'').trim().split('|');
+        const css=maskCss({shape:'file:'+a[0],size:a[1],rotate:a[2],feather:a[3],fit:a[4]||undefined,invert:a[5]==='1'});
+        css.split(';').forEach(dc=>{const i=dc.indexOf(':');if(i>0)el.style.setProperty(dc.slice(0,i).trim(),dc.slice(i+1).trim())})})}).catch(()=>{});
+  }
   let fileUrl=n=>'./assets/'+n;                      // the admin page replaces this to preview files not yet published
   // overlay -> {css (a background value), a (average opacity 0 to 1), c (main colour)} or null when there is no overlay
   function ovInfo(ov,T){
@@ -122,14 +148,16 @@
   // mask -> CSS declarations (empty when there is no mask)
   function maskCss(m){
     if(!m||!m.shape)return '';
-    const sh=String(m.shape),p=MASK_BY[sh];let u='';
-    if(p)u=encSvg(svgOf(p));
-    else if(sh.indexOf('file:')===0){const n=sh.slice(5);if(!/^[\w.\-]+\.svg$/i.test(n))return '';u=String(fileUrl(n)).replace(/'/g,'%27')}
+    const sh=String(m.shape),p=MASK_BY[sh],o={size:m.size,rotate:m.rotate,feather:m.feather},custom=num(m.size,100)!==100||num(m.rotate,0)!==0||num(m.feather,0)>0;let u='',pend='';
+    if(p)u=encSvg(custom?svgOf(p,o):svgOf(p));
+    else if(sh.indexOf('file:')===0){const n=sh.slice(5);if(!/^[\w.\-]+\.svg$/i.test(n))return '';
+      const made=custom&&fileText[n]?fileSvg(fileText[n],o):null;
+      if(made)u=encSvg(made);else{u=String(fileUrl(n)).replace(/'/g,'%27');if(custom){fileFetch(n);pend=`--kfx-p:${n}|${num(m.size,100)}|${num(m.rotate,0)}|${num(m.feather,0)}|${m.fit||''}|${m.invert?1:0};`}}}
     else return '';
     const fit={contain:'contain',cover:'cover',stretch:'100% 100%'}[m.fit]||{contain:'contain',cover:'cover',stretch:'100% 100%'}[p?p[2]:'contain'];
     let im=`url('${u}')`,sz=fit,ps='center',rp='no-repeat';
     if(m.invert){im+=',linear-gradient(#000,#000)';sz+=',100% 100%';ps+=',center';rp+=',no-repeat'}   // the shape is cut out instead
-    return `-webkit-mask-image:${im};mask-image:${im};-webkit-mask-size:${sz};mask-size:${sz};-webkit-mask-position:${ps};mask-position:${ps};-webkit-mask-repeat:${rp};mask-repeat:${rp};`+(m.invert?'-webkit-mask-composite:xor;mask-composite:exclude;':'');
+    return `-webkit-mask-image:${im};mask-image:${im};-webkit-mask-size:${sz};mask-size:${sz};-webkit-mask-position:${ps};mask-position:${ps};-webkit-mask-repeat:${rp};mask-repeat:${rp};`+(m.invert?'-webkit-mask-composite:xor;mask-composite:exclude;':'')+pend;
   }
   // One <img>. cls = the classes the plain image had (size, margins, rounding, object-fit, opacity).
   // With no effect the result is exactly the old <img>; with an effect it is a wrapper that holds the image and the overlay.
@@ -143,7 +171,7 @@
   (function(){
     if(document.getElementById('kfx-css'))return;
     const st=document.createElement('style');st.id='kfx-css';
-    st.textContent='.kfx{position:relative;display:block;overflow:hidden}.kfx>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}.kfx-ov{position:absolute;inset:0;display:block;pointer-events:none}.kfx-sec{position:relative;isolation:isolate}.kfx-bg{position:absolute;inset:0;z-index:-1;pointer-events:none}';
+    st.textContent='.kfx{position:relative;display:block;overflow:hidden}.kfx>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}.kfx-ov{position:absolute;inset:0;display:block;pointer-events:none}.kfx-sec{position:relative;isolation:isolate}.kfx-bg{position:absolute;inset:0;z-index:-1;pointer-events:none}[data-sec].ov-on{position:relative;margin-bottom:calc(var(--ov-m,0) * -1px)}[data-sec].ov-next{position:relative}@media(min-width:768px){[data-sec].ov-on{margin-bottom:calc(var(--ov-t,0) * -1px)}}@media(min-width:1024px){[data-sec].ov-on{margin-bottom:calc(var(--ov-d,0) * -1px)}}';
     (document.head||document.documentElement).appendChild(st);
   })();
   function vars(T){
@@ -157,7 +185,7 @@
     const S=(T||{}).sections||{},ink=palette(T).ink;
     document.querySelectorAll('[data-sec]').forEach(el=>{
       ['background-color','background-image','background-size','background-position','background-repeat'].forEach(p=>el.style.removeProperty(p));
-      el.classList.remove('sec-light','kfx-sec');
+      el.classList.remove('sec-light','kfx-sec','ov-on','ov-next');['--ov-m','--ov-t','--ov-d','z-index'].forEach(p=>el.style.removeProperty(p));
       const oldLayer=el.querySelector(':scope>.kfx-bg');if(oldLayer)oldLayer.remove();
       const s0=S[el.dataset.sec]||{},pw=v=>{v=parseFloat(v);return isFinite(v)?Math.min(100,Math.max(40,v))/100:null};
       el.toggleAttribute('data-off',s0.hidden===true);                       // hidden from the admin page
@@ -165,6 +193,8 @@
       const wt=pw(s0.widthTablet),wd=pw(s0.widthDesktop);
       wt!==null?el.style.setProperty('--sec-wt',wt.toFixed(4)):el.style.removeProperty('--sec-wt');
       wd!==null?el.style.setProperty('--sec-wd',wd.toFixed(4)):el.style.removeProperty('--sec-wd');
+      {const pv=v=>{if(v===undefined||v===null||v==='')return null;v=parseFloat(v);return isFinite(v)?Math.min(600,Math.max(0,v)):null},om=pv(s0.overlapMobile),ot=pv(s0.overlapTablet),od=pv(s0.overlapDesktop),m=om??0,t=ot??m,d=od??t;
+        if(m||t||d){el.classList.add('ov-on');el.style.setProperty('--ov-m',m);el.style.setProperty('--ov-t',t);el.style.setProperty('--ov-d',d)}}   // overlap with the next section (px per screen size)
       const s=S[el.dataset.sec];
       if(!s||(s.mode!=='color'&&s.mode!=='image'))return;
       const tone=s.tone||'auto';let light=false;
@@ -188,6 +218,10 @@
       }
       el.classList.toggle('sec-light',light);
     });
+    // stacking order of overlapping sections: "above" = this section paints over the next one, "behind" = under it
+    const all=[...document.querySelectorAll('[data-sec]')],vis=all.filter(e=>!e.hasAttribute('data-off'));
+    vis.forEach((el,i)=>{if(!el.classList.contains('ov-on'))return;const nx=vis[i+1];if(nx)nx.classList.add('ov-next');
+      if(((S[el.dataset.sec]||{}).overlapOrder)!=='behind')el.style.zIndex=String(10+vis.length-i)});
   }
   // Fonts: only written when the admin chose something, so with no "fonts" block the site looks exactly as before.
   function fontRules(T){
@@ -222,7 +256,7 @@
   function apply(D){const T=(D&&D.theme)||{};vars(T);paint(T);fonts(T)}
   const NOWIDTH=['patents-contact','trademarks-contact','translation-contact'];     // blocks inside another section: no width of their own
   window.KTHEME={DEFAULTS,ROLES,SECTIONS,HEX,resolve,lum,palette,apply,BRAND_DEFAULTS,brandPal,FONTS,FONT_KEYS,cssName,NOWIDTH};
-  window.KFX={MASKS,DIRS,img:fxImg,ovInfo,maskCss,svgOf,encSvg,setFileUrl:f=>{fileUrl=f}};
+  window.KFX={MASKS,DIRS,img:fxImg,ovInfo,maskCss,svgOf,buildSvg,encSvg,setFileUrl:f=>{fileUrl=f}};
   // The admin page uses the definitions only; it must not recolour itself.
   if(/admin\.html$/.test(location.pathname))return;
   let cached=null;try{cached=JSON.parse(localStorage.getItem(CACHE))}catch{}

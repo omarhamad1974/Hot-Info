@@ -38,3 +38,12 @@ One setting per picture: the news card, the article and the related-news thumbna
 
 ## Files changed
 `theme.js` (the effects engine, `KFX`), `admin.html`, `index.html`, `about.html`, `scripts/validate.js`, `README.md`, `ADMIN-IMPROVEMENTS.md`. New: this file. Upload all of them.
+
+## Mask size, feather and rotation (added later)
+Under the shape buttons (once a shape is chosen) there are three sliders:
+- **Shape size** 10 to 300% (100 = as before). Turns the shape bigger or smaller around its centre. Parts pushed outside the frame are cut off.
+- **Edge feather (softness)** 0 to 100 (0 = sharp). Blurs the edge so the picture fades out softly. The blur is relative to the shape, so it looks the same on any screen size.
+- **Rotation** -180 to 180 degrees, around the centre of the shape. Looks best with fit "Whole shape" (with "Stretch to the frame" a rotated shape is also stretched).
+A button resets the three. Works for the built-in shapes and for your uploaded SVGs (an uploaded SVG is read once from assets/ the first time a page needs it, so for a moment it may show without the rotation or feather, then updates itself). "Cut the shape out (invert)" works with all three.
+Saved in the picture's imageFx as mask.size, mask.feather, mask.rotate (only when not the default); `node scripts/validate.js` checks the ranges.
+Files: theme.js, admin.html, scripts/validate.js. No SQL.

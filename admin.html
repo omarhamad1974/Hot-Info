@@ -32,9 +32,10 @@ details[open]>summary .chev{transform:rotate(90deg)}
       <!-- hidden for now: HOT Info Issues
       <button data-pane="issues" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-table"></i> HOT Info Issues</button>
       -->
-      <button data-pane="tenders1" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-camera"></i> 1 &middot; Read &amp; name</button>
-      <button data-pane="tenders2" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-pen-nib"></i> 2 &middot; Write<span id="bd-tenders2" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Tenders waiting to be written"></span></button>
-      <button data-pane="tenders3" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-circle-check"></i> 3 &middot; Review &amp; publish<span id="bd-tenders3" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Written tenders waiting for review"></span></button>
+      <button data-pane="tenders1" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-table"></i> 1 &middot; Input tender<span id="bd-tenders2" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Tenders waiting to be sent to Classification"></span></button>
+      <button data-pane="tenders2" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-tags"></i> 2 &middot; Classification &amp; notification<span id="bd-tenders3" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Tenders waiting for classification and approval"></span></button>
+      <button data-pane="tenders3" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-sliders"></i> 3 &middot; Settings</button>
+      <button data-pane="tenders4" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-file-export"></i> 4 &middot; Generate file</button>
       <button data-pane="directory" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-address-book"></i> Directory<span id="bd-directory" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Entries waiting for approval"></span></button>
     </nav>
     <!-- hidden for now: Search (remove these comment marks and the SEARCH_ON line in the script to bring it back)
@@ -146,7 +147,7 @@ function showPane(p){
   pane=p;history.replaceState(null,'','#'+p);
   $('pane-content').classList.toggle('hidden',p!=='content');$('pane-clients').classList.toggle('hidden',p==='content');
   document.querySelectorAll('.pane-btn').forEach(b=>{const on=b.dataset.pane===p;b.className='pane-btn text-xs font-bold px-3 py-1.5 rounded-lg '+(on?'bg-white text-gray-900':'text-gray-300 hover:bg-white/10')});
-  const hi=$('pane-hint');if(hi)hi.textContent=({content:'Edit the website text, photos, news, team and languages.',clients:'Manage users, their subscriptions to sectors, and the files in each sector.',leads:'People who may become subscribers.',issues:'The HOT Info issues table.',tenders1:'Step 1: upload tender images (or import a sheet) and give each one a unique name.',tenders2:'Step 2: type each tender, or read it from its image with OCR. Press Done to send it to step 3.',tenders3:'Step 3: check the written tenders, choose sectors and publish.',directory:'Companies, institutions and freelancers shown in the public Directory: approve, edit, import.'})[p]||'';
+  const hi=$('pane-hint');if(hi)hi.textContent=({content:'Edit the website text, photos, news, team and languages.',clients:'Manage users, their subscriptions to sectors, and the files in each sector.',leads:'People who may become subscribers.',issues:'The HOT Info issues table.',tenders1:'Input: upload images, read them (OCR), type or import tender rows from Excel. Press Done to send a row to Classification.',tenders2:'Classification: choose and confirm sectors, approve tenders and send the notification update.',tenders3:'Settings: what is featured on the website.',tenders4:'Generate a tenders file (PDF, Excel or Word) for a date range.',directory:'Companies, institutions and freelancers shown in the public Directory: approve, edit, import.'})[p]||'';
   if(p!=='content')K.go(p);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pane]');if(b)showPane(b.dataset.pane)});
@@ -278,7 +279,8 @@ function cleanTheme(){ // before saving: drop backgrounds that are set back to "
     const x=D.theme.sections[k]||{},m=x.mode,keep={};
     if(m==='color'||m==='image')Object.assign(keep,x);
     if(x.hidden===true)keep.hidden=true;else delete keep.hidden;
-    for(const w of ['widthTablet','widthDesktop']){if(x[w]!==undefined&&x[w]!==''&&x[w]!==null)keep[w]=x[w];else delete keep[w]}
+    for(const w of ['widthTablet','widthDesktop','overlapMobile','overlapTablet','overlapDesktop']){if(x[w]!==undefined&&x[w]!==''&&x[w]!==null)keep[w]=x[w];else delete keep[w]}
+    if(x.overlapOrder==='behind'&&['overlapMobile','overlapTablet','overlapDesktop'].some(w=>parseFloat(x[w])>0))keep.overlapOrder='behind';else delete keep.overlapOrder;
     if(m!=='color'&&m!=='image')for(const f of ['mode','color','image','overlay','tone','imageFx'])delete keep[f];else if(m!=='image')delete keep.imageFx;
     if(Object.keys(keep).length)D.theme.sections[k]=keep;else delete D.theme.sections[k];
   }
@@ -356,6 +358,11 @@ function fxInner(p){
   const def=KFX.MASKS.find(m=>m[0]===shape),fit=mk.fit||(def?def[2]:'contain');
   const mkh=shape?`<div class="grid sm:grid-cols-2 gap-2 items-end"><label class="${small}">Fit<select data-p="${base}.mask.fit" class="${inp} mt-1">${[['contain','Whole shape, keep its proportions'],['cover','Fill the frame, keep proportions (edges may be cut)'],['stretch','Stretch to the frame']].map(([v,n])=>`<option value="${v}" ${fit===v?'selected':''}>${n}</option>`).join('')}</select></label>
     <label class="flex items-center gap-2 text-xs font-bold pb-2"><input type="checkbox" data-fxchk="${base}.mask.invert" ${mk.invert?'checked':''}> Cut the shape out (invert)</label></div>`:'';
+  const mrng=(k,label,val,min,max,step,unit)=>`<label class="${small}">${label}: <span id="fxo-${id}-${k}">${val}</span>${unit}<input type="range" min="${min}" max="${max}" step="${step}" data-p="${base}.mask.${k}" data-out="fxo-${id}-${k}" data-pct="1" value="${val}" class="mt-1 w-full"></label>`;
+  const fx2=(v,d,a,b)=>{v=parseFloat(v);return isFinite(v)?Math.min(b,Math.max(a,Math.round(v))):d};
+  const mkc=shape?`<div class="grid sm:grid-cols-3 gap-3 pt-1">${mrng('size','Shape size',fx2(mk.size,100,10,300),10,300,5,'%')}${mrng('feather','Edge feather (softness)',fx2(mk.feather,0,0,100),0,100,1,'')}${mrng('rotate','Rotation',fx2(mk.rotate,0,-180,180),-180,180,5,'°')}</div>
+    <p class="text-[11px] text-gray-500">Size and rotation turn the shape around its centre. Feather softens the edge so the picture fades out; 0 = sharp. Rotation looks best with "Whole shape" fit. Parts of a shape pushed outside the frame are cut off.</p>
+    <button type="button" data-act="fx-maskreset" data-b="${base}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-rotate-left"></i> Reset size, feather and rotation</button>`:'';
   const chips=[type!=='none'?(type==='matt'?'Matt overlay':'Gradient overlay'):'',shape?(def?def[1]:'My shape'):''].filter(Boolean);
   const checker='background:repeating-conic-gradient(#e5e7eb 0% 25%,#fff 0% 50%) 50%/14px 14px';
   return `<details data-fxd="${base}" ${FXOPEN.has(base)?'open':''} class="rounded-xl border border-gray-200 bg-gray-50"><summary class="flex items-center gap-2 px-3 py-2 cursor-pointer text-xs font-bold"><i class="fas fa-chevron-right chev text-[10px] text-gray-400"></i><i class="fas fa-wand-magic-sparkles text-brand-600"></i><span class="flex-1">Image effects: color overlay and shape</span>${chips.length?`<span class="text-[11px] font-bold px-2 py-1 rounded-lg bg-brand-50 text-brand-700">${esc(chips.join(' · '))}</span>`:'<span class="text-[11px] text-gray-400">None</span>'}</summary>
@@ -366,7 +373,7 @@ function fxInner(p){
     <div class="space-y-2"><p class="text-xs font-extrabold">Shape (SVG mask)</p><p class="text-[11px] text-gray-500">The picture shows only inside the shape.</p>
       <div class="flex flex-wrap gap-1.5">${shapes}</div>
       <label class="inline-flex items-center gap-1.5 text-xs bg-brand-50 text-brand-700 font-bold px-3 py-2 rounded-lg cursor-pointer hover:bg-brand-100"><i class="fas fa-upload"></i> Upload my own SVG<input type="file" accept=".svg,image/svg+xml" data-fxsvg="${base}" class="hidden"></label>
-      <p class="text-[11px] text-gray-500">Use a filled shape: filled parts show the picture, empty or transparent parts hide it.</p>${mkh}</div>
+      <p class="text-[11px] text-gray-500">Use a filled shape: filled parts show the picture, empty or transparent parts hide it.</p>${mkh}${mkc}</div>
     <button type="button" data-act="fx-reset" data-b="${base}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-rotate-left"></i> Remove all effects from this picture</button>
   </div></details>`;
 }
@@ -403,7 +410,9 @@ function cleanFx(){      // before saving: keep only the effects that are switch
       if(ov.type==='gradient'){o.color2=ov.color2||o.color;o.opacity2=fxNum(ov.opacity2,0);o.dir=ov.dir||'to top'}
       out.ov=o;
     }
-    if(mk.shape){out.mask={shape:mk.shape};if(mk.fit)out.mask.fit=mk.fit;if(mk.invert)out.mask.invert=true}
+    if(mk.shape){out.mask={shape:mk.shape};if(mk.fit)out.mask.fit=mk.fit;if(mk.invert)out.mask.invert=true;
+      const n2=(v,d,a,b)=>{v=parseFloat(v);return isFinite(v)?Math.min(b,Math.max(a,Math.round(v))):d};
+      if(n2(mk.size,100,10,300)!==100)out.mask.size=n2(mk.size,100,10,300);if(n2(mk.feather,0,0,100)!==0)out.mask.feather=n2(mk.feather,0,0,100);if(n2(mk.rotate,0,-180,180)!==0)out.mask.rotate=n2(mk.rotate,0,-180,180)}
     if(Object.keys(out).length)host[key]=out;else delete host[key];
   };
   for(const k of ['carousel','news','employees'])(D[k]||[]).forEach(x=>{if(x&&typeof x==='object')one(x,'imageFx')});
@@ -545,7 +554,8 @@ function wSlider(label,path,val,glob,id){
 function secExtra(key,s){
   const base=`theme.sections.${key}.`;
   return `<label class="flex items-center gap-2 text-sm font-bold"><input type="checkbox" data-chk="${base}hidden" data-view="1" ${s.hidden?'checked':''}> Hide this section on the website</label>`
-   +(TH.NOWIDTH.includes(key)?'':`<div class="grid sm:grid-cols-2 gap-2">${wSlider('Width on tablet',base+'widthTablet',s.widthTablet,theme().sectionWidthTablet,key+'-t')}${wSlider('Width on desktop',base+'widthDesktop',s.widthDesktop,theme().sectionWidth,key+'-d')}</div>`);
+   +(TH.NOWIDTH.includes(key)?'':`<div class="grid sm:grid-cols-2 gap-2">${wSlider('Width on tablet',base+'widthTablet',s.widthTablet,theme().sectionWidthTablet,key+'-t')}${wSlider('Width on desktop',base+'widthDesktop',s.widthDesktop,theme().sectionWidth,key+'-d')}</div>`)
+   +(TH.NOWIDTH.includes(key)?'':`<div class="rounded-lg border border-gray-200 p-2.5 space-y-2"><p class="text-[11px] font-bold text-gray-600">Overlap with the next section <span class="font-normal">(pixels; empty or 0 = no overlap)</span></p><div class="grid grid-cols-3 gap-2">${[['Mobile','overlapMobile','0'],['Tablet (768px+)','overlapTablet','as mobile'],['Desktop (1024px+)','overlapDesktop','as tablet']].map(([l,f,ph])=>`<label class="text-[11px] font-bold">${l}<input type="number" min="0" max="600" step="5" inputmode="numeric" data-p="${base+f}" value="${esc(s[f]??'')}" placeholder="${ph}" class="${inp} mt-1"></label>`).join('')}</div><label class="block text-[11px] font-bold">Order<select data-p="${base}overlapOrder" class="${inp} mt-1"><option value="above" ${s.overlapOrder!=='behind'?'selected':''}>Above the next section (this one covers it)</option><option value="behind" ${s.overlapOrder==='behind'?'selected':''}>Behind the next section (the next one covers this)</option></select></label></div>`);
 }
 const SOCIALS=[['linkedin','LinkedIn'],['youtube','YouTube'],['facebook','Facebook'],['instagram','Instagram'],['x','X (Twitter)'],['tiktok','TikTok'],['telegram','Telegram']];
 function contactData(){const c=D.contact=D.contact||{};if(!Array.isArray(c.phones))c.phones=[];D.social=D.social||{};return c}
@@ -929,6 +939,7 @@ document.addEventListener('click',e=>{
   else if(a==='cc-add'){theme().custom.push({id:'c'+Date.now().toString(36),name:'',hex:'#8aa6d6'});mark();view()}
   else if(a==='cc-del'){const c=theme().custom[i];if(c&&confirm(`Delete "${c.name||c.hex}"? Sections that use it go back to their normal background.`)){theme().custom.splice(i,1);mark();view()}}
   else if(a==='fx-shape'){const b=t.dataset.b;set(D,b+'.mask.shape',t.dataset.v);mark();fxRefresh(b+'.');}
+  else if(a==='fx-maskreset'){const b=t.dataset.b;['size','feather','rotate'].forEach(k=>set(D,b+'.mask.'+k,''));mark();fxRefresh(b+'.')}
   else if(a==='fx-reset'){const b=t.dataset.b;if(confirm('Remove the color overlay and the shape from this picture?')){set(D,b,{});mark();fxRefresh(b+'.')}}
   else if(a==='lang')switchLang(t.dataset.l);
   else if(a==='fmt')fmt(t.dataset.k,t.dataset.t);
@@ -1111,18 +1122,18 @@ const K=(()=>{
   const label=r=>((profiles[r.id]||{}).full_name||r.email);
   const badge=r=>!r.account?pill('bg-gray-100 text-gray-600','Folder only')
     :r.confirmed?pill('bg-emerald-50 text-emerald-700','Account active'):pill('bg-amber-100 text-amber-800','Invite pending');
-  const T_TITLES=['','1 \u00b7 Read & name tenders','2 \u00b7 Write tenders','3 \u00b7 Review & publish'];
+  const T_TITLES=['','Read & name tenders (old)','1 \u00b7 Input tender','2 \u00b7 Classification & notification','','3 \u00b7 Settings','4 \u00b7 Generate tenders file'];
   const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues',tenders:'Tenders',directory:'Directory'};
   const setW=w=>{main().className=w==='wide'?'p-3 space-y-3':w==='mid'?'max-w-6xl mx-auto p-4 space-y-3':'max-w-3xl mx-auto p-4 space-y-3'};
   async function home(){
     cur=null;path=[];$('k-title').textContent=(tabK==='tenders'?T_TITLES[tStep]:TITLES[tabK])||'Admin';main().innerHTML=LOADING;
-    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await(tStep===1?loadT1():(tStep===3&&tView==='sector')?(async()=>{await loadSectorData();await loadSectorView();await tPipeLoad()})():(tView='table',loadTableView()));else if(tabK==='directory')await loadDirectory();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
+    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await((tStep===5||tStep===6)?0:tStep===2?(async()=>{await loadTableView();await loadT1()})():tStep===1?loadT1():(tStep===3&&tView==='sector')?(async()=>{await loadSectorData();await loadSectorView();await tPipeLoad()})():(tView='table',loadTableView()));else if(tabK==='directory')await loadDirectory();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
     paintHome();
   }
   const paintHome=()=>{setW(tabK==='issues'||(tabK==='tenders'&&(tStep<3||tView==='table'))?'wide':(tabK==='leads'||tabK==='tenders'||tabK==='directory')?'mid':'narrow');tabK==='directory'?paintDirectory():tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
   function go(p){ // called by the top bar: leads | clients | issues | tenders
     if(p==='tenders')p='tenders1';
-    if(/^tenders[123]$/.test(p)){tStep=+p.slice(7);tabK='tenders';tView='table';TR=null;tbF.st='all';tbSel.clear();tbCap=100}
+    if(/^tenders[1-4]$/.test(p)){tStep=({1:2,2:3,3:5,4:6})[+p.slice(7)];tabK='tenders';tView='table';TR=null;tbF.st='all';tbSel.clear();tbCap=100}
     else tabK=p==='clients'?(['overview','clients','sectors'].includes(tabK)?tabK:'overview'):p;
     if(!started||!sb)start();else if(me)home();
   }
@@ -1925,6 +1936,8 @@ const K=(()=>{
   }
   function paintTenders(){
     setW(tStep<3||tView==='table'?'wide':'mid');TR=null;
+    if(tStep===6)return paintGenerate();
+    if(tStep===5)return paintSettings();
     if(tStep===1)return paintT1();
     if(tStep===3&&tView==='sector')return paintSectorView();
     return paintTable();
@@ -2560,6 +2573,7 @@ const K=(()=>{
     if(tbF.st==='approved'&&r.status!=='approved')return false;
     if(tbF.st==='nosector'&&!(r.status==='approved'&&!tbLive(r)))return false;
     if(tbF.st==='hot'&&!r.hot_featured)return false;
+    if(tbF.st==='needsec'&&((r.sector_ids||[]).length&&r.sectors_confirmed))return false;
     if(tbF.st==='empty'&&String(r.subject||'').trim())return false;
     if(tbF.st==='text'&&!String(r.subject||'').trim())return false;
     const q=tFold(tbF.q);return !q||tFold((r.entity||'')+' '+(r.subject||'')+' '+(r.governorate||'')+' '+(r.name||'')).includes(q);
@@ -2573,14 +2587,14 @@ const K=(()=>{
   const tbActs=r=>`<div class="flex items-center gap-1">`
     +(r.image_id?`<button data-k="tbocr1" data-id="${esc(r.id)}" class="h-8 px-2 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 text-[11px] font-bold whitespace-nowrap" title="Read the text of this row's image (OCR)"><i class="fas fa-wand-magic-sparkles"></i> <span lang="ar">قراءة</span></button>`
       :`<button data-k="tbimg" data-id="${esc(r.id)}" class="h-8 px-2 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 text-[11px] font-bold whitespace-nowrap" title="Read from image: choose or take a photo; the text goes into the description" lang="ar"><i class="fas fa-camera"></i> قراءة من صورة</button>`)
-    +(tStep===2?`<button data-k="tbwrite" data-id="${esc(r.id)}" class="h-8 px-2 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-[11px] font-bold whitespace-nowrap" title="Finished writing: send to step 3 (Review & publish)"><i class="fas fa-check"></i> Done</button>`
-      :`<button data-k="tbback" data-id="${esc(r.id)}" class="h-8 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-[11px] font-bold whitespace-nowrap" title="Send back to step 2 (Write)"><i class="fas fa-rotate-left"></i> To write</button>`)
+    +(tStep===2?`<button data-k="tbwrite" data-id="${esc(r.id)}" class="h-8 px-2 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-[11px] font-bold whitespace-nowrap" title="Done: send this row to Classification"><i class="fas fa-check"></i> Done</button>`
+      :`<button data-k="tbback" data-id="${esc(r.id)}" class="h-8 px-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-[11px] font-bold whitespace-nowrap" title="Send back to Input"><i class="fas fa-rotate-left"></i> To write</button>`)
     +`<button data-k="tbdel" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg bg-red-50 text-red-600" aria-label="Delete this row" title="Delete"><i class="fas fa-trash text-xs"></i></button></div>`;
   function tbRow(r,i){
     const am=on=>on?' !bg-amber-100':'',id=esc(r.id),w=tStep===2,dt=f=>`<input data-tc="${f}" data-id="${id}" data-dmy type="text" inputmode="numeric" placeholder="dd-mm-yy" value="${esc(dmy(r[f]))}" class="${TC}">`;
     return `<tr data-row="${id}" class="align-top ${r.status==='approved'?'bg-emerald-50':'bg-white'}">
       <td class="border border-gray-300 text-center px-1"><input type="checkbox" data-sel="${id}" ${tbSel.has(r.id)?'checked':''} class="w-4 h-4" aria-label="Select this row"><div class="text-[10px] text-gray-400" data-n>${i}</div></td>
-      <td class="border border-gray-300 px-1.5 py-1 min-w-[9rem]"><div class="flex items-center gap-1.5">${tThumbBtn(r)}<span dir="ltr" class="font-mono text-[10px] text-gray-600 break-all">${esc(r.name||'')}</span></div></td>
+      <td class="border border-gray-300 px-1.5 py-1 min-w-[11rem]">${w&&!r._new?tbInputCell(r):`<div class="flex items-center gap-1.5">${tThumbBtn(r)}<span dir="ltr" class="font-mono text-[10px] text-gray-600 break-all">${esc(r.name||'')}</span></div>`}</td>
       <td class="border border-gray-300 p-0 ${TBW.entity}"><input data-tc="entity" data-id="${id}" list="t-ents" autocomplete="off" dir="rtl" lang="ar" value="${esc(r.entity||'')}" class="${TC}${am(!r.entity&&r.status==='approved')}"><div data-entchip="${id}" class="px-2 pb-1">${tEntChip(r)}</div></td>
       <td class="border border-gray-300 p-0 ${TBW.gov}"><select data-tc="governorate" data-id="${id}" dir="rtl" class="${TC}"><option value=""></option>${GOVS.map(g=>`<option ${g===r.governorate?'selected':''}>${esc(g)}</option>`).join('')}${r.governorate&&!GOVS.includes(r.governorate)?`<option selected>${esc(r.governorate)}</option>`:''}</select></td>
       <td class="border border-gray-300 p-0 ${TBW.pub}">${dt('publish_date')}</td>
@@ -2589,13 +2603,13 @@ const K=(()=>{
       <td class="border border-gray-300 p-0 ${TBW.price}"><textarea data-tc="booklet_price_raw" data-id="${id}" dir="rtl" lang="ar" rows="1" class="${TC}">${esc(r.booklet_price_raw||'')}</textarea></td>
       <td class="border border-gray-300 p-0 ${TBW.bond}"><textarea data-tc="bid_bond" data-id="${id}" dir="rtl" lang="ar" rows="1" class="${TC}">${esc(r.bid_bond||'')}</textarea></td>
       <td class="border border-gray-300 min-w-[9rem]" data-sc>${tbSectCell(r)}</td>
-      ${w?'':`<td class="border border-gray-300 text-center" data-ok>${tbOkBtn(r)}</td><td class="border border-gray-300 text-center" data-hot>${tbHotBtn(r)}</td>`}
+      ${w?'':`<td class="border border-gray-300 text-center" data-ok>${tbOkBtn(r)}</td>`}
       <td class="border border-gray-300 px-1 whitespace-nowrap" data-acts>${tbActs(r)}</td></tr>`;
   }
   function paintTbRows(){
     const box=$('tb-rows');if(!box)return;
     const all=tbl.filter(tbShow),list=all.slice(0,tbCap+tbl.filter(x=>x._new).length);
-    box.innerHTML=list.map((r,i)=>tbRow(r,i+1)).join('')||`<tr><td colspan="14" class="text-center text-sm text-gray-500 p-6">${tbl.length?'No tender matches this search.':(tStep===2?'Nothing to write. New rows come from tab 1.':'Nothing waiting for review. Rows arrive here when they are marked Done in tab 2.')}</td></tr>`;
+    box.innerHTML=list.map((r,i)=>tbRow(r,i+1)).join('')||`<tr><td colspan="14" class="text-center text-sm text-gray-500 p-6">${tbl.length?'No tender matches this search.':(tStep===2?'Nothing to input. Add an image, import a sheet or add a typed row.':'Nothing waiting for review. Rows arrive here when they are marked Done in Input.')}</td></tr>`;
     box.querySelectorAll('textarea[data-tc]').forEach(autosize);
     const c=$('tb-count');if(c)c.textContent=`${all.length} tender${all.length===1?'':'s'}`+(list.length<all.length?` (showing ${list.length})`:'');
     const m=$('tb-more');if(m)m.classList.toggle('hidden',list.length>=all.length);
@@ -2605,25 +2619,26 @@ const K=(()=>{
   function paintTable(){
     const w=tStep===2;
     const chip=(k,l)=>`<button data-k="tbst" data-v="${k}" class="text-xs font-bold px-3 py-1.5 rounded-lg ${tbF.st===k?'bg-gray-900 text-white':'bg-gray-100 hover:bg-gray-200'}">${l}</button>`;
-    const chips=w?chip('all','All')+chip('empty','No text yet')+chip('text','Has text')+chip('nosector','No sector'):chip('all','All')+chip('draft','Waiting approval')+chip('approved','Approved')+chip('hot','In slider');
+    const chips=w?chip('all','All')+chip('empty','No text yet')+chip('text','Has text')+chip('nosector','No sector'):chip('all','All')+chip('draft','Waiting approval')+chip('approved','Approved')+chip('needsec','Needs sector');
     const sb2=(k,ic,l,tt)=>`<button data-k="${k}" data-selbtn disabled class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-40 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="${tt}"><i class="fas ${ic}"></i> ${l}</button>`;
     const th=(a,e)=>`<th class="sticky top-0 z-10 bg-gray-100 border border-gray-300 px-2 py-1.5 text-xs font-bold whitespace-nowrap text-center">${a}${a?'<span class="block font-normal text-[10px] text-gray-500">'+e+'</span>':e}</th>`;
-    const heads=[['الجهة المعلنة','Entity'],['المحافظة','Governorate'],['تاريخ النشر','Published dd-mm-yy'],['الوصف','Description'],['موعد الجلسة','Session dd-mm-yy'],['ثمن الكراسة','Booklet price'],['التأمين','Bid bond'],['القطاع','Sector']].concat(w?[]:[['اعتماد','Approve'],['السلايدر','Slider']]);
+    const heads=[['الجهة المعلنة','Entity'],['المحافظة','Governorate'],['تاريخ النشر','Published dd-mm-yy'],['الوصف','Description'],['موعد الجلسة','Session dd-mm-yy'],['ثمن الكراسة','Booklet price'],['التأمين','Bid bond'],['القطاع','Sector']].concat(w?[]:[['اعتماد','Approve']]);
     main().innerHTML=tNav()
+      +(w?t1InputBar():'')
       +(tbErr?warn('<b>The tenders table could not be read.</b> Database message: <code>'+esc(tbErr)+'</code><br>Run <code>supabase-step18-tender-workflow.sql</code> (and step15 if it mentions governorate) in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
       +`<div class="bg-white px-2.5 py-2 rounded-xl border border-gray-200 flex flex-wrap items-center gap-2">
         <span id="tb-count" class="text-xs font-bold text-gray-600 whitespace-nowrap"></span><span id="tb-selcount" class="text-xs font-bold text-brand-700 whitespace-nowrap"></span>
         <input id="tb-q" type="search" dir="rtl" lang="ar" placeholder="بحث / Search" aria-label="Search tenders" value="${esc(tbF.q)}" class="${inp} !w-44 !py-1.5">
         <div class="flex gap-1">${chips}</div>
         <div class="ml-auto flex flex-wrap items-center gap-2">
-          ${w?`<button data-k="tbselunread" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Select the rows that have an image but no text yet"><i class="fas fa-check-double"></i> Select unread</button>${sb2('tbocrsel','fa-wand-magic-sparkles','Read selected (OCR)','Read the text of the selected images')}<button data-k="tbclassify" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Suggest sectors from the keywords for the visible rows that have none"><i class="fas fa-tags"></i> Auto-classify</button>${sb2('tbwritesel','fa-check','Done (selected)','Send the selected rows to step 3')}`
-            :`${sb2('tbapprovesel','fa-circle-check','Approve selected','Approve the selected tenders')}${sb2('tbhotsel','fa-star','Slider on/off (selected)','Show / stop showing the selected approved tenders in the Hot News slider')}${sb2('tbbacksel','fa-rotate-left','Back to writing','Send the selected rows back to step 2')}`}
+          ${w?`<button data-k="tbadd" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Add an empty row to type in"><i class="fas fa-plus"></i> Add typed row</button><button data-k="tbselunread" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Select the rows that have an image but no text yet"><i class="fas fa-check-double"></i> Select unread</button>${sb2('tbocrsel','fa-wand-magic-sparkles','Read selected (OCR)','Read the text of the selected images')}${sb2('tbwritesel','fa-check','Done (selected)','Send the selected rows to Classification')}`
+            :`<button data-k="tbclassify" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Suggest sectors from the keywords for the visible rows that have none"><i class="fas fa-tags"></i> Auto-classify</button>${sb2('tbapprovesel','fa-circle-check','Approve selected','Approve the selected tenders')}${sb2('tbconfsel','fa-check-double','Confirm sectors (selected)','Confirm the sectors of the selected tenders (they need at least one sector)')}${sb2('tbbacksel','fa-rotate-left','Back to Input','Send the selected rows back to Input')}`}
           <button data-k="tdict" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg" title="Arabic dictionary used to underline unknown words"><i class="fas fa-spell-check"></i> Dictionary</button>
           <button data-k="tentman" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-building-columns"></i> Entities</button>
           <button data-k="tkwopen" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-key"></i> Keywords</button></div></div>
-      <details class="text-[11px] text-gray-600"><summary class="cursor-pointer font-bold">${w?'How step 2 works':'How step 3 works'}</summary><ol class="list-decimal ms-5 mt-1 space-y-0.5">${w
-        ?'<li><b>Write:</b> type the cells (Tab = next cell, Enter = down), or read the text from the image with OCR: one row (قراءة) or many (select rows, then Read selected).</li><li><b>Check:</b> words underlined in red are not in the dictionary. Click one to add or ignore it.</li><li><b>Sector:</b> press Auto-classify, or choose sectors by hand on each row.</li><li><b>Done</b> sends the row to step 3. It needs an entity, a description and a sector.</li>'
-        :'<li><b>Approve:</b> press the circle (or select rows and Approve selected). Subscribers of the sectors of the tender can then see it.</li><li><b>Slider:</b> press the star on approved tenders to show them in the Hot News slider. A sector with starred tenders shows only those; a sector with none shows its latest.</li><li><b>Notify:</b> when you have approved the new tenders, press Send tender notification update (it needs the By sector view for the counter).</li>'}</ol></details>
+      <details class="text-[11px] text-gray-600"><summary class="cursor-pointer font-bold">${w?'How Input works':'How Classification works'}</summary><ol class="list-decimal ms-5 mt-1 space-y-0.5">${w
+        ?'<li><b>Add rows:</b> choose or take an image, import rows from the Excel template, or add a typed row.</li><li><b>Columns:</b> if the image has several columns, set the number under the image and press Lines to place the cut lines, then read it. Columns are read right to left.</li><li><b>Read:</b> press قراءة on a row, or select rows and Read selected. The text goes only into the Description; nothing else is filled in.</li><li><b>Check:</b> words underlined in red are not in the dictionary.</li><li><b>Done</b> sends the row to Classification. It needs an entity and a description.</li>'
+        :'<li><b>Sector:</b> press Auto-classify (keywords) or choose sectors by hand, then confirm.</li><li><b>Approve:</b> press the circle (or select rows and Approve selected). Subscribers of the sectors of the tender can then see it.</li><li><b>Featured on the website:</b> the Hot News slider is managed in tab 3 (Settings).</li><li><b>Notify:</b> when you have approved the new tenders, press Send tender notification update (it needs the By sector view for the counter).</li>'}</ol></details>
       <datalist id="t-ents">${tEnt.map(e=>`<option value="${esc(e.name)}">`).join('')}</datalist>
       <div class="bg-white border border-gray-300 rounded-xl overflow-auto" style="max-height:calc(100vh - 17rem)"><table dir="rtl" class="border-collapse text-sm" style="min-width:100%"><thead><tr>
         <th class="sticky top-0 z-10 bg-gray-100 border border-gray-300 px-1 py-1.5"><input type="checkbox" data-selall class="w-4 h-4" aria-label="Select all"></th>${th('الصورة','Image / name')}${heads.map(([a,e])=>th(a,e)).join('')}${th('','')}</tr></thead>
@@ -2660,7 +2675,7 @@ const K=(()=>{
   Object.assign(ACT,{
     tbadd(){
       const blank=tbl.find(x=>x._new&&!String(x.entity||'').trim()&&!String(x.subject||'').trim());
-      if(!blank){tbl.unshift({id:'n'+Date.now(),_new:true,entity:'',subject:'',governorate:tbLast.governorate||'',publish_date:tbLast.publish_date||today(),session_date:null,booklet_price_raw:'',bid_bond:'',status:'draft',sector_ids:[],sectors_confirmed:false});paintTbRows()}
+      if(!blank){tbl.unshift({id:'n'+Date.now(),_new:true,entity:'',subject:'',governorate:'',publish_date:null,session_date:null,booklet_price_raw:'',bid_bond:'',status:'draft',sector_ids:[],sectors_confirmed:false});paintTbRows()}
       const f=document.querySelector('#tb-rows tr [data-tc="entity"]');if(f){f.focus();f.closest('tr').scrollIntoView({block:'nearest'})}
     },
     tbmore(){tbCap+=100;paintTbRows()},
@@ -2714,10 +2729,11 @@ const K=(()=>{
     return ins.data;
   }
   async function tbOcr(imageId,first,fallback,say){
+    let strips=null;{const c=tbCols[imageId];if(c&&c.columns>1){const q=await sb.from('tender_images').select('*').eq('id',imageId).maybeSingle();if(q.error||!q.data)throw new Error('Could not load the image to cut it into columns.');say(`Cutting the image into ${c.columns} columns...`);const bl=await tStripBlobs(q.data);if(bl)strips=await Promise.all(bl.map(tB64))}}
     const order=fallback?[first,...['ocrspace','groq','gemini'].filter(p=>p!==first)]:[first],errs=[];
     for(let i=0;i<order.length;i++){const p=order[i];
       try{say(i?`Trying ${tPName(p)}...`:`Reading with ${tPName(p)}... 10 to 30 seconds.`);tProg.set(3,3,'Reading the text with '+tPName(p),25);
-        const r=await tFn({action:'read',image_id:imageId,provider:p,engine:'1'});
+        const r=await tFn(Object.assign({action:'read',image_id:imageId,provider:p,engine:'1'},strips?{strips}:{}));
         if(r&&typeof r.text==='string'&&r.text.trim()){tBump(p);return {text:r.text,provider:p}}
         errs.push(tPName(p)+': no text came back')}
       catch(e){errs.push(tPName(p)+': '+e.message)}}
@@ -3145,6 +3161,7 @@ const K=(()=>{
     if(!t1F.date||!parseDmy(t1F.date))t1F.date=today();
     const r=await sb.from('tenders').select(TBCOLS).order('created_at',{ascending:false}).limit(500);
     t1Err=r.error?r.error.message:'';t1rows=r.error?[]:(r.data||[]);
+    if(tStep===2){await loadTable();await tbColsLoad()}
   }
   const t1Taken=(name,exceptId)=>t1rows.some(r=>r.id!==exceptId&&String(r.name||'').toLowerCase()===String(name).toLowerCase());
   async function t1AssertFree(name,exceptId){
@@ -3204,7 +3221,7 @@ const K=(()=>{
     else t1F[k]=v.trim();
     t1Dirty=true;paintT1Bar()});
   function tNeedDetails(){ // true = something is wrong, do not continue
-    if(tStep!==1){toast('Images are uploaded in tab 1 (Read & name).',false);return true}
+    if(tStep!==2){toast('Images are uploaded in tab 1 (Input tender).',false);return true}
     const f=t1F;if(!parseDmy(f.date)){toast('Write the date as dd-mm-yy first.',false);return true}
     if(f.kind==='newspaper'&&!f.code){toast('Choose the newspaper.',false);return true}
     if(t1Dirty){if(!confirm('You changed the details.\n\nUse them for this image and the next ones?'))return true;t1Persist();t1Dirty=false;paintT1Bar()}
@@ -3269,6 +3286,7 @@ const K=(()=>{
     const q=tFold(t1Q.q);return !q||tFold((r.name||'')+' '+(r.entity||'')+' '+(r.subject||'')).includes(q);
   };
   function paintT1Rows(){
+    if(tStep===2)return paintTbRows();
     const box=$('t1-rows');if(!box)return;
     const all=t1rows.filter(t1Show),list=all.slice(0,t1Cap);
     box.innerHTML=list.map((r,i)=>t1Row(r,i+1)).join('')||`<tr><td colspan="10" class="text-center text-sm text-gray-500 p-6">${t1rows.length?'No row matches.':'No rows yet. Choose an image, add a row, or import a sheet.'}</td></tr>`;
@@ -3277,6 +3295,7 @@ const K=(()=>{
     tThumbsLater();
   }
   function paintT1(){
+    if(tStep===2)return paintTable();
     const chip=(k,l)=>`<button data-k="t1st" data-v="${k}" class="text-xs font-bold px-3 py-1.5 rounded-lg ${t1Q.st===k?'bg-gray-900 text-white':'bg-gray-100 hover:bg-gray-200'}">${l}</button>`;
     main().innerHTML=(t1Err?warn('<b>The tenders table could not be read.</b> Database message: <code>'+esc(t1Err)+'</code><br>Run <code>supabase-step18-tender-workflow.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
       +`<div id="t1-bar" class="bg-white p-3 rounded-2xl border border-gray-200 space-y-2.5">${t1BarHtml()}</div>
@@ -3295,7 +3314,7 @@ const K=(()=>{
   document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='t1-q'){t1Q.q=t.value;t1Cap=100;paintT1Rows()}});
 
   async function t1SaveCell(el){
-    const r=t1rows.find(x=>x.id===el.dataset.id);if(!r)return;const f=el.dataset.t1,raw=el.value,nowIso=new Date().toISOString(),patch={};
+    const r=tbl.find(x=>x.id===el.dataset.id)||t1rows.find(x=>x.id===el.dataset.id);if(!r)return;const f=el.dataset.t1,raw=el.value,nowIso=new Date().toISOString(),patch={};
     const revert=()=>paintT1Rows();
     if(f==='name'){const n=t1Slug(raw);if(!n){toast('The name cannot be empty.',false);return revert()}
       if(n===r.name){el.value=n;return}try{await t1AssertFree(n,r.id)}catch(e){toast(e.message,false);return revert()}patch.name=n}
@@ -3310,9 +3329,9 @@ const K=(()=>{
     patch.updated_at=nowIso;
     const u=await sb.from('tenders').update(patch).eq('id',r.id);
     if(u.error){toast(u.error.code==='23505'?'This name already exists.':u.error.message,false);return revert()}
-    Object.assign(r,patch);
+    Object.assign(r,patch);{const o=t1rows.find(x=>x.id===r.id);if(o&&o!==r)Object.assign(o,patch)}
     if(r.image_id&&f!=='name')sb.from('tender_images').update({source_paper:r.source_paper||'',page:r.page||null,publish_date:r.publish_date||null,updated_at:nowIso}).eq('id',r.image_id).then(()=>{});
-    const tr=el.closest('tr'),i=tr?tr.querySelector('td').textContent:'';if(tr){tr.outerHTML=t1Row(r,i);tThumbsLater()}
+    const tr=el.closest('tr'),i=tr?tr.querySelector('td').textContent:'';if(tr){tr.outerHTML=tStep===2?tbRow(r,i):t1Row(r,i);tThumbsLater()}
     toast('Saved');
   }
   document.addEventListener('change',e=>{const c=e.target&&e.target.closest&&e.target.closest('[data-t1]');if(c)t1SaveCell(c).catch(x=>toast(x.message,false))});
@@ -3348,12 +3367,12 @@ const K=(()=>{
     rows.slice(h+1).forEach((r,i)=>{
       const line=h+i+2,raw=k=>k in map?r[map[k]]:'',txt=k=>String(raw(k)??'').trim();
       if(!r.some(c=>String(c).trim()))return;
-      let kind=f.kind,code=f.code,fromSheet=false;const a=t1SrcFrom(txt('kind')),b=t1SrcFrom(txt('paper'));
+      let kind=null,code=null,fromSheet=false;const a=t1SrcFrom(txt('kind')),b=t1SrcFrom(txt('paper'));
       if(a){kind=a.kind;code=a.code;fromSheet=true}if(b&&(b.kind==='newspaper')&&(!a||a.kind==='newspaper')){kind='newspaper';code=b.code||code;fromSheet=true}
-      if(kind==='newspaper'&&!T1PAPERS.some(p=>p[0]===code))code=T1PAPERS.some(p=>p[0]===f.code)?f.code:'ahram';
-      if(kind!=='newspaper')code=kind;
+      if(kind==='newspaper'&&!T1PAPERS.some(p=>p[0]===code))code=null;
+      if(kind&&kind!=='newspaper')code=kind;
       if(!fromSheet)defSrc++;
-      let pd=t1AnyDate(raw('publish_date'));if(!pd){pd=f.date;defDate++}
+      let pd=t1AnyDate(raw('publish_date'))||null;
       const sd=txt('session_date')?t1AnyDate(raw('session_date')):null;
       if(txt('session_date')&&!sd){bad.push(`Row ${line}: session date "${txt('session_date')}" is not a date (use dd-mm-yy)`);return}
       const page=tDigits(txt('page')),sub0=tDigits(txt('sub'));let sub=sub0;
@@ -3364,7 +3383,7 @@ const K=(()=>{
       used.add(name);
       const ent=tbVal('entity',txt('entity')).v,subj=tbVal('subject',txt('subject')).v,pr=tbVal('booklet_price_raw',txt('price')),bd=tbVal('bid_bond',txt('bond')).v;
       const img=txt('image');if(img)withImg++;
-      ok.push({row:{name,source_kind:kind,source_code:code,source_paper:t1Label(kind,code),page:page||null,sub_page:sub||null,publish_date:pd,entity:ent||'',subject:subj||'',
+      ok.push({row:{name,source_kind:kind,source_code:code,source_paper:kind?t1Label(kind,code):'',page:page||null,sub_page:sub||null,publish_date:pd,entity:ent||'',subject:subj||'',
         governorate:txt('governorate')||null,session_date:sd,booklet_price_raw:pr.v,booklet_price:pr.x.booklet_price??null,bid_bond:bd||null,status:'draft',written:false},img:img?t1Slug(img.replace(/\.[^.]+$/,'')):''});
     });
     if(!ok.length)throw new Error('No row could be imported.'+(bad.length?' '+bad.slice(0,5).join('; '):''));
@@ -3373,10 +3392,9 @@ const K=(()=>{
     modal(`<h2 class="font-extrabold text-lg mb-2">Import ${ok.length} row${ok.length===1?'':'s'} from ${esc(file.name)}</h2>
       <ul class="text-xs text-gray-700 space-y-1 list-disc ms-5">
         <li>The rows are <b>added</b> after the existing ones. Nothing is overwritten.</li>
-        ${defSrc?`<li>${defSrc} row${defSrc===1?'':'s'} had no source: they use <b>${esc(t1Label(f.kind,f.code))}</b> from the details bar.</li>`:''}
-        ${defDate?`<li>${defDate} row${defDate===1?'':'s'} had no date: they use <b>${esc(dmy(f.date))}</b> from the details bar.</li>`:''}
+        <li>Empty cells stay empty: nothing is filled in automatically.</li>
         ${adjusted?`<li>${adjusted} name${adjusted===1?'':'s'} already existed, so the sub-page was moved to the next free number.</li>`:''}
-        ${noText?`<li>${noText} row${noText===1?'':'s'} have no description yet: they go to tab 2 to be typed.</li>`:''}
+        ${noText?`<li>${noText} row${noText===1?'':'s'} have no description yet: they stay in Input to be typed or read.</li>`:''}
         ${withImg?`<li>${withImg} row${withImg===1?'':'s'} name an image file. After importing press <b>Attach images</b> and choose those files.</li>`:''}
       </ul>
       ${bad.length?`<p class="text-xs font-bold text-red-700 mt-2">${bad.length} row${bad.length===1?'':'s'} skipped:</p><ul class="text-[11px] text-red-700 list-disc ms-5 max-h-28 overflow-auto">${bad.slice(0,30).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
@@ -3385,7 +3403,7 @@ const K=(()=>{
   }
   document.addEventListener('change',e=>{const t=e.target;if(!t)return;
     if(t.id==='t1-imp'){const f=t.files[0];t.value='';if(f)t1ImportFile(f).catch(x=>toast(x.message,false))}
-    if(t.id==='t1-attach'){const f=t.files[0];t.value='';const r=t1rows.find(x=>x.id===t1AttachId);if(!f||!r)return;
+    if(t.id==='t1-attach'){const f=t.files[0];t.value='';const r=tbl.find(x=>x.id===t1AttachId)||t1rows.find(x=>x.id===t1AttachId);if(!f||!r)return;
       toast('Attaching the image...');tAttach(r,f).then(async()=>{await loadT1();paintT1();toast('Image attached')}).catch(x=>toast(x.message,false))}
     if(t.id==='t1-bulkf'){const fs=[...t.files];t.value='';if(fs.length)t1Bulk(fs).catch(x=>toast(x.message,false))}});
   async function t1Bulk(files){
@@ -3436,12 +3454,12 @@ const K=(()=>{
     const s=document.createElement('p');s.className='text-xs font-bold pt-1';s.textContent=`Done: ${ok} read, ${skip} skipped, ${fail} failed.`;log.appendChild(s);log.scrollTop=log.scrollHeight;go.disabled=false;
   }
   async function tbSetWritten(ids,to){
-    const rows=ids.map(id=>tbl.find(x=>x.id===id)).filter(Boolean),list=to?rows.filter(r=>tValid(r)&&(r.sector_ids||[]).length):rows,bad=rows.length-list.length;
-    if(!list.length)return toast(to?'Each row needs an entity, a description and a sector before it can move on.':'Select rows first.',false);
-    const now=new Date().toISOString(),patch=to?{written:true,written_at:now,written_by:(me&&me.id)||null,sectors_confirmed:true,updated_at:now}:{written:false,status:'draft',hot_featured:false,updated_at:now};
+    const rows=ids.map(id=>tbl.find(x=>x.id===id)).filter(Boolean),list=to?rows.filter(tValid):rows,bad=rows.length-list.length;
+    if(!list.length)return toast(to?'Each row needs an entity and a description before it can move on.':'Select rows first.',false);
+    const now=new Date().toISOString(),patch=to?{written:true,written_at:now,written_by:(me&&me.id)||null,updated_at:now}:{written:false,status:'draft',hot_featured:false,updated_at:now};
     const u=await sb.from('tenders').update(patch).in('id',list.map(r=>r.id));if(u.error)throw u.error;
     tbl=tbl.filter(r=>!list.includes(r));list.forEach(r=>tbSel.delete(r.id));paintTbRows();tbSelCount();if(window.kBadges)kBadges();
-    toast(to?`${list.length} row${list.length===1?'':'s'} sent to tab 3 (Review & publish)`+(bad?`. ${bad} not sent: entity, description and sector are required.`:''):`${list.length} row${list.length===1?'':'s'} sent back to tab 2`);
+    toast(to?`${list.length} row${list.length===1?'':'s'} sent to Classification`+(bad?`. ${bad} not sent: entity and description are required.`:''):`${list.length} row${list.length===1?'':'s'} sent back to Input`);
   }
   Object.assign(ACT,{
     tpick(){if(tNeedDetails())return;$('t-file').click()},
@@ -3453,7 +3471,7 @@ const K=(()=>{
       if(tNeedDetails())return;const f=t1F,name=t1Name({code:f.code,page:f.page,sub:f.sub,date:f.date});await t1AssertFree(name);
       const label=t1Label(f.kind,f.code),ins=await sb.from('tenders').insert({name,source_kind:f.kind,source_code:f.code,source_paper:label,page:f.page||null,sub_page:f.sub||null,publish_date:f.date,status:'draft',written:false,entity:'',subject:''}).select(TBCOLS).single();
       if(ins.error)throw ins.error;if(/^\d+$/.test(String(f.sub).trim()))f.sub=String(+f.sub+1);t1Persist();
-      t1rows.unshift(ins.data);paintT1();toast('Row added: '+name)},
+      t1rows.unshift(ins.data);tbl.unshift(ins.data);paintT1();toast('Row added: '+name)},
     t1attach(t){t1AttachId=t.dataset.id;$('t1-attach').click()},
     t1bulk(){$('t1-bulkf').click()},
     t1import(){$('t1-imp').click()},
@@ -3470,7 +3488,7 @@ const K=(()=>{
     t1tpl(){loadXlsx().then(()=>{const H=['Name (optional)','Source (newspaper / private / manzooma)','Newspaper (ahram / akhbar / gomohareya)','Page','Sub-page','Date (dd-mm-yy)','Entity','Description','Governorate','Session date (dd-mm-yy)','Booklet price','Bid bond','Image file (optional)'],
       ws=XLSX.utils.aoa_to_sheet([H,['','newspaper','ahram',1,1,'10-10-26','Example entity','Example description','القاهرة','20-10-26','500','2%','ahram-p1-1-10-10-26.jpg'],['','private','','','','10-10-26','','','','','','','']]);
       ws['!cols']=H.map(h=>({wch:Math.max(14,Math.min(40,h.length))}));const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Tenders');
-      const ns=XLSX.utils.aoa_to_sheet([['Notes'],['Every column is optional. Missing source and date use the details bar of tab 1; a missing page or sub-page is written as '+NOPAGE+' in the name.'],['Dates are written dd-mm-yy. Names must be unique; if a name is taken the sub-page moves to the next free number.'],['Rows are added after the existing ones. Pictures are attached afterwards with the Attach images button, by file name.']]);
+      const ns=XLSX.utils.aoa_to_sheet([['Notes'],['Every column is optional. Empty cells stay empty (nothing is filled in automatically); a missing page or sub-page is written as '+NOPAGE+' in the name. Use the sheet Tenders and keep the header row.'],['Dates are written dd-mm-yy. Names must be unique; if a name is taken the sub-page moves to the next free number.'],['Rows are added after the existing ones. Pictures are attached afterwards with the Attach images button, by file name.']]);
       XLSX.utils.book_append_sheet(wb,ns,'Notes');XLSX.writeFile(wb,'tenders-import-template.xlsx')}).catch(e=>toast(e.message,false))},
     async t1del(t){const r=t1rows.find(x=>x.id===t.dataset.id);if(!r)return;
       if(!confirm(`Delete this row (${r.name||'no name'})?${r.image_id?'\n\nIts image is deleted too.':''}\n\nThis cannot be undone.`))return;
@@ -3490,7 +3508,7 @@ const K=(()=>{
       const todo=tbl.filter(r=>tbShow(r)&&!(r.sector_ids||[]).length&&tValid(r));
       if(!todo.length)return toast('Every visible row with text already has a sector.',false);
       const r=await tClassify(todo);paintTbRows();
-      toast(r.tried?`${r.hit} of ${r.tried} tender${r.tried===1?'':'s'} got sectors from the keywords. Check the sector chips, then press Done.`:'Nothing to classify.',r.hit>0)},
+      toast(r.tried?`${r.hit} of ${r.tried} tender${r.tried===1?'':'s'} got sectors from the keywords. Check the sector chips, then confirm them.`:'Nothing to classify.',r.hit>0)},
     async tbhot(t){const r=tbl.find(x=>x.id===t.dataset.id);if(!r)return;const to=!r.hot_featured;
       const u=await sb.from('tenders').update({hot_featured:to,updated_at:new Date().toISOString()}).eq('id',r.id);if(u.error)throw u.error;r.hot_featured=to;
       t.outerHTML=tbHotBtn(r);toast(to?'Will be shown in the Hot News slider':'Removed from the Hot News slider')},
@@ -3500,6 +3518,11 @@ const K=(()=>{
       if(!confirm(`Approve ${ok.length} tender${ok.length===1?'':'s'}? Subscribers of their sectors can then see them.`))return;
       const u=await sb.from('tenders').update({status:'approved',sectors_confirmed:true,updated_at:new Date().toISOString()}).in('id',ok.map(r=>r.id));if(u.error)throw u.error;
       ok.forEach(r=>{r.status='approved';r.sectors_confirmed=true});paintTbRows();if(window.kBadges)kBadges();toast(ok.length+' approved. Now send the notification update when you are ready.')},
+    async tbconfsel(){
+      const l=[...tbSel].map(id=>tbl.find(x=>x.id===id)).filter(r=>r&&(r.sector_ids||[]).length&&!r.sectors_confirmed);
+      if(!l.length)return toast('Select tenders that have a sector that is not confirmed yet.',false);
+      const u=await sb.from('tenders').update({sectors_confirmed:true,updated_at:new Date().toISOString()}).in('id',l.map(r=>r.id));if(u.error)throw u.error;
+      l.forEach(r=>{r.sectors_confirmed=true});paintTbRows();toast(l.length+' confirmed');if(window.kBadges)kBadges()},
     async tbhotsel(){
       const rows=[...tbSel].map(id=>tbl.find(x=>x.id===id)).filter(r=>r&&r.status==='approved');
       if(!rows.length)return toast('Select approved tenders to show in the slider.',false);
@@ -3541,6 +3564,170 @@ const K=(()=>{
     e.preventDefault();const td=el.closest('td'),tr=td.parentElement,nx=e.altKey?tr.previousElementSibling:tr.nextElementSibling,i=[...tr.children].indexOf(td);
     el.blur();const n=nx&&nx.children[i]&&nx.children[i].querySelector('[data-cell]');if(n)n.focus();
   });
+
+  // =====================================================================================================
+  // Phase 1: ONE "Input tender" table (scan + read), column cutter per image, 4 tabs (Settings and Generate come later)
+  // =====================================================================================================
+  let tbCols={};  // image_id -> {columns, col_splits}
+  async function tbColsLoad(){
+    const ids=[...new Set(tbl.map(r=>r.image_id).filter(Boolean))];
+    for(let i=0;i<ids.length;i+=100){const q=await sb.from('tender_images').select('id,columns,col_splits').in('id',ids.slice(i,i+100));
+      if(q.error)return;(q.data||[]).forEach(x=>{tbCols[x.id]={columns:x.columns||1,col_splits:x.col_splits}})}
+  }
+  const t1InputBar=()=>`<div id="t1-bar" class="bg-white p-3 rounded-2xl border border-gray-200 space-y-2.5">${t1BarHtml()}</div>
+    <input id="t-file" type="file" accept="image/jpeg,image/png,image/webp" class="hidden"><input id="t-cam" type="file" accept="image/*" capture="environment" class="hidden">
+    <input id="t1-attach" type="file" accept="image/*" class="hidden"><input id="t1-bulkf" type="file" accept="image/*" multiple class="hidden"><input id="t1-imp" type="file" accept=".xlsx,.xls,.csv" class="hidden">`;
+  function tbInputCell(r){
+    const id=esc(r.id),c=tbCols[r.image_id]||{columns:1},F='w-full px-1 py-1 text-[10px] border border-gray-200 rounded bg-white';
+    return `<div class="flex items-start gap-1.5">${tThumbBtn(r)}<div class="min-w-0 flex-1 space-y-1">
+      <input data-t1="name" data-id="${id}" dir="ltr" value="${esc(r.name||'')}" maxlength="80" class="${F} font-mono">
+      ${r.image_id?`<div class="flex items-center gap-1 text-[10px] font-bold" dir="ltr"><label class="flex items-center gap-1">Columns <select data-tbcols="${id}" class="border border-gray-300 rounded p-0.5">${[1,2,3,4].map(n=>`<option ${n===c.columns?'selected':''}>${n}</option>`).join('')}</select></label>${c.columns>1?`<button data-k="tbcoledit" data-id="${id}" class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 hover:bg-amber-100">Lines</button>`:''}</div>`:''}
+      <details class="text-[10px]" dir="ltr"><summary class="cursor-pointer text-gray-500">Source / page</summary><div class="grid grid-cols-2 gap-1 mt-1">
+        <select data-t1="kind" data-id="${id}" class="${F}"><option value=""></option>${T1KINDS.map(([k,l])=>`<option value="${k}" ${k===r.source_kind?'selected':''}>${l}</option>`).join('')}</select>
+        ${r.source_kind==='newspaper'?`<select data-t1="code" data-id="${id}" class="${F}">${T1PAPERS.map(([k,l])=>`<option value="${k}" ${k===r.source_code?'selected':''}>${l}</option>`).join('')}</select>`:'<span></span>'}
+        <input data-t1="page" data-id="${id}" value="${esc(r.page||'')}" placeholder="page" maxlength="12" class="${F}"><input data-t1="sub" data-id="${id}" value="${esc(r.sub_page||'')}" placeholder="sub" maxlength="12" class="${F}"></div></details></div></div>`;
+  }
+  async function tbColOpenFor(row){
+    const q=await sb.from('tender_images').select('*').eq('id',row.image_id).maybeSingle();
+    if(q.error||!q.data)throw new Error('The picture was not found.');const x=q.data;
+    if(x.image_path&&!tUrl[x.image_path]){const {data}=await sb.storage.from(TB).createSignedUrl(x.image_path,3600);if(data&&data.signedUrl)tUrl[x.image_path]=data.signedUrl}
+    modal(`<h2 class="font-extrabold text-lg mb-1">Columns of ${esc(row.name||'this image')}</h2><div id="t-coled" class="space-y-2"></div><div class="flex justify-end pt-2"><button data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Close</button></div>`);
+    tColOpen(x);
+  }
+  document.addEventListener('change',async e=>{const t=e.target,id=t&&t.dataset&&t.dataset.tbcols;if(!id)return;
+    try{const r=tbl.find(x=>x.id===id);if(!r||!r.image_id)return;const n=+t.value,patch={columns:n,col_splits:tEven(n),updated_at:new Date().toISOString()};
+      const u=await sb.from('tender_images').update(patch).eq('id',r.image_id);
+      if(u.error){t.value=(tbCols[r.image_id]||{columns:1}).columns;throw new Error(u.error.message+' (run supabase-step9-columns.sql)')}
+      tbCols[r.image_id]={columns:n,col_splits:patch.col_splits};
+      const tr=t.closest('tr'),i=tr?tr.querySelector('[data-n]').textContent:'';if(tr){tr.outerHTML=tbRow(r,i);tThumbsLater()}
+      if(n>1)await tbColOpenFor(r);else toast('One column: the whole image is read as it is')}catch(x){toast(x.message,false)}});
+  // the column editor saves through the old action; this version also refreshes the table state and closes the window
+  Object.assign(ACT,{
+    async tbcoledit(t){const r=tbl.find(x=>x.id===t.dataset.id);if(r)await tbColOpenFor(r)},
+    async tcolsave(){if(!TCE)return;const x=TCE.x,patch={columns:TCE.n,col_splits:TCE.sp.map(v=>Math.round(v*1000)/1000),updated_at:new Date().toISOString()};
+      const u=await sb.from('tender_images').update(patch).eq('id',x.id);if(u.error)throw u.error;Object.assign(x,patch);
+      tbCols[x.id]={columns:patch.columns,col_splits:patch.col_splits};toast('Column lines saved. Now press قراءة to read the image.');
+      if($('t-coled')&&$('k-modal-box')&&$('k-modal-box').contains($('t-coled')))closeM()}
+  });
+  // =====================================================================================================
+  // Phase 3: Generate tenders file (PDF / Excel / Word). Default = tenders whose publishing date is today.
+  // No sector column and no grouped items: one flat table, one row per tender.
+  // =====================================================================================================
+  const GENCOLS=[['no','#','#'],['name','الاسم','Name'],['source','المصدر','Source'],['page','الصفحة','Page'],['entity','الجهة المعلنة','Entity'],['governorate','المحافظة','Governorate'],['publish_date','تاريخ النشر','Publishing date'],['subject','الوصف','Description'],['session_date','موعد الجلسة','Session date'],['booklet_price_raw','ثمن الكراسة','Booklet price'],['bid_bond','التأمين','Bid bond'],['status','الحالة','Status']];
+  let GEN={from:'',to:'',st:'all',cols:Object.fromEntries(GENCOLS.map(c=>[c[0],true])),rows:[],busy:false,err:''};
+  const genVal=(r,k,i)=>k==='no'?String(i+1):k==='source'?[r.source_paper,].filter(Boolean).join(''):k==='page'?[r.page,r.sub_page].filter(x=>x!=null&&x!=='').join('-'):(k==='publish_date'||k==='session_date')?dmy(r[k]):k==='status'?(r.status==='approved'?'منشور':'مسودة'):String(r[k]??'');
+  const genCols=()=>GENCOLS.filter(c=>GEN.cols[c[0]]);
+  async function genLoad(){
+    if(!GEN.from)GEN.from=GEN.to=today();
+    GEN.busy=true;GEN.err='';const box=$('gen-prev');if(box)box.innerHTML='<p class="text-xs text-gray-500 p-3">Loading...</p>';
+    let out=[];
+    for(let from=0;;from+=1000){let q=sb.from('tenders').select(TBCOLS).gte('publish_date',GEN.from).lte('publish_date',GEN.to).order('publish_date',{ascending:true}).order('created_at',{ascending:true}).range(from,from+999);
+      if(GEN.st==='approved')q=q.eq('status','approved');else if(GEN.st==='draft')q=q.eq('status','draft');
+      const r=await q;if(r.error){GEN.err=r.error.message;break}out=out.concat(r.data||[]);if((r.data||[]).length<1000)break}
+    GEN.rows=out;GEN.busy=false;genPaintPrev();
+  }
+  function genPaintPrev(){
+    const box=$('gen-prev');if(!box)return;const cols=genCols(),rows=GEN.rows;
+    const c=$('gen-count');if(c)c.textContent=GEN.err?'':`${rows.length} tender${rows.length===1?'':'s'}`;
+    if(GEN.err){box.innerHTML=`<p class="text-xs text-red-700 p-3">${esc(GEN.err)}</p>`;return}
+    if(!rows.length){box.innerHTML='<p class="text-sm text-gray-500 p-4 text-center">No tender has a publishing date in this range.</p>';return}
+    box.innerHTML=`<table dir="rtl" class="border-collapse text-xs"><thead><tr>${cols.map(c=>`<th class="sticky top-0 bg-gray-100 border border-gray-300 px-2 py-1 whitespace-nowrap">${c[1]}</th>`).join('')}</tr></thead><tbody>${rows.slice(0,200).map((r,i)=>`<tr>${cols.map(c=>`<td class="border border-gray-300 px-2 py-1 align-top ${c[0]==='subject'?'min-w-[22rem]':'whitespace-nowrap'}">${esc(genVal(r,c[0],i))}</td>`).join('')}</tr>`).join('')}</tbody></table>${rows.length>200?`<p class="text-[11px] text-gray-500 p-2">Preview shows the first 200 rows. The file has all ${rows.length}.</p>`:''}`;
+  }
+  function paintGenerate(){
+    if(!GEN.from)GEN.from=GEN.to=today();
+    const L='text-[11px] font-bold',chip=(k,l)=>`<button data-k="genq" data-v="${k}" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200">${l}</button>`;
+    main().innerHTML=`<div class="bg-white p-3 rounded-2xl border border-gray-200 space-y-3">
+      <div class="flex flex-wrap items-end gap-2">
+        <label class="${L}">From (publishing date)<input type="date" data-gen="from" value="${esc(GEN.from)}" class="${mt} !py-1.5 block"></label>
+        <label class="${L}">To<input type="date" data-gen="to" value="${esc(GEN.to)}" class="${mt} !py-1.5 block"></label>
+        <label class="${L}">Status<select data-gen="st" class="${mt} !py-1.5 !w-auto block"><option value="all" ${GEN.st==='all'?'selected':''}>All</option><option value="approved" ${GEN.st==='approved'?'selected':''}>Approved only</option><option value="draft" ${GEN.st==='draft'?'selected':''}>Drafts only</option></select></label>
+        <div class="flex gap-1">${chip('today','Today')}${chip('yesterday','Yesterday')}${chip('week','Last 7 days')}${chip('month','This month')}</div></div>
+      <div><p class="${L} mb-1">Columns in the file</p><div class="flex flex-wrap gap-x-4 gap-y-1 text-xs">${GENCOLS.map(c=>`<label class="flex items-center gap-1.5"><input type="checkbox" data-gencol="${c[0]}" ${GEN.cols[c[0]]?'checked':''} class="w-4 h-4"> ${c[2]}</label>`).join('')}</div>
+        <p class="text-[11px] text-gray-500 mt-1">One flat table, one row per tender, sorted by publishing date. No sector and no grouping.</p></div>
+      <div class="flex flex-wrap items-center gap-2"><span id="gen-count" class="text-xs font-bold text-gray-600 me-2"></span>
+        <button data-k="genxlsx" class="${btn1}"><i class="fas fa-file-excel"></i> Excel</button>
+        <button data-k="gendoc" class="${btn1}"><i class="fas fa-file-word"></i> Word</button>
+        <button data-k="genpdf" class="${btn1}"><i class="fas fa-file-pdf"></i> PDF</button></div>
+      <p class="text-[11px] text-gray-500">PDF opens the print window: choose <b>Save as PDF</b> as the printer (this keeps Arabic letters correct). Word is saved as a .doc file that Word opens.</p></div>
+      <div id="gen-prev" class="bg-white border border-gray-300 rounded-xl overflow-auto" style="max-height:calc(100vh - 22rem)"></div>`;
+    genLoad().catch(e=>{GEN.err=e.message;genPaintPrev()});
+  }
+  document.addEventListener('change',e=>{const t=e.target;if(!t||!t.dataset)return;
+    if(t.dataset.gen){GEN[t.dataset.gen]=t.value;if(GEN.from&&GEN.to&&GEN.from>GEN.to){if(t.dataset.gen==='from')GEN.to=GEN.from;else GEN.from=GEN.to;paintGenerate();return}genLoad().catch(x=>{GEN.err=x.message;genPaintPrev()})}
+    if(t.dataset.gencol){GEN.cols[t.dataset.gencol]=t.checked;genPaintPrev()}});
+  const genStamp=()=>GEN.from===GEN.to?GEN.from:GEN.from+'_to_'+GEN.to;
+  const genTitle=()=>'المناقصات - '+(GEN.from===GEN.to?dmy(GEN.from):dmy(GEN.from)+' إلى '+dmy(GEN.to));
+  function genHtml(){
+    const cols=genCols(),css='body{font-family:Arial,Tahoma,sans-serif;direction:rtl}@page{size:landscape;margin:12mm}h1{font-size:16px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #555;padding:4px 6px;font-size:11px;vertical-align:top;text-align:right}th{background:#e8e8e8}tr{page-break-inside:avoid}';
+    return `<!DOCTYPE html><html dir="rtl" lang="ar" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>${esc(genTitle())}</title><style>${css}</style></head><body><h1>${esc(genTitle())}</h1><table><thead><tr>${cols.map(c=>`<th>${c[1]}</th>`).join('')}</tr></thead><tbody>${GEN.rows.map((r,i)=>`<tr>${cols.map(c=>`<td>${esc(genVal(r,c[0],i))}</td>`).join('')}</tr>`).join('')}</tbody></table></body></html>`;
+  }
+  const genOk=()=>{if(GEN.busy||GEN.err){toast('Wait for the list to load first.',false);return false}if(!GEN.rows.length){toast('No tenders in this range.',false);return false}if(!genCols().length){toast('Choose at least one column.',false);return false}return true};
+  Object.assign(ACT,{
+    genq(t){const d=new Date(today()+'T12:00:00'),iso=x=>x.toLocaleDateString('en-CA'),v=t.dataset.v;let a=d,b=d;
+      if(v==='yesterday'){a=b=new Date(d.getTime()-864e5)}else if(v==='week'){a=new Date(d.getTime()-6*864e5)}else if(v==='month'){a=new Date(d.getFullYear(),d.getMonth(),1,12)}
+      GEN.from=iso(a);GEN.to=iso(b);paintGenerate()},
+    async genxlsx(){if(!genOk())return;await loadXlsx();const cols=genCols(),aoa=[cols.map(c=>c[1])].concat(GEN.rows.map((r,i)=>cols.map(c=>genVal(r,c[0],i))));
+      const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=cols.map(c=>({wch:c[0]==='subject'?80:c[0]==='entity'?32:c[0]==='no'?5:16}));
+      const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Tenders');wb.Workbook={Views:[{RTL:true}]};XLSX.writeFile(wb,'tenders-'+genStamp()+'.xlsx');toast('Excel file created')},
+    gendoc(){if(!genOk())return;const b=new Blob(['\ufeff'+genHtml()],{type:'application/msword'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='tenders-'+genStamp()+'.doc';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);toast('Word file created')},
+    genpdf(){if(!genOk())return;const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(f);
+      const d=f.contentWindow.document;d.open();d.write(genHtml());d.close();f.contentWindow.document.title='tenders-'+genStamp();
+      setTimeout(()=>{f.contentWindow.focus();f.contentWindow.print();setTimeout(()=>f.remove(),60000)},400)}
+  });
+
+  // =====================================================================================================
+  // Phase 2: Settings tab = what is featured on the website (Hot News slider)
+  // =====================================================================================================
+  let SET={feat:[],cand:[],q:'',err:'',busy:false};
+  const setRow=(r,on)=>`<div class="flex items-start gap-2 p-2 border-b border-gray-100 last:border-0" dir="rtl"><div class="flex-1 min-w-0"><p class="font-bold text-sm leading-6">${esc(r.entity||'-')}</p><p class="text-xs text-gray-700 leading-5">${esc(String(r.subject||'').slice(0,160))}</p><p class="text-[11px] text-gray-500" dir="ltr">${r.publish_date?'Published '+esc(dmy(r.publish_date)):'No publishing date'}${r.session_date?' &middot; Session '+esc(dmy(r.session_date)):''}</p></div>
+    <button data-k="sethot" data-id="${esc(r.id)}" data-on="${on?1:0}" class="text-xs font-bold px-3 py-2 rounded-lg whitespace-nowrap ${on?'bg-amber-100 text-amber-900 hover:bg-amber-200':'bg-gray-100 hover:bg-gray-200'}" dir="ltr"><i class="fas fa-star"></i> ${on?'Remove':'Feature'}</button></div>`;
+  function setPaintLists(){
+    const f=$('set-feat'),c=$('set-cand');if(!f||!c)return;
+    if(SET.err){f.innerHTML=`<p class="text-xs text-red-700 p-3">${esc(SET.err)}</p>`;c.innerHTML='';return}
+    const q=tFold(SET.q),cand=SET.cand.filter(r=>!q||tFold((r.entity||'')+' '+(r.subject||'')).includes(q)).slice(0,40);
+    f.innerHTML=SET.feat.map(r=>setRow(r,true)).join('')||'<p class="text-sm text-gray-500 p-4 text-center">Nothing is featured. Each sector shows its latest tenders.</p>';
+    c.innerHTML=cand.map(r=>setRow(r,false)).join('')||`<p class="text-sm text-gray-500 p-4 text-center">${SET.cand.length?'No tender matches this search.':'No approved tender with confirmed sectors is waiting to be featured.'}</p>`;
+    const n=$('set-fcount');if(n)n.textContent=SET.feat.length;
+  }
+  async function setLoad(){
+    SET.err='';
+    const a=await sb.from('tenders').select(TBCOLS).eq('hot_featured',true).order('publish_date',{ascending:false}).limit(200);
+    if(a.error){SET.err=a.error.message+' (run supabase-step18-tender-workflow.sql)';return setPaintLists()}
+    const b=await sb.from('tenders').select(TBCOLS).eq('status','approved').eq('sectors_confirmed',true).or('hot_featured.is.null,hot_featured.eq.false').order('publish_date',{ascending:false}).limit(300);
+    if(b.error){SET.err=b.error.message;return setPaintLists()}
+    SET.feat=a.data||[];SET.cand=b.data||[];setPaintLists();
+  }
+  function paintSettings(){
+    const L='text-[11px] font-bold';
+    main().innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-2">
+        <h2 class="font-extrabold text-sm"><i class="fas fa-star text-amber-500"></i> Featured on the website (Hot News slider) <span class="text-gray-500 font-normal">&middot; <span id="set-fcount">0</span> featured</span></h2>
+        <p class="text-[11px] text-gray-600">A sector that has featured tenders shows only those. A sector with none shows its latest tenders. Only approved tenders with confirmed sectors can be featured; sending a tender back to draft removes it from here.</p>
+        <div id="set-feat" class="border border-gray-200 rounded-xl overflow-auto" style="max-height:40vh"></div></div>
+      <div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-2">
+        <h2 class="font-extrabold text-sm">Add to featured</h2>
+        <input id="set-q" type="search" dir="rtl" lang="ar" placeholder="بحث / Search approved tenders" value="${esc(SET.q)}" class="${inp} !w-64 !py-1.5">
+        <div id="set-cand" class="border border-gray-200 rounded-xl overflow-auto" style="max-height:40vh"></div></div>
+      <div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-2">
+        <h2 class="font-extrabold text-sm">Display</h2>
+        <p class="text-[11px] text-gray-600">How many tenders each sector shows, the Hot News section text and its look are edited in the website content.</p>
+        <button data-k="setopencontent" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl"><i class="fas fa-pen-to-square"></i> Open website content (General)</button></div>`;
+    setPaintLists();setLoad().catch(e=>{SET.err=e.message;setPaintLists()});
+  }
+  document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='set-q'){SET.q=t.value;setPaintLists()}});
+  Object.assign(ACT,{
+    async sethot(t){const on=t.dataset.on!=='1',id=t.dataset.id,r=SET.feat.find(x=>x.id===id)||SET.cand.find(x=>x.id===id);if(!r)return;t.disabled=true;
+      const u=await sb.from('tenders').update({hot_featured:on,updated_at:new Date().toISOString()}).eq('id',id);if(u.error){t.disabled=false;throw u.error}
+      r.hot_featured=on;SET.feat=SET.feat.filter(x=>x.id!==id);SET.cand=SET.cand.filter(x=>x.id!==id);(on?SET.feat:SET.cand).unshift(r);
+      const m=tbl.find(x=>x.id===id);if(m)m.hot_featured=on;setPaintLists();toast(on?'Featured on the website':'Removed from featured')},
+    setopencontent(){showPane('content')}
+  });
+  // ---- (old placeholder, no longer used) ----
+  function paintTPlaceholder(){
+    const s=tStep===5;
+    main().innerHTML=`<div class="bg-white rounded-2xl border border-gray-200 p-6 text-center space-y-2"><i class="fas ${s?'fa-sliders':'fa-file-export'} text-3xl text-gray-400"></i>
+      <h2 class="font-extrabold">${s?'Settings (featured on the website)':'Generate tenders file'}</h2>
+      <p class="text-sm text-gray-600">${s?'Coming in Phase 2. For now the Hot News slider star is in tab 2 (Classification &amp; notification).':'Coming in Phase 3: PDF, Excel or Word, default = tenders published today, with a date range.'}</p></div>`;
+  }
 
   // ---- events ----
   Object.assign(ACT,{
@@ -3679,7 +3866,7 @@ const K=(()=>{
   return {start,go};
 })();
 
-showPane(/type=recovery/.test(location.hash)?'clients':(['#leads','#clients','#issues','#tenders','#tenders1','#tenders2','#tenders3','#directory'].includes(location.hash.split('&')[0])?(location.hash.split('&')[0]==='#tenders'?'tenders1':location.hash.slice(1)):'content'));
+showPane(/type=recovery/.test(location.hash)?'clients':(['#leads','#clients','#issues','#tenders','#tenders1','#tenders2','#tenders3','#tenders4','#directory'].includes(location.hash.split('&')[0])?(location.hash.split('&')[0]==='#tenders'?'tenders1':location.hash.slice(1)):'content'));
 </script>
 </body>
 </html>
