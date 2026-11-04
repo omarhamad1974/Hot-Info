@@ -418,7 +418,8 @@
             "opacity": 40
           },
           "mask": {
-            "shape": "wave-t"
+            "shape": "file:mask-mw26zxnu-85674.svg",
+            "feather": 76
           }
         },
         "image": "mw26v05d-85673.png"
