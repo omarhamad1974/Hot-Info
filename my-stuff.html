@@ -24,14 +24,15 @@
     <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="KHIP" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink">Intellectual Properties</span></a>
     <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
       <a href="index.html" class="hover:text-brand-600 transition">Home</a><a href="patents.html" class="text-brand-700 font-normal transition">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition">Translation</a><a href="about.html" class="hover:text-brand-600 transition">About</a>
-    <a href="my-stuff.html" class="hover:text-brand-600 transition">My files</a><a href="directory.html" class="hover:text-brand-600 transition" data-i18n="nav_directory">Directory</a></nav>
+    <a href="my-stuff.html" class="text-brand-700 font-normal transition" aria-current="page">My files</a><a href="subscribe.html" class="hover:text-brand-600 transition">Subscribe</a><a href="directory.html" class="hover:text-brand-600 transition" data-i18n="nav_directory">Directory</a></nav>
     <span data-social class="flex gap-2"><a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a></span>
   </div>
 </header>
 <main>
 <section class="band"><div class="wrap">
   <div class="fu"><h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-medium text-title leading-[1.05]">My files</h1><span class="rule mt-5"></span>
-  <p id="who" class="text-base md:text-lg max-w-xl">Your sector libraries, ready to open or download.</p></div>
+  <p id="who" class="text-base md:text-lg max-w-xl">Your sector libraries, ready to open or download.</p>
+  <a href="subscribe.html" class="auth-btn mt-5 !w-auto" style="display:inline-flex"><i class="ph-light ph-credit-card"></i><span style="display:inline">Subscribe or renew</span></a></div>
   <nav id="crumb" class="mt-8 flex flex-wrap items-center gap-2 text-sm" aria-label="Where you are"></nav>
   <div id="tools" class="mt-4 hidden flex-wrap items-center gap-3"><div class="relative w-full sm:w-80"><i class="ph-light ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-stone-400"></i><input id="q" type="search" placeholder="Search in this folder" aria-label="Search files" class="auth-in !mb-0 !w-full !pl-11"></div><label class="text-sm text-stone-500 flex items-center gap-2">Sort<select id="sort" class="rounded-full border border-stone-300 bg-white px-3 py-2 text-sm"><option value="name">Name</option><option value="new">Newest first</option></select></label></div>
   <div id="files" class="mt-5" aria-live="polite"></div>
@@ -69,7 +70,7 @@ async function home(){ // sector cards: only the sectors this user currently sub
   const t=new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'}),until={};
   (pr.data||[]).forEach(p=>{if(t>=p.start_date&&t<=p.end_date&&(!until[p.sector_id]||p.end_date>until[p.sector_id]))until[p.sector_id]=p.end_date});
   sectors=(r.data||[]).filter(x=>until[x.id]).map(x=>({...x,until:until[x.id],left:Math.round((Date.parse(until[x.id])-Date.parse(t))/864e5)}));
-  if(!sectors.length)return note('ph-stack','No active subscriptions yet','Once you are subscribed to a sector, its documents appear here. Get in touch with us to subscribe.');
+  if(!sectors.length)return note('ph-stack','No active subscriptions yet','Once you are subscribed to a sector, its documents appear here. Press Subscribe or renew above to get started.');
   $('tools').classList.add('hidden');$('tools').classList.remove('flex');
   $('files').innerHTML=`<p class="text-sm text-stone-500 mb-3">${sectors.length} active sector${sectors.length===1?'':'s'}</p><div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">`+sectors.map(x=>{
     const soon=x.left<=14;

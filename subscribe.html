@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="lang.js"></script>
+<title>Subscribe | KHIP Intellectual Properties</title>
+<meta name="robots" content="noindex"><meta name="description" content="Subscribe to KHIP sectors or renew your subscription.">
+<meta name="theme-color" content="#1d4ed8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="tailwind-config.js"></script>
+<script src="theme.js"></script>
+<script src="brand.js"></script>
+<script src="contact.js"></script>
+<script src="motion.js"></script>
+<script src="menu.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .p-opt{display:block;cursor:pointer;background:#fff;border:2px solid #e7e5e4;border-radius:1rem;padding:1rem 1.1rem;transition:border-color .2s,background .2s}
+  .p-opt:hover{border-color:#a8a29e}
+  .p-opt.on{border-color:rgb(var(--c-accent-rgb));background:rgb(var(--c-accent-soft-rgb,239 246 255) / .5)}
+  .p-opt.off{opacity:.55;cursor:not-allowed}
+  .p-opt input{position:absolute;opacity:0;pointer-events:none}
+  .p-in{width:100%;border:1px solid #d6d3d1;background:#fff;border-radius:.75rem;padding:.6rem .85rem;font:inherit;font-size:16px;color:rgb(var(--c-ink-rgb))}
+  .p-lab{display:block;font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:#78716c;margin-bottom:.3rem}
+  .p-pill{display:inline-block;font-size:.6875rem;border-radius:999px;padding:.15rem .65rem}
+  .p-h{font-family:inherit}
+</style>
+</head>
+<body class="font-sans font-light antialiased">
+<header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
+  <div class="wrap py-3 flex items-center justify-between">
+    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="KHIP" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
+    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
+      <a href="index.html" class="hover:text-brand-600 transition" data-i18n="bar_home">Home</a><a href="patents.html" class="hover:text-brand-600 transition" data-svc-page="patents.html">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition" data-svc-page="trademarks.html">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition" data-svc-page="translation.html">Translation</a><a href="about.html" class="hover:text-brand-600 transition" data-i18n="bar_about">About</a>
+    <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a><a href="subscribe.html" class="text-brand-700 font-normal transition" aria-current="page" data-i18n="pay_nav">Subscribe</a><a href="directory.html" class="hover:text-brand-600 transition" data-i18n="nav_directory">Directory</a></nav>
+    <div class="flex items-center gap-2"><div id="lang-switch"></div><span data-social class="flex gap-2"><a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a></span></div>
+  </div>
+</header>
+<main>
+<section class="band"><div class="wrap">
+  <div class="fu"><h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-medium text-title leading-[1.05]" data-i18n="pay_title">Subscribe</h1><span class="rule mt-5"></span>
+  <p class="text-base md:text-lg max-w-2xl" data-i18n="pay_sub">Choose a package and your sectors, pay in your own banking or wallet app, then send us the receipt. We activate your subscription after checking it.</p></div>
+  <div id="msg" class="hidden mt-6 card !transform-none p-4 text-sm" role="status" aria-live="polite"></div>
+  <div id="state" class="mt-8" aria-live="polite"></div>
+  <form id="form" class="hidden mt-8 grid gap-8 max-w-3xl" autocomplete="off" novalidate>
+    <section aria-labelledby="h1"><h2 id="h1" class="font-display text-2xl font-semibold text-title mb-3" data-i18n="pay_step1">1. Choose a package</h2><div id="s-pkg" class="grid gap-3 sm:grid-cols-2"></div></section>
+    <section aria-labelledby="h2"><h2 id="h2" class="font-display text-2xl font-semibold text-title mb-3" data-i18n="pay_step2">2. Choose your sectors</h2><div id="s-sec" class="grid gap-3 sm:grid-cols-2"></div></section>
+    <section id="s-sum" class="card !transform-none p-5" aria-live="polite"></section>
+    <div id="s-paid" class="hidden grid gap-8">
+      <section aria-labelledby="h3"><h2 id="h3" class="font-display text-2xl font-semibold text-title mb-1" data-i18n="pay_step3">3. Pay</h2><p class="text-sm text-stone-500 mb-3" data-i18n="pay_paid_hint">Pay the exact amount in your own app, then attach the receipt below.</p>
+        <div id="s-meth" class="grid gap-3 sm:grid-cols-2"></div><div id="s-mdet" class="mt-4"></div></section>
+      <section aria-labelledby="h4"><h2 id="h4" class="font-display text-2xl font-semibold text-title mb-3" data-i18n="pay_step4">4. Send your receipt</h2>
+        <label class="block"><span class="p-lab" data-i18n="pay_receipt">Receipt or QR screenshot</span><input id="f-file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="p-in"></label>
+        <p class="text-xs text-stone-500 mt-1" data-i18n="pay_receipt_hint">JPG, PNG, WebP or PDF, up to 5 MB.</p></section>
+    </div>
+    <label class="block"><span class="p-lab" data-i18n="pay_note">Note (optional)</span><input id="f-note" maxlength="500" dir="auto" class="p-in"></label>
+    <div><button id="b-send" type="submit" class="auth-btn !h-12 !px-8" style="background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))"><i class="ph-light ph-paper-plane-tilt"></i><span id="b-send-t" data-i18n="pay_send">Send request</span></button></div>
+  </form>
+  <div id="mine" class="hidden mt-14 max-w-3xl"><h2 class="font-display text-3xl font-semibold text-title mb-4" data-i18n="pay_my">My requests</h2><div id="mine-l" class="grid gap-3"></div></div>
+</div></section>
+</main>
+<script src="footer.js"></script>
+<script src="auth.js"></script>
+<script>
+const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.08});
+document.querySelectorAll('.fu').forEach(e=>io.observe(e));
+</script>
+<script>
+/* Subscribe: pick a package + sectors, pay in your own app, upload the receipt. No payment gateway.
+   The amount is calculated in the database (request_subscription); the admin approves in admin > Payments. */
+const K=window.KLang,T=(k,v)=>K?K.t(k,v):k,rtl=()=>!!(K&&K.rtl);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const PRB='payment-receipts',PAB='payment-assets',MAXB=5*1024*1024;
+const S={pkgs:[],meths:[],secs:[],until:{},reqs:[],pkg:'',pick:new Set(),method:'',busy:false,ok:false};
+const nm=(o,k)=>(rtl()&&o[k+'_ar'])||o[k]||'';
+const cur=c=>!c||c==='EGP'?T('pay_egp'):c;
+const money=(n,c)=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2})+' '+cur(c);
+const day=d=>d?new Date(d.length>10?d:d+'T00:00:00Z').toLocaleDateString(rtl()?'ar-EG':'en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:d.length>10?'Africa/Cairo':'UTC'}):'';
+const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
+const pkgOf=c=>S.pkgs.find(p=>p.code===c);
+const methOf=c=>S.meths.find(m=>m.code===c);
+const secName=id=>{const s=S.secs.find(x=>x.id===id);return s?s.name:id};
+const qr=p=>KHIPAuth.client().storage.from(PAB).getPublicUrl(p).data.publicUrl;
+
+function flash(t,ok=true){const m=$('msg');m.textContent=t;m.className='mt-6 card !transform-none p-4 text-sm '+(ok?'text-emerald-900 bg-emerald-50 border-emerald-200':'text-red-900 bg-red-50 border-red-200');m.scrollIntoView({behavior:'smooth',block:'center'})}
+function note(icon,t,sub,btn){
+  $('form').classList.add('hidden');$('mine').classList.add('hidden');
+  $('state').innerHTML=`<div class="card !transform-none p-10 text-center max-w-xl"><i class="ph-light ${icon} text-5xl text-stone-400"></i><p class="mt-3 font-display text-2xl font-semibold text-title">${esc(t)}</p>${sub?`<p class="mt-1 text-sm text-stone-500">${esc(sub)}</p>`:''}${btn?`<button id="n-btn" class="auth-btn" style="margin:1.25rem auto 0"><i class="ph-light ph-user"></i><span style="display:inline">${esc(btn)}</span></button>`:''}</div>`;
+  const b=$('n-btn');if(b)b.onclick=()=>KHIPAuth.open();
+}
+
+// ---- which sectors can be picked for the chosen package (free package: once per sector; no double pending request)
+function blocked(sid){
+  const p=pkgOf(S.pkg);if(!p)return '';
+  const mine=S.reqs.filter(r=>r.package_code===p.code&&(r.sector_ids||[]).includes(sid));
+  if(mine.some(r=>r.status==='pending'))return T('pay_in_review');
+  if(p.max_per_user_sector!=null&&mine.filter(r=>r.status==='pending'||r.status==='approved').length>=p.max_per_user_sector)return T('pay_used');
+  return '';
+}
+function paintPkgs(){
+  $('s-pkg').innerHTML=S.pkgs.map(p=>{const free=!(Number(p.price)>0),on=S.pkg===p.code;
+    return `<label class="p-opt ${on?'on':''}"><input type="radio" name="pkg" value="${esc(p.code)}" ${on?'checked':''}>
+      <span class="block font-display text-2xl font-semibold text-title leading-tight">${esc(nm(p,'name'))}</span>
+      <span class="block mt-1 text-lg ${free?'text-emerald-700':'text-ink'}">${free?esc(T('pay_free')):esc(money(p.price,p.currency))+' <span class="text-xs text-stone-500">'+esc(T('pay_per_sector'))+'</span>'}</span></label>`}).join('');
+}
+function paintSecs(){
+  const t=today();
+  $('s-sec').innerHTML=S.secs.map(s=>{const b=blocked(s.id),on=S.pick.has(s.id)&&!b,u=S.until[s.id];
+    return `<label class="p-opt ${on?'on':''} ${b?'off':''}"><input type="checkbox" name="sec" value="${esc(s.id)}" ${on?'checked':''} ${b?'disabled':''}>
+      <span class="flex items-start justify-between gap-3"><span><span class="block font-medium text-ink">${esc(s.name)}</span>
+      ${u&&u>=t?`<span class="block text-xs text-emerald-700 mt-1">${esc(T('pay_active_until',{x:day(u)}))}</span>`:''}${b?`<span class="block text-xs text-amber-700 mt-1">${esc(b)}</span>`:''}</span>
+      <i class="ph-light ${on?'ph-check-square':'ph-square'} text-2xl ${on?'text-brand-600':'text-stone-300'}"></i></span></label>`}).join('');
+}
+function total(){const p=pkgOf(S.pkg);return p?Number(p.price)*[...S.pick].filter(x=>!blocked(x)).length:0}
+function paintSum(){
+  const p=pkgOf(S.pkg),n=[...S.pick].filter(x=>!blocked(x)).length,free=p&&!(Number(p.price)>0),renew=[...S.pick].some(x=>S.until[x]&&S.until[x]>=today());
+  $('s-sum').innerHTML=!p?`<p class="text-sm text-stone-500">${esc(T('pay_pick_pkg'))}</p>`
+    :`<div class="flex flex-wrap items-end justify-between gap-3"><div><p class="p-lab !mb-0">${esc(T('pay_total'))}</p><p class="font-display text-4xl font-semibold text-title">${free?esc(T('pay_free')):esc(money(total(),p.currency))}</p></div>
+      <p class="text-sm text-stone-600">${esc(nm(p,'name'))} &middot; ${esc(T('pay_sel_n',{x:n}))}</p></div>
+      ${free?`<p class="text-sm text-stone-600 mt-3">${esc(T('pay_free_note'))}</p>`:''}${renew?`<p class="text-sm text-stone-600 mt-2">${esc(T('pay_renew_note'))}</p>`:''}`;
+  const paid=p&&Number(p.price)>0;$('s-paid').classList.toggle('hidden',!paid);if(paid)paintMeths();
+}
+function paintMeths(){
+  if(!S.meths.length){$('s-meth').innerHTML=`<p class="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3 sm:col-span-2">${esc(T('pay_none_methods'))}</p>`;$('s-mdet').innerHTML='';return}
+  if(!methOf(S.method))S.method='';
+  $('s-meth').innerHTML=S.meths.map(m=>`<label class="p-opt ${S.method===m.code?'on':''}"><input type="radio" name="meth" value="${esc(m.code)}" ${S.method===m.code?'checked':''}><span class="font-medium text-ink">${esc(nm(m,'name'))}</span></label>`).join('');
+  const m=methOf(S.method),p=pkgOf(S.pkg);
+  $('s-mdet').innerHTML=!m?'':`<div class="card !transform-none p-5 grid gap-4 sm:grid-cols-[1fr_auto] items-start">
+    <dl class="grid gap-3 text-sm"><div><dt class="p-lab !mb-0">${esc(T('pay_amount'))}</dt><dd class="font-display text-3xl font-semibold text-title">${esc(money(total(),p&&p.currency))}</dd></div>
+      ${m.account_name?`<div><dt class="p-lab !mb-0">${esc(T('pay_account_name'))}</dt><dd class="text-ink break-words" dir="auto">${esc(m.account_name)}</dd></div>`:''}
+      ${m.account_number?`<div><dt class="p-lab !mb-0">${esc(T('pay_account_no'))}</dt><dd class="flex items-center gap-2 flex-wrap"><span class="text-ink text-lg break-all" dir="ltr">${esc(m.account_number)}</span><button type="button" data-copy="${esc(m.account_number)}" class="text-xs border border-stone-300 hover:border-stone-500 rounded-full px-3 py-1"><i class="ph-light ph-copy"></i> ${esc(T('pay_copy'))}</button></dd></div>`:''}
+      ${nm(m,'instructions')?`<div class="whitespace-pre-line text-stone-700 leading-7" dir="auto">${esc(nm(m,'instructions'))}</div>`:''}</dl>
+    ${m.qr_path?`<figure class="text-center"><img src="${esc(qr(m.qr_path))}" alt="${esc(T('pay_scan'))}" class="w-40 h-40 object-contain rounded-xl border border-stone-200 bg-white mx-auto"><figcaption class="text-xs text-stone-500 mt-1">${esc(T('pay_scan'))}</figcaption></figure>`:''}</div>`;
+}
+const STAT={pending:['bg-amber-100 text-amber-800','pay_pending'],approved:['bg-emerald-100 text-emerald-800','pay_approved'],rejected:['bg-red-100 text-red-800','pay_rejected'],cancelled:['bg-stone-200 text-stone-700','pay_cancelled']};
+function paintMine(){
+  $('mine').classList.toggle('hidden',false);
+  $('mine-l').innerHTML=!S.reqs.length?`<p class="text-sm text-stone-500">${esc(T('pay_none_req'))}</p>`:S.reqs.map(r=>{const p=pkgOf(r.package_code)||{name:r.package_code},[c,k]=STAT[r.status]||STAT.pending;
+    return `<div class="card !transform-none p-4"><div class="flex flex-wrap items-center justify-between gap-2"><p class="font-medium text-ink">${esc(T('pay_ref',{x:r.ref}))} &middot; ${esc(nm(p,'name'))}</p><span class="p-pill ${c}">${esc(T(k))}</span></div>
+      <p class="text-sm text-stone-600 mt-1">${esc((r.sector_ids||[]).map(secName).join(rtl()?'، ':', '))}</p>
+      <p class="text-xs text-stone-500 mt-1">${Number(r.amount)>0?esc(money(r.amount,r.currency))+' &middot; ':''}${esc(T('pay_sent_on',{x:day(r.created_at)}))}</p>
+      ${r.admin_note?`<p class="text-sm mt-2 rounded-lg ${r.status==='rejected'?'bg-red-50 text-red-900':'bg-stone-50 text-stone-700'} p-2 break-words"><b>${esc(T('pay_reason'))}:</b> ${esc(r.admin_note)}</p>`:''}
+      ${r.status==='pending'?`<button data-cancel="${esc(r.id)}" class="mt-3 text-sm border border-stone-300 hover:border-stone-500 rounded-full px-4 py-1.5">${esc(T('pay_cancel'))}</button>`:''}
+      ${r.status==='approved'?`<a href="my-stuff.html" class="mt-3 inline-block text-sm text-brand-700 underline underline-offset-4">${esc(T('pay_open_files'))}</a>`:''}</div>`}).join('');
+}
+function paintAll(){
+  if(K)K.dom();
+  if(!S.ok)return;
+  $('state').innerHTML='';$('form').classList.remove('hidden');
+  if(!S.pkgs.length){$('form').classList.add('hidden');$('state').innerHTML=`<p class="text-stone-600">${esc(T('pay_no_pkgs'))}</p>`}
+  paintPkgs();paintSecs();paintSum();paintMine();
+}
+
+async function load(){
+  const A=KHIPAuth,sb=A.client(),u=A.user();
+  if(K){try{await K.data('./app-data.json')}catch(_){}K.dom()}
+  S.ok=false;$('msg').classList.add('hidden');
+  if(!sb)return note('ph-plug',T('pay_err_load'));
+  if(!u)return note('ph-lock-simple',T('pay_signin'),T('pay_signin_sub'),T('pay_login'));
+  $('state').innerHTML='<div class="card !transform-none p-6 animate-pulse h-40 max-w-3xl"></div>';
+  const [pk,me,sc,pr,rq]=await Promise.all([
+    sb.from('payment_packages').select('*').eq('active',true).order('sort_order'),
+    sb.from('payment_methods').select('*').eq('active',true).order('sort_order'),
+    sb.from('sectors').select('id,name').order('name'),
+    sb.from('subscription_periods').select('sector_id,end_date'),
+    sb.from('subscription_requests').select('*').order('created_at',{ascending:false}).limit(50)]);
+  if(pk.error||sc.error)return note('ph-warning-circle',T('pay_err_load'));
+  S.pkgs=pk.data||[];S.meths=me.error?[]:(me.data||[]);S.secs=sc.data||[];S.reqs=rq.error?[]:(rq.data||[]);
+  S.until={};(pr.data||[]).forEach(p=>{if(!S.until[p.sector_id]||p.end_date>S.until[p.sector_id])S.until[p.sector_id]=p.end_date});
+  if(!pkgOf(S.pkg))S.pkg='';S.ok=true;paintAll();
+}
+async function reloadReqs(){
+  const sb=KHIPAuth.client(),[rq,pr]=await Promise.all([sb.from('subscription_requests').select('*').order('created_at',{ascending:false}).limit(50),sb.from('subscription_periods').select('sector_id,end_date')]);
+  if(!rq.error)S.reqs=rq.data||[];S.until={};(pr.data||[]).forEach(p=>{if(!S.until[p.sector_id]||p.end_date>S.until[p.sector_id])S.until[p.sector_id]=p.end_date});
+}
+// photos from phones are large: shrink big images before upload
+async function shrink(f){
+  if(!/^image\/(jpeg|png|webp)$/.test(f.type)||f.size<1.5*1024*1024)return f;
+  try{const bm=await createImageBitmap(f),k=Math.min(1,2000/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);
+    c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
+    const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.85));return b?new File([b],'receipt.jpg',{type:'image/jpeg'}):f}catch(_){return f}
+}
+async function send(){
+  if(S.busy)return;
+  const sb=KHIPAuth.client(),u=KHIPAuth.user(),p=pkgOf(S.pkg),secs=[...S.pick].filter(x=>!blocked(x));
+  if(!u)return KHIPAuth.open();
+  if(!p)return flash(T('pay_pick_pkg'),false);
+  if(!secs.length)return flash(T('pay_pick_sec'),false);
+  const paid=Number(p.price)>0;let file=null,path=null;
+  if(paid){
+    if(!S.method)return flash(T('pay_err_method'),false);
+    file=$('f-file').files[0];if(!file)return flash(T('pay_err_receipt'),false);
+    if(!/^(image\/(jpeg|png|webp)|application\/pdf)$/.test(file.type))return flash(T('pay_err_type'),false);
+    file=await shrink(file);if(file.size>MAXB)return flash(T('pay_err_size'),false);
+  }
+  S.busy=true;$('b-send').disabled=true;$('b-send-t').textContent=T('pay_sending');
+  try{
+    if(paid){
+      const ext=file.type==='application/pdf'?'pdf':file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+      path=`${u.id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+      const up=await sb.storage.from(PRB).upload(path,file,{contentType:file.type,cacheControl:'3600'});if(up.error)throw up.error;
+    }
+    const r=await sb.rpc('request_subscription',{p_package:p.code,p_sectors:secs,p_method:paid?S.method:null,p_receipt:paid?path:null,p_note:$('f-note').value.trim()||null});
+    if(r.error){if(path){try{await sb.storage.from(PRB).remove([path])}catch(_){}}throw r.error}
+    S.pick.clear();$('f-file').value='';$('f-note').value='';
+    await reloadReqs();paintAll();flash(T('pay_sent')+' '+T('pay_files_hint'));
+  }catch(e){flash(e.message||String(e),false)}
+  finally{S.busy=false;$('b-send').disabled=false;$('b-send-t').textContent=T('pay_send')}
+}
+$('form').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.name==='pkg'){S.pkg=t.value;paintPkgs();paintSecs();paintSum()}
+  else if(t.name==='sec'){t.checked?S.pick.add(t.value):S.pick.delete(t.value);paintSecs();paintSum()}
+  else if(t.name==='meth'){S.method=t.value;paintMeths()}
+});
+$('form').addEventListener('submit',e=>{e.preventDefault();send()});
+document.addEventListener('click',async e=>{
+  const c=e.target.closest('[data-copy]');
+  if(c){try{await navigator.clipboard.writeText(c.dataset.copy);const o=c.innerHTML;c.textContent=T('pay_copied');setTimeout(()=>{c.innerHTML=o},1500)}catch(_){}return}
+  const x=e.target.closest('[data-cancel]');
+  if(x){if(!confirm(T('pay_cancel_ask')))return;x.disabled=true;
+    const r=await KHIPAuth.client().rpc('cancel_subscription_request',{p_id:x.dataset.cancel});
+    if(r.error){x.disabled=false;return flash(r.error.message,false)}
+    await reloadReqs();paintAll()}
+});
+if(window.KMENU)KMENU.onChange(()=>{paintAll()});
+KHIPAuth.onChange(()=>{load()});
+KHIPAuth.ready.then(load);
+</script>
+</body>
+</html>

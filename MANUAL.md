@@ -222,6 +222,7 @@ To remove an admin: `delete from public.admins where lower(email) = lower('colle
 |---|---|
 | `index.html`, `about.html`, `patents.html`, `trademarks.html`, `translation.html` | Public pages |
 | `my-stuff.html` | Client file portal |
+| `subscribe.html`, `supabase-step18-payments.sql` | Subscribe and pay with a receipt; database script for payments |
 | `admin.html` | Admin (content and client files) |
 | `app-data.json` | All editable content (`app-data.sample.json` is a fuller example) |
 | `supabase-config.js` | Your Supabase URL and anon key |
@@ -250,3 +251,22 @@ See README, "Tenders page for users and the notification update". Order of work 
 **4 · Generate file**: pick a publishing-date range (default today), a status and the columns, then download **Excel**, **Word** or **PDF** (PDF: choose Save as PDF in the print window). One flat table, no sector, no grouping.
 
 See TENDERS-REDESIGN.md for the design decisions.
+
+## Payments: subscribe with a receipt, you approve (steps P1 to P4)
+Plan and phases: `PAYMENTS-PLAN.md`. There is **no payment gateway**. The user pays in their own banking / wallet app (CIB, InstaPay, Vodafone Cash or Fawry), uploads the receipt or QR screenshot, and you approve it.
+
+**One-time setup**
+1. Supabase > SQL Editor: run `supabase-step18-payments.sql` once (after steps 1 to 17). It is safe to run again; your prices and account details are never overwritten.
+2. Admin > **Payments** > **Packages & prices**: type the price per sector for 6 months, 1 year and 2 years (the same price for every sector). The weekly package stays at 0: free, no receipt, but you still approve it. It can be taken once per sector (clear "Max times per sector" to allow repeats).
+3. Admin > Payments > **Payment methods**: for each method fill in the account holder, account / number / InstaPay address / Fawry code, the instructions (English and Arabic) and an optional QR image, then switch it **On**. Users only see methods that are On.
+4. Optional: admin > Website content > Menu: add the destination **Subscribe page** so the header and bottom bar link to `subscribe.html`. The page is also linked from **My files** (button "Subscribe or renew").
+
+**What the user does** (`subscribe.html`, English or Arabic): choose a package, choose one or more sectors (price x number of sectors), pay the amount shown, attach the receipt (JPG, PNG, WebP or PDF, up to 5 MB; big photos are shrunk automatically) and press Send. The page lists their requests with the status and your note, and lets them cancel a pending request.
+
+**What you do** (admin > Payments > Requests): open the receipt (**View receipt**), check the amount, then **Approve** (optional start date and note; the subscription starts today, or the day after the current one ends for a renewal) or **Reject** (a reason is required and the user can read it). A red badge on the Payments button shows how many requests wait. Approved requests appear in Users & sectors like any other subscription.
+
+**Good to know**
+- The amount is calculated in the database, never taken from the browser.
+- Receipts are private: only the user and admins can open them. QR images are public (users must see them).
+- The manual Subscribe dialog (Users & sectors) now also offers **6 months**.
+- Not included on purpose: automatic payment matching, e-mail or WhatsApp alerts, self sign-up. See "Ideas for later" in `PAYMENTS-PLAN.md`.

@@ -36,6 +36,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
       <button data-pane="tenders2" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-tags"></i> 2 &middot; Classification &amp; notification<span id="bd-tenders3" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Tenders waiting for classification and approval"></span></button>
       <button data-pane="tenders3" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-sliders"></i> 3 &middot; Settings</button>
       <button data-pane="tenders4" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-file-export"></i> 4 &middot; Generate file</button>
+      <button data-pane="payments" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-wallet"></i> Payments<span id="bd-payments" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Payment requests waiting for approval"></span></button>
       <button data-pane="directory" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-address-book"></i> Directory<span id="bd-directory" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Entries waiting for approval"></span></button>
     </nav>
     <!-- hidden for now: Search (remove these comment marks and the SEARCH_ON line in the script to bring it back)
@@ -147,7 +148,7 @@ function showPane(p){
   pane=p;history.replaceState(null,'','#'+p);
   $('pane-content').classList.toggle('hidden',p!=='content');$('pane-clients').classList.toggle('hidden',p==='content');
   document.querySelectorAll('.pane-btn').forEach(b=>{const on=b.dataset.pane===p;b.className='pane-btn text-xs font-bold px-3 py-1.5 rounded-lg '+(on?'bg-white text-gray-900':'text-gray-300 hover:bg-white/10')});
-  const hi=$('pane-hint');if(hi)hi.textContent=({content:'Edit the website text, photos, news, team and languages.',clients:'Manage users, their subscriptions to sectors, and the files in each sector.',leads:'People who may become subscribers.',issues:'The HOT Info issues table.',tenders1:'Input: upload images, read them (OCR), type or import tender rows from Excel. Press Done to send a row to Classification.',tenders2:'Classification: choose and confirm sectors, approve tenders and send the notification update.',tenders3:'Settings: what is featured on the website.',tenders4:'Generate a tenders file (PDF, Excel or Word) for a date range.',directory:'Companies, institutions and freelancers shown in the public Directory: approve, edit, import.'})[p]||'';
+  const hi=$('pane-hint');if(hi)hi.textContent=({content:'Edit the website text, photos, news, team and languages.',clients:'Manage users, their subscriptions to sectors, and the files in each sector.',leads:'People who may become subscribers.',issues:'The HOT Info issues table.',tenders1:'Input: upload images, read them (OCR), type or import tender rows from Excel. Press Done to send a row to Classification.',tenders2:'Classification: choose and confirm sectors, approve tenders and send the notification update.',tenders3:'Settings: what is featured on the website.',tenders4:'Generate a tenders file (PDF, Excel or Word) for a date range.',directory:'Companies, institutions and freelancers shown in the public Directory: approve, edit, import.',payments:'Subscription requests: check the receipt, approve or reject. Set package prices and payment methods.'})[p]||'';
   if(p!=='content')K.go(p);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pane]');if(b)showPane(b.dataset.pane)});
@@ -623,7 +624,7 @@ document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.datas
 /* ---------- Menu tab (saved as menu.items; used by menu.js, footer.js) ---------- */
 const MENU_DEST=[['index.html','Home page'],['index.html#about','Home: about us'],['index.html#jurisdictions','Home: HOT News'],['index.html#services','Home: IP Services'],['index.html#news','Home: News'],['index.html#testimonials','Home: Client endorsements'],
   ['about.html','About page'],['about.html#map','About: regional scope'],['about.html#value','About: value'],['about.html#advantages','About: advantages'],['about.html#team','About: team'],['about.html#contact','About: contact'],
-  ['patents.html','Patents page'],['trademarks.html','Trademarks page'],['translation.html','Translation page'],['tenders.html','Tenders page'],['my-stuff.html','My files page']];
+  ['patents.html','Patents page'],['trademarks.html','Trademarks page'],['translation.html','Translation page'],['tenders.html','Tenders page'],['my-stuff.html','My files page'],['subscribe.html','Subscribe page']];
 const MENU_ICONS=[['ph-house','House'],['ph-seal-check','Seal'],['ph-newspaper','Newspaper'],['ph-fire','Flame (HOT)'],['ph-megaphone','Megaphone'],['ph-info','Info'],['ph-folder-user','Folder'],['ph-gavel','Gavel'],['ph-scales','Scales'],['ph-certificate','Certificate'],['ph-lightbulb','Light bulb'],['ph-translate','Translate'],['ph-briefcase','Briefcase'],['ph-users','People'],['ph-star','Star'],['ph-envelope-simple','Envelope'],['ph-phone','Phone'],['ph-map-pin','Map pin'],['ph-globe-hemisphere-west','Globe'],['ph-chat-circle-text','Chat']];
 const MENU_DEFAULT=()=>[
   {id:'home',en:'Home',ar:'الرئيسية',link:'index.html',icon:'ph-house',header:true,bar:true},
@@ -1026,9 +1027,9 @@ const K=(()=>{
   }
   async function badges(){ // red counters on the top bar: what is waiting for the admin
     try{const tc=q=>q.select('id',{count:'exact',head:true});
-      const [a,b,d]=await Promise.all([tc(sb.from('tenders')).eq('written',false),tc(sb.from('tenders')).eq('written',true).eq('status','draft'),sb.from('directory_entries').select('id',{count:'exact',head:true}).eq('status','pending')]);
+      const [a,b,d,pq]=await Promise.all([tc(sb.from('tenders')).eq('written',false),tc(sb.from('tenders')).eq('written',true).eq('status','draft'),sb.from('directory_entries').select('id',{count:'exact',head:true}).eq('status','pending'),sb.from('subscription_requests').select('id',{count:'exact',head:true}).eq('status','pending')]);
       const set=(id,n)=>{const e=$(id);if(!e)return;e.textContent=n>99?'99+':n;e.classList.toggle('hidden',!(n>0))};
-      set('bd-tenders2',a.error?0:(a.count||0));set('bd-tenders3',b.error?0:(b.count||0));set('bd-directory',d.error?0:(d.count||0))}catch(_){}
+      set('bd-tenders2',a.error?0:(a.count||0));set('bd-tenders3',b.error?0:(b.count||0));set('bd-directory',d.error?0:(d.count||0));set('bd-payments',pq.error?0:(pq.count||0))}catch(_){}
   }
   window.kBadges=badges;
   async function enter(user){
@@ -1073,12 +1074,12 @@ const K=(()=>{
   const today=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
   const addDays=(d,n)=>{const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
   const fd=d=>dmy(d)||'';   // dd-mm-yy everywhere
-  const DUR=[['1 week','1 week'],['1 year','1 year'],['2 years','2 years']];
+  const DUR=[['1 week','1 week'],['6 months','6 months'],['1 year','1 year'],['2 years','2 years']];
   // end date = start + duration - 1 day (same rule as the database trigger)
   function endOf(start,dur){
     if(dur==='1 week')return addDays(start,6);
     const x=new Date(start+'T00:00:00Z'),m=x.getUTCMonth();
-    x.setUTCFullYear(x.getUTCFullYear()+(dur==='2 years'?2:1));if(x.getUTCMonth()!==m)x.setUTCDate(0);
+    const want=dur==='6 months'?(m+6)%12:m;if(dur==='6 months')x.setUTCMonth(x.getUTCMonth()+6);else x.setUTCFullYear(x.getUTCFullYear()+(dur==='2 years'?2:1));if(x.getUTCMonth()!==want)x.setUTCDate(0);
     return addDays(x.toISOString().slice(0,10),-1);
   }
   const pstate=(p,t)=>t<p.start_date?'upcoming':t>p.end_date?'ended':'active';
@@ -1123,14 +1124,14 @@ const K=(()=>{
   const badge=r=>!r.account?pill('bg-gray-100 text-gray-600','Folder only')
     :r.confirmed?pill('bg-emerald-50 text-emerald-700','Account active'):pill('bg-amber-100 text-amber-800','Invite pending');
   const T_TITLES=['','Read & name tenders (old)','1 \u00b7 Input tender','2 \u00b7 Classification & notification','','3 \u00b7 Settings','4 \u00b7 Generate tenders file'];
-  const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues',tenders:'Tenders',directory:'Directory'};
+  const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues',tenders:'Tenders',directory:'Directory',payments:'Payments'};
   const setW=w=>{main().className=w==='wide'?'p-3 space-y-3':w==='mid'?'max-w-6xl mx-auto p-4 space-y-3':'max-w-3xl mx-auto p-4 space-y-3'};
   async function home(){
     cur=null;path=[];$('k-title').textContent=(tabK==='tenders'?T_TITLES[tStep]:TITLES[tabK])||'Admin';main().innerHTML=LOADING;
-    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await((tStep===5||tStep===6)?0:tStep===2?(async()=>{await loadTableView();await loadT1()})():tStep===1?loadT1():(tStep===3&&tView==='sector')?(async()=>{await loadSectorData();await loadSectorView();await tPipeLoad()})():(tView='table',loadTableView()));else if(tabK==='directory')await loadDirectory();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
+    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await((tStep===5||tStep===6)?0:tStep===2?(async()=>{await loadTableView();await loadT1()})():tStep===1?loadT1():(tStep===3&&tView==='sector')?(async()=>{await loadSectorData();await loadSectorView();await tPipeLoad()})():(tView='table',loadTableView()));else if(tabK==='directory')await loadDirectory();else if(tabK==='payments')await loadPayments();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
     paintHome();
   }
-  const paintHome=()=>{setW(tabK==='issues'||(tabK==='tenders'&&(tStep<3||tView==='table'))?'wide':(tabK==='leads'||tabK==='tenders'||tabK==='directory')?'mid':'narrow');tabK==='directory'?paintDirectory():tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
+  const paintHome=()=>{setW(tabK==='issues'||(tabK==='tenders'&&(tStep<3||tView==='table'))?'wide':(tabK==='leads'||tabK==='tenders'||tabK==='directory'||tabK==='payments')?'mid':'narrow');tabK==='payments'?paintPayments():tabK==='directory'?paintDirectory():tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
   function go(p){ // called by the top bar: leads | clients | issues | tenders
     if(p==='tenders')p='tenders1';
     if(/^tenders[1-4]$/.test(p)){tStep=({1:2,2:3,3:5,4:6})[+p.slice(7)];tabK='tenders';tView='table';TR=null;tbF.st='all';tbSel.clear();tbCap=100}
@@ -1873,6 +1874,166 @@ const K=(()=>{
       const r=await sb.from('directory_sectors').update({[k]:val||null}).eq('id',s.id);
       if(r.error){t.value=s[k]||'';return toast(r.error.message,false)}
       s[k]=val||null;toast('Saved')}});
+
+  // ======================= Payments (P2): requests, packages, payment methods =======================
+  // Tables payment_packages, payment_methods, subscription_requests (supabase-step18-payments.sql).
+  // Receipts: PRIVATE bucket payment-receipts (signed links). QR images: PUBLIC bucket payment-assets.
+  const PRB='payment-receipts',PAB='payment-assets';
+  let pReqs=[],pPkgs=[],pMeths=[],pProf={},pErr=false,pView='requests',pF={st:'pending',q:''},pCap=100;
+  const money=(n,c)=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2})+' '+(c||'EGP');
+  const pWhen=t=>t?new Date(t).toLocaleString('en-GB',{timeZone:'Africa/Cairo',dateStyle:'short',timeStyle:'short'}):'';
+  const pUser=id=>{const p=pProf[id];return p?(p.full_name||p.email||id.slice(0,8)):id.slice(0,8)};
+  const pPkg=c=>pPkgs.find(x=>x.code===c);
+  const pMeth=c=>pMeths.find(x=>x.code===c);
+  const pSecs=ids=>(ids||[]).map(i=>{const s=sectors.find(x=>x.id===i);return s?s.name:i}).join(', ');
+  const pStat=s=>s==='approved'?pill('bg-emerald-100 text-emerald-800','Approved'):s==='rejected'?pill('bg-red-100 text-red-800','Rejected'):s==='cancelled'?pill('bg-gray-200 text-gray-700','Cancelled by user'):pill('bg-amber-100 text-amber-800','Pending approval');
+  const pQr=p=>p?sb.storage.from(PAB).getPublicUrl(p).data.publicUrl:'';
+  async function loadPayments(){
+    const [a,b,c,d,e]=await Promise.all([
+      fetchAll('subscription_requests','*',[['created_at',false],['id',true]]),
+      sb.from('payment_packages').select('*').order('sort_order'),
+      sb.from('payment_methods').select('*').order('sort_order'),
+      sb.from('sectors').select('id,name').order('name'),
+      sb.from('client_profiles').select('user_id,email,full_name,mobile')]);
+    pErr=!!(a.error||b.error||c.error);pReqs=a.error?[]:(a.data||[]);pPkgs=b.error?[]:(b.data||[]);pMeths=c.error?[]:(c.data||[]);
+    if(!d.error)sectors=d.data||[];
+    pProf={};(e.data||[]).forEach(x=>pProf[x.user_id]=x);
+    if(window.kBadges)setTimeout(kBadges,0);
+  }
+  function paintPayments(){
+    const nP=pReqs.filter(r=>r.status==='pending').length;
+    const tab=(v,l,ic,extra='')=>`<button data-k="pview" data-v="${v}" class="text-xs font-bold px-4 py-2 rounded-xl border ${pView===v?'bg-gray-900 text-white border-gray-900':'bg-white border-gray-200'}"><i class="fas ${ic}"></i> ${l}${extra}</button>`;
+    main().innerHTML=(pErr?warn('<b>Payments are not set up yet.</b> Run <code>supabase-step18-payments.sql</code> in the Supabase SQL Editor (it is safe to run again), then press Refresh.'):'')
+      +`<div class="flex flex-wrap items-center gap-2">${tab('requests','Requests','fa-inbox',nP?` <span class="ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5">${nP}</span>`:'')}${tab('packages','Packages &amp; prices','fa-tags')}${tab('methods','Payment methods','fa-wallet')}
+        <button data-k="prefresh" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2 rounded-xl ml-auto"><i class="fas fa-rotate"></i> Refresh</button></div><div id="p-body" class="space-y-3"></div>`;
+    pView==='packages'?paintPkgs():pView==='methods'?paintMeths():paintReqs();
+  }
+  // ---- Requests
+  function pFiltered(){
+    const q=pF.q.toLowerCase().trim();
+    return pReqs.filter(r=>(pF.st==='all'||r.status===pF.st)&&(!q||[r.ref,pUser(r.user_id),(pProf[r.user_id]||{}).email,(pProf[r.user_id]||{}).mobile,pSecs(r.sector_ids)].some(v=>String(v||'').toLowerCase().includes(q))))
+      .sort((a,b)=>(a.status==='pending'?0:1)-(b.status==='pending'?0:1)||(a.status==='pending'?String(a.created_at).localeCompare(b.created_at):String(b.created_at).localeCompare(a.created_at)));
+  }
+  function paintReqs(){
+    const n=s=>pReqs.filter(r=>r.status===s).length,c=(s,l,cls)=>`<button data-k="pchip" data-s="${s}" class="text-[11px] font-bold px-3 py-1 rounded-full border ${pF.st===s?'bg-gray-900 text-white border-gray-900':cls}">${l}</button>`;
+    $('p-body').innerHTML=`<div class="flex flex-wrap gap-1.5">${c('pending','Pending '+n('pending'),'bg-amber-50 border-amber-300 text-amber-900')+c('approved','Approved '+n('approved'),'bg-emerald-50 border-emerald-300 text-emerald-900')+c('rejected','Rejected '+n('rejected'),'bg-red-50 border-red-300 text-red-900')+c('cancelled','Cancelled '+n('cancelled'),'bg-white border-gray-200')+c('all','All '+pReqs.length,'bg-white border-gray-200')}</div>
+      <input id="p-q" type="search" placeholder="Search request number, user, email, mobile or sector" aria-label="Search requests" value="${esc(pF.q)}" class="${inp}"><div id="p-rows"></div>`;
+    paintReqRows();
+  }
+  function paintReqRows(){
+    const all=pFiltered(),rows=all.slice(0,pCap);
+    $('p-rows').innerHTML=!all.length?`<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">${pReqs.length?'No requests match.':'No requests yet. They appear here when a user sends one from the Subscribe page.'}</p>`
+    :`<p class="text-[11px] text-gray-500 mb-1">${all.length} request${all.length===1?'':'s'}${all.length>pCap?` (showing the first ${pCap})`:''}</p><div class="space-y-2">`+rows.map(r=>{
+      const pk=pPkg(r.package_code),free=!(Number(r.amount)>0),m=pMeth(r.method_code),u=pProf[r.user_id]||{};
+      return `<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 space-y-2">
+        <div class="flex flex-wrap items-start justify-between gap-2"><div class="min-w-0"><p class="font-bold text-sm break-words">#${esc(r.ref)} &middot; ${esc(pUser(r.user_id))}</p>
+          <p class="text-[11px] text-gray-500 break-all">${esc([u.email,u.mobile].filter(Boolean).join(' · '))}</p></div><div class="flex flex-wrap items-center gap-1.5">${pStat(r.status)}${free?pill('bg-blue-100 text-blue-800','Free'):''}</div></div>
+        <p class="text-xs"><b>${esc(pk?pk.name:r.package_code)}</b> &middot; ${esc(pSecs(r.sector_ids))}</p>
+        <p class="text-xs text-gray-700"><b>${free?'No payment':esc(money(r.amount,r.currency))}</b>${m?' via '+esc(m.name):''} &middot; sent ${esc(pWhen(r.created_at))}${r.reviewed_at?' &middot; reviewed '+esc(pWhen(r.reviewed_at)):''}</p>
+        ${r.user_note?`<p class="text-xs bg-gray-50 border border-gray-200 rounded-lg p-2 break-words"><b>User note:</b> ${esc(r.user_note)}</p>`:''}
+        ${r.admin_note?`<p class="text-xs bg-amber-50 border border-amber-200 rounded-lg p-2 break-words"><b>Your note:</b> ${esc(r.admin_note)}</p>`:''}
+        <div class="flex flex-wrap gap-1.5">
+          ${r.receipt_path?`<button data-k="preceipt" data-id="${esc(r.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-lg"><i class="fas fa-receipt"></i> View receipt</button>`:(free?'':'<span class="text-[11px] text-red-700 self-center">No receipt attached</span>')}
+          ${r.status==='pending'?`<button data-k="papprove" data-id="${esc(r.id)}" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-check"></i> Approve</button>
+          <button data-k="preject" data-id="${esc(r.id)}" class="text-xs bg-red-50 text-red-700 hover:bg-red-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-xmark"></i> Reject</button>`:''}</div></div>`}).join('')
+    +(all.length>pCap?`<button data-k="pmore" class="${btn1}">Show more</button>`:'')+'</div>';
+  }
+  async function pReceipt(r){
+    const s=await sb.storage.from(PRB).createSignedUrl(r.receipt_path,3600);if(s.error)throw s.error;
+    const u=s.data.signedUrl,pdf=/\.pdf$/i.test(r.receipt_path);
+    $('k-modal-box').classList.add('!max-w-2xl');
+    modal(`<h2 class="font-extrabold text-lg mb-1">Receipt #${esc(r.ref)}</h2><p class="text-xs text-gray-600 mb-3">${esc(pUser(r.user_id))} &middot; ${esc(money(r.amount,r.currency))}${pMeth(r.method_code)?' via '+esc(pMeth(r.method_code).name):''}</p>
+      ${pdf?`<a href="${esc(u)}" target="_blank" rel="noopener" class="${btn1} inline-block"><i class="fas fa-file-pdf"></i> Open the PDF receipt</a>`:`<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt="Receipt" class="w-full max-h-[65vh] object-contain rounded-xl border border-gray-200 bg-gray-50"></a><p class="text-[11px] text-gray-500 mt-1">Click the image to open it full size.</p>`}
+      <div class="flex justify-end pt-3"><button data-k="mclose" class="${btn1}">Close</button></div>`);
+  }
+  function pApproveDialog(r){
+    const pk=pPkg(r.package_code);
+    modal(`<h2 class="font-extrabold text-lg mb-1">Approve request #${esc(r.ref)}</h2>
+      <p class="text-xs text-gray-700 mb-3">${esc(pUser(r.user_id))} &middot; <b>${esc(pk?pk.name:r.package_code)}</b> &middot; ${esc(pSecs(r.sector_ids))} &middot; ${Number(r.amount)>0?esc(money(r.amount,r.currency)):'free'}</p>
+      <form data-k-form="papprove" data-id="${esc(r.id)}" class="space-y-3">
+        <label class="${fl}">Start date <span class="font-normal text-gray-500">(leave empty = today, or the day after the current subscription ends)</span><input type="date" name="start" class="${mt}"></label>
+        <label class="${fl}">Note to the user (optional)<input name="note" maxlength="300" class="${mt}"></label>
+        <p class="text-[11px] text-gray-600">Approving creates the subscription for each sector. The user sees it in My files.</p>
+        <div class="flex justify-end gap-2 pt-1"><button type="button" data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button class="${btn1}">Approve</button></div></form>`);
+  }
+  function pRejectDialog(r){
+    modal(`<h2 class="font-extrabold text-lg mb-1">Reject request #${esc(r.ref)}</h2>
+      <p class="text-xs text-gray-700 mb-3">${esc(pUser(r.user_id))} &middot; ${esc(pSecs(r.sector_ids))}</p>
+      <form data-k-form="preject" data-id="${esc(r.id)}" class="space-y-3">
+        <label class="${fl}">Reason (the user can read it)<input name="note" required maxlength="300" placeholder="e.g. The amount on the receipt does not match" class="${mt}"></label>
+        <div class="flex justify-end gap-2 pt-1"><button type="button" data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Cancel</button><button class="text-xs bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl">Reject</button></div></form>`);
+  }
+  async function pSubmit(f){
+    const id=f.dataset.id,kind=f.dataset.kForm,b=f.querySelector('button:not([type=button])');b.disabled=true;
+    try{
+      if(kind==='papprove'){const r=await sb.rpc('approve_subscription_request',{p_id:id,p_start:f.start.value||null,p_note:f.note.value.trim()||null});if(r.error)throw r.error;toast(`Approved: ${r.data} sector${r.data===1?'':'s'} subscribed`)}
+      else{const r=await sb.rpc('reject_subscription_request',{p_id:id,p_note:f.note.value.trim()||null});if(r.error)throw r.error;toast('Request rejected')}
+      closeM();await loadPayments();paintPayments();
+    }catch(err){toast(err.message||String(err),false);b.disabled=false}
+  }
+  // ---- Packages & prices (saved when you leave a box)
+  function paintPkgs(){
+    $('p-body').innerHTML=`<p class="text-xs text-gray-700 bg-white border border-gray-200 rounded-2xl p-3">The price is <b>per sector</b> and is the same for every sector. A user who picks 2 sectors pays 2 &times; the price. A price of <b>0</b> means free: no receipt, but you still approve it. Changes are saved when you leave a box.</p>
+      <div class="space-y-2">${pPkgs.map(p=>`<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 space-y-2">
+        <div class="flex flex-wrap items-center justify-between gap-2"><p class="font-bold text-sm">${esc(p.name)} <span class="text-[11px] font-normal text-gray-500">(${esc(p.duration)})</span></p>
+          <label class="flex items-center gap-1.5 text-xs font-bold"><input type="checkbox" data-pkg="active" data-id="${esc(p.code)}" ${p.active?'checked':''} class="w-4 h-4"> Available to users</label></div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <label class="${fl}">Name<input data-pkg="name" data-id="${esc(p.code)}" value="${esc(p.name)}" maxlength="60" class="${mt}"></label>
+          <label class="${fl}">Name (Arabic)<input data-pkg="name_ar" data-id="${esc(p.code)}" dir="rtl" value="${esc(p.name_ar||'')}" maxlength="60" placeholder="بالعربية" class="${mt}"></label>
+          <label class="${fl}">Price per sector (${esc(p.currency)})<input type="number" min="0" step="0.01" data-pkg="price" data-id="${esc(p.code)}" value="${esc(p.price)}" class="${mt}"></label>
+          <label class="${fl}">Max times per sector<input type="number" min="1" step="1" data-pkg="max_per_user_sector" data-id="${esc(p.code)}" value="${esc(p.max_per_user_sector??'')}" placeholder="no limit" class="${mt}"></label></div></div>`).join('')||'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No packages found. Run supabase-step18-payments.sql.</p>'}</div>`;
+  }
+  // ---- Payment methods
+  function paintMeths(){
+    $('p-body').innerHTML=`<p class="text-xs text-gray-700 bg-white border border-gray-200 rounded-2xl p-3">Fill in where users should send the money, add an optional QR image, then turn the method on. Users only see methods that are <b>on</b>. Changes are saved when you leave a box.</p>
+      <div class="space-y-2">${pMeths.map(m=>`<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 space-y-2">
+        <div class="flex flex-wrap items-center justify-between gap-2"><p class="font-bold text-sm">${esc(m.name)} ${m.name_ar?`<span dir="rtl" class="text-gray-500 font-normal">${esc(m.name_ar)}</span>`:''}</p>
+          <label class="flex items-center gap-1.5 text-xs font-bold"><input type="checkbox" data-pm="active" data-id="${esc(m.code)}" ${m.active?'checked':''} class="w-4 h-4"> On (visible to users)</label></div>
+        <div class="grid sm:grid-cols-2 gap-2">
+          <label class="${fl}">Account holder name<input data-pm="account_name" data-id="${esc(m.code)}" value="${esc(m.account_name||'')}" maxlength="120" class="${mt}"></label>
+          <label class="${fl}">Account / number / InstaPay address / Fawry code<input data-pm="account_number" data-id="${esc(m.code)}" value="${esc(m.account_number||'')}" maxlength="120" class="${mt}"></label>
+          <label class="${fl}">Instructions (English)<textarea data-pm="instructions" data-id="${esc(m.code)}" rows="2" maxlength="600" class="${mt}">${esc(m.instructions||'')}</textarea></label>
+          <label class="${fl}">Instructions (Arabic)<textarea data-pm="instructions_ar" data-id="${esc(m.code)}" dir="rtl" rows="2" maxlength="600" class="${mt}">${esc(m.instructions_ar||'')}</textarea></label></div>
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="w-20 h-20 rounded-xl bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0">${m.qr_path?`<img src="${esc(pQr(m.qr_path))}" alt="QR code" class="w-full h-full object-contain">`:'<i class="fas fa-qrcode text-gray-400 text-xl"></i>'}</div>
+          <label class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-lg cursor-pointer"><i class="fas fa-upload"></i> ${m.qr_path?'Replace':'Upload'} QR image<input type="file" accept="image/png,image/jpeg,image/webp" data-pmqr="${esc(m.code)}" class="hidden"></label>
+          ${m.qr_path?`<button data-k="pqrdel" data-id="${esc(m.code)}" class="text-xs bg-red-50 text-red-700 hover:bg-red-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-trash"></i> Remove QR</button>`:''}</div></div>`).join('')||'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No payment methods found. Run supabase-step18-payments.sql.</p>'}</div>`;
+  }
+  Object.assign(ACT,{
+    pview:t=>{pView=t.dataset.v;paintPayments()},
+    async prefresh(){main().innerHTML=LOADING;await loadPayments();paintPayments()},
+    pchip:t=>{pF.st=t.dataset.s;pCap=100;paintReqs()},
+    pmore:()=>{pCap+=100;paintReqRows()},
+    async preceipt(t){const r=pReqs.find(x=>x.id===t.dataset.id);if(r)await pReceipt(r)},
+    papprove:t=>{const r=pReqs.find(x=>x.id===t.dataset.id);if(r)pApproveDialog(r)},
+    preject:t=>{const r=pReqs.find(x=>x.id===t.dataset.id);if(r)pRejectDialog(r)},
+    async pqrdel(t){const m=pMeth(t.dataset.id);if(!m||!confirm(`Remove the QR image of ${m.name}?`))return;
+      const old=m.qr_path,r=await sb.from('payment_methods').update({qr_path:null,updated_at:new Date().toISOString()}).eq('code',m.code);if(r.error)throw r.error;
+      m.qr_path=null;try{await sb.storage.from(PAB).remove([old])}catch(_){}paintMeths();toast('QR removed')}
+  });
+  document.addEventListener('input',e=>{const t=e.target;if(t&&t.id==='p-q'){pF.q=t.value;pCap=100;paintReqRows()}});
+  document.addEventListener('change',async e=>{const t=e.target;if(!t||!t.dataset)return;
+    try{
+      if(t.dataset.pkg){const p=pPkg(t.dataset.id);if(!p)return;const k=t.dataset.pkg;let v;
+        if(k==='active')v=t.checked;
+        else if(k==='price'){v=Number(t.value);if(t.value===''||!(v>=0)){t.value=p.price;return toast('Type a price of 0 or more.',false)}}
+        else if(k==='max_per_user_sector'){v=t.value===''?null:Math.floor(Number(t.value));if(v!==null&&!(v>=1)){t.value=p.max_per_user_sector??'';return toast('Use 1 or more, or leave empty for no limit.',false)}}
+        else{v=t.value.trim();if(k==='name'&&!v){t.value=p.name;return toast('The English name cannot be empty.',false)};if(!v)v=null}
+        const r=await sb.from('payment_packages').update({[k]:v,updated_at:new Date().toISOString()}).eq('code',p.code);if(r.error){if(k==='active')t.checked=!!p[k];else t.value=p[k]??'';throw r.error}
+        p[k]=v;toast('Saved');return}
+      if(t.dataset.pm){const m=pMeth(t.dataset.id);if(!m)return;const k=t.dataset.pm;let v=k==='active'?t.checked:(t.value.trim()||null);
+        if(k==='active'&&v&&!m.account_number&&!m.qr_path){t.checked=false;return toast('Add the account number or a QR image first.',false)}
+        const r=await sb.from('payment_methods').update({[k]:v,updated_at:new Date().toISOString()}).eq('code',m.code);if(r.error){if(k==='active')t.checked=!!m[k];else t.value=m[k]||'';throw r.error}
+        m[k]=v;if(k==='account_number'&&!v&&!m.qr_path&&m.active){await sb.from('payment_methods').update({active:false}).eq('code',m.code);m.active=false;paintMeths();return toast('Saved. The method was switched off because it has no account number or QR.',false)}
+        toast('Saved');return}
+      if(t.dataset.pmqr){const m=pMeth(t.dataset.pmqr),f=t.files[0];t.value='';if(!m||!f)return;
+        if(!/^image\/(png|jpeg|webp)$/.test(f.type))return toast('Use a PNG, JPG or WebP image.',false);
+        if(f.size>2*1024*1024)return toast('The image is over 2 MB. Use a smaller one.',false);
+        const ext=f.type==='image/png'?'png':f.type==='image/webp'?'webp':'jpg',path=`qr-${m.code}-${Date.now()}.${ext}`,old=m.qr_path;
+        const up=await sb.storage.from(PAB).upload(path,f,{contentType:f.type,cacheControl:'3600'});if(up.error)throw up.error;
+        const r=await sb.from('payment_methods').update({qr_path:path,updated_at:new Date().toISOString()}).eq('code',m.code);if(r.error){await sb.storage.from(PAB).remove([path]);throw r.error}
+        m.qr_path=path;if(old){try{await sb.storage.from(PAB).remove([old])}catch(_){}}paintMeths();toast('QR image saved')}
+    }catch(err){toast(err.message||String(err),false)}});
 
   // ======================= Tender images (Phase 2): upload =======================
   // Images are cropped offline and uploaded as they are (JPG, PNG or WebP, max 1 MB: the OCR.space free limit).
@@ -3805,6 +3966,7 @@ const K=(()=>{
     if(f.dataset.kForm==='lead')return saveLeadForm(f);
     if(f.dataset.kForm==='dentry')return saveDirForm(f);
     if(f.dataset.kForm==='dsector')return saveDirSector(f);
+    if(f.dataset.kForm==='papprove'||f.dataset.kForm==='preject')return pSubmit(f);
     const b0=f.querySelector('button:not([type=button])');
     if(f.dataset.kForm==='user'){
       const v=formVals(f),uid=f.dataset.u;b0.disabled=true;
@@ -3867,7 +4029,7 @@ const K=(()=>{
   return {start,go};
 })();
 
-showPane(/type=recovery/.test(location.hash)?'clients':(['#leads','#clients','#issues','#tenders','#tenders1','#tenders2','#tenders3','#tenders4','#directory'].includes(location.hash.split('&')[0])?(location.hash.split('&')[0]==='#tenders'?'tenders1':location.hash.slice(1)):'content'));
+showPane(/type=recovery/.test(location.hash)?'clients':(['#leads','#clients','#issues','#tenders','#tenders1','#tenders2','#tenders3','#tenders4','#directory','#payments'].includes(location.hash.split('&')[0])?(location.hash.split('&')[0]==='#tenders'?'tenders1':location.hash.slice(1)):'content'));
 </script>
 </body>
 </html>
