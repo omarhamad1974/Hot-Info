@@ -171,5 +171,26 @@ for(const [k,v] of Object.entries(d.social||{}))if(v&&!/^https:\/\//.test(v))err
     for(const k of keys){const n=(L.match(new RegExp(`\\b${k}\\s*:`,'g'))||[]).length;if(n<2)errs.push(`index.html: text "${k}" must be written in English and Arabic in lang.js (found ${n})`)}
   }
 }
+// Payments (phases P1 to P3): files exist, the page texts exist in English AND Arabic, admin and database pieces are in place.
+{
+  for(const q of ['subscribe.html','supabase-step18-payments.sql','PAYMENTS-PLAN.md'])if(!fs.existsSync(q))errs.push(`payments: ${q} is missing`);
+  if(fs.existsSync('supabase-step18-payments.sql')){
+    const q=fs.readFileSync('supabase-step18-payments.sql','utf8');
+    for(const f of ['request_subscription','cancel_subscription_request','approve_subscription_request','reject_subscription_request'])if(!q.includes(f))errs.push(`supabase-step18-payments.sql: function ${f} is missing`);
+  }
+  if(fs.existsSync('admin.html')){
+    const a=fs.readFileSync('admin.html','utf8');
+    if(!/data-pane="payments"/.test(a))errs.push('admin.html: the Payments tab button is missing');
+    for(const f of ['approve_subscription_request','reject_subscription_request','payment_packages','payment_methods'])if(!a.includes(f))errs.push(`admin.html: Payments tab does not use ${f}`);
+    if(!/\['6 months','6 months'\]/.test(a))errs.push('admin.html: the manual Subscribe dialog needs the 6 months duration');
+  }
+  if(fs.existsSync('subscribe.html')&&fs.existsSync('lang.js')){
+    const html=fs.readFileSync('subscribe.html','utf8'),L=fs.readFileSync('lang.js','utf8'),keys=new Set();
+    for(const m of html.matchAll(/['"](pay_\w+)['"]/g))keys.add(m[1]);
+    if(!keys.size)errs.push('subscribe.html: no pay_ texts found');
+    for(const k of keys){const n=(L.match(new RegExp(`\\b${k}\\s*:`,'g'))||[]).length;if(n<2)errs.push(`subscribe.html: text "${k}" must be written in English and Arabic in lang.js (found ${n})`)}
+    for(const f of ['request_subscription','cancel_subscription_request'])if(!html.includes(f))errs.push(`subscribe.html: does not call ${f}`);
+  }
+}
 if(errs.length){console.error(errs.join('\n'));process.exit(1)}
 console.log('app-data.json OK');
