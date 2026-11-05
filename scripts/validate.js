@@ -173,7 +173,7 @@ for(const [k,v] of Object.entries(d.social||{}))if(v&&!/^https:\/\//.test(v))err
 }
 // Payments (phases P1 to P3): files exist, the page texts exist in English AND Arabic, admin and database pieces are in place.
 {
-  for(const q of ['subscribe.html','supabase-step18-payments.sql','PAYMENTS-PLAN.md'])if(!fs.existsSync(q))errs.push(`payments: ${q} is missing`);
+  for(const q of ['subscribe.html','supabase-step18-payments.sql','supabase-step19-signup-and-orders.sql','PAYMENTS-PLAN.md'])if(!fs.existsSync(q))errs.push(`payments: ${q} is missing`);
   if(fs.existsSync('supabase-step18-payments.sql')){
     const q=fs.readFileSync('supabase-step18-payments.sql','utf8');
     for(const f of ['request_subscription','cancel_subscription_request','approve_subscription_request','reject_subscription_request'])if(!q.includes(f))errs.push(`supabase-step18-payments.sql: function ${f} is missing`);
@@ -189,7 +189,19 @@ for(const [k,v] of Object.entries(d.social||{}))if(v&&!/^https:\/\//.test(v))err
     for(const m of html.matchAll(/['"](pay_\w+)['"]/g))keys.add(m[1]);
     if(!keys.size)errs.push('subscribe.html: no pay_ texts found');
     for(const k of keys){const n=(L.match(new RegExp(`\\b${k}\\s*:`,'g'))||[]).length;if(n<2)errs.push(`subscribe.html: text "${k}" must be written in English and Arabic in lang.js (found ${n})`)}
-    for(const f of ['request_subscription','cancel_subscription_request'])if(!html.includes(f))errs.push(`subscribe.html: does not call ${f}`);
+    for(const f of ['request_subscription_items','cancel_subscription_request'])if(!html.includes(f))errs.push(`subscribe.html: does not call ${f}`);
+  }
+  if(fs.existsSync('supabase-step19-signup-and-orders.sql')){
+    const q=fs.readFileSync('supabase-step19-signup-and-orders.sql','utf8');
+    for(const f of ['handle_web_signup','khip_web_signup','request_subscription_items','approve_subscription_request','supabase_realtime','items jsonb'])if(!q.includes(f))errs.push(`supabase-step19-signup-and-orders.sql: ${f} is missing`);
+  }
+  if(fs.existsSync('auth.js')){
+    const a=fs.readFileSync('auth.js','utf8');
+    for(const f of ["signup:'web'",'full_name','mobile'])if(!a.includes(f))errs.push(`auth.js: the sign-up form must send ${f}`);
+  }
+  if(fs.existsSync('admin.html')){
+    const a=fs.readFileSync('admin.html','utf8');
+    for(const f of ['payWatch','pLinesHtml','pCsv','postgres_changes'])if(!a.includes(f))errs.push(`admin.html: Payments piece ${f} is missing`);
   }
 }
 if(errs.length){console.error(errs.join('\n'));process.exit(1)}
