@@ -359,9 +359,9 @@
     }
   ],
   "social": {
-    "linkedin": "https://www.linkedin.com/company/hotinformationonline/",
+    "linkedin": "",
     "youtube": "",
-    "facebook": "https://web.facebook.com/HOTinformation.eg",
+    "facebook": "",
     "instagram": "",
     "x": "",
     "tiktok": "",
@@ -414,15 +414,21 @@
         "image": "mw0nqqhc-abstract-glass-window-roof-architecture-exterior.jpg",
         "imageFx": {
           "ov": {
-            "type": "matt",
-            "color": "#1760de",
-            "opacity": 70
+            "type": "gradient",
+            "color": "brand:7",
+            "opacity": 70,
+            "color2": "role:accentSoft",
+            "opacity2": 0,
+            "dir": "to bottom"
           },
           "mask": {
-            "shape": "leaf",
+            "shape": "wave-t",
             "fit": "cover"
           }
         }
+      },
+      "home-carousel": {
+        "overlapMobile": "30"
       }
     },
     "sectionWidthTablet": "68",
