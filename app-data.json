@@ -406,26 +406,13 @@
       "text": "#3a4051"
     },
     "custom": [],
-    "sectionWidth": "85",
+    "sectionWidth": "61",
     "sections": {
       "home-about": {
-        "mode": "image",
+        "mode": "color",
         "overlay": 0,
-        "image": "mw0nqqhc-abstract-glass-window-roof-architecture-exterior.jpg",
-        "imageFx": {
-          "ov": {
-            "type": "gradient",
-            "color": "brand:7",
-            "opacity": 70,
-            "color2": "role:accentSoft",
-            "opacity2": 0,
-            "dir": "to bottom"
-          },
-          "mask": {
-            "shape": "wave-t",
-            "fit": "cover"
-          }
-        }
+        "image": "mw3c9b1d-84335.jpg",
+        "color": "role:accentSoft"
       },
       "home-carousel": {
         "overlapMobile": "30"
