@@ -359,9 +359,9 @@
     }
   ],
   "social": {
-    "linkedin": "https://www.linkedin.com/company/hotinformationonline/",
+    "linkedin": "",
     "youtube": "",
-    "facebook": "https://web.facebook.com/HOTinformation.eg",
+    "facebook": "",
     "instagram": "",
     "x": "",
     "tiktok": "",
@@ -402,7 +402,7 @@
       "sand": "#d9c8a4",
       "page": "#f7f6f3",
       "surface": "#ffffff",
-      "text": "#3a4051"
+      "text": "#193685"
     },
     "custom": [],
     "sectionWidth": "85",
@@ -444,7 +444,16 @@
         "name": "Neutral",
         "hex": "#3a4051"
       }
-    ]
+    ],
+    "fonts": {
+      "h1": {
+        "family": "Cairo",
+        "color": "brand:1"
+      },
+      "h2": {
+        "family": "Cairo"
+      }
+    }
   },
   "newsCategories": [
     "Tanders",
