@@ -34,10 +34,10 @@
   back.addEventListener('click',e=>{if(e.target===back||e.target.closest('.auth-x'))close()});
   addEventListener('keydown',e=>{if(e.key==='Escape')close()});
   function open(mode){
-    const T={login:['Sign in','Access your files.'],reset:['Reset password','We will email you a reset link.'],newpw:['Set your password','Choose a password with at least 8 characters.'],signup:['Create account','Use your email address.']}[mode];
+    const T={login:['Sign in','Access your files.'],reset:['Reset password','We will email you a reset link.'],newpw:['Set your password','Choose a password with at least 8 characters.'],signup:['Create account','Create your account, then choose your sectors and subscribe.']}[mode];
     const body=back.querySelector('#auth-body'),em=mode!=='newpw',pw=mode!=='reset';
     body.innerHTML=`<h2 id="auth-t" class="auth-h">${T[0]}</h2><p class="auth-p">${T[1]}</p>
-      <form novalidate>${em?'<input class="auth-in" name="email" type="email" placeholder="Email" autocomplete="email" required>':''}${pw?`<input class="auth-in" name="password" type="password" placeholder="Password" autocomplete="${mode==='login'?'current-password':'new-password'}" required>`:''}${mode==='login'?`<label class="auth-p" style="display:flex;align-items:center;gap:.5rem;margin:.25rem 0 .5rem;cursor:pointer"><input type="checkbox" name="remember" ${remember()?'checked':''}> Keep me signed in on this device</label>`:''}
+      <form novalidate>${mode==='signup'?'<input class="auth-in" name="full_name" type="text" placeholder="Full name" autocomplete="name" maxlength="120" required><input class="auth-in" name="mobile" type="tel" inputmode="tel" placeholder="Mobile number" autocomplete="tel" maxlength="40" required><input class="auth-in" name="company" type="text" placeholder="Company (optional)" autocomplete="organization" maxlength="120">':''}${em?'<input class="auth-in" name="email" type="email" placeholder="Email" autocomplete="email" required>':''}${pw?`<input class="auth-in" name="password" type="password" placeholder="Password" autocomplete="${mode==='login'?'current-password':'new-password'}" required>`:''}${mode==='login'?`<label class="auth-p" style="display:flex;align-items:center;gap:.5rem;margin:.25rem 0 .5rem;cursor:pointer"><input type="checkbox" name="remember" ${remember()?'checked':''}> Keep me signed in on this device</label>`:''}
       <p class="auth-msg" role="alert"></p><button class="auth-go">${T[0]}</button></form>
       <div class="auth-links">${mode==='login'?'<a href="#" data-m="reset">Forgot password?</a>'+(C&&C.allowSignUp?'<a href="#" data-m="signup">Create account</a>':''):mode==='newpw'?'':'<a href="#" data-m="login">Back to sign in</a>'}</div>`;
     const form=body.querySelector('form'),msg=(t,ok)=>{const m=form.querySelector('.auth-msg');m.textContent=t;m.className='auth-msg'+(ok?' ok':'')};
@@ -46,9 +46,18 @@
       msg('');btn.disabled=true;
       try{
         if(!sb)throw new Error('Sign-in is not set up yet.');
-        if(mode==='login'){try{localStorage.setItem(FLAG,f.get('remember')?'1':'0')}catch(e){}const {error}=await sb.auth.signInWithPassword({email,password:p});if(error)throw new Error('Incorrect email or password.');close();if(!/my-stuff/.test(location.pathname))location.href='my-stuff.html'}
+        if(mode==='login'){try{localStorage.setItem(FLAG,f.get('remember')?'1':'0')}catch(e){}const {error}=await sb.auth.signInWithPassword({email,password:p});if(error)throw new Error('Incorrect email or password.');close();if(!/my-stuff|subscribe/.test(location.pathname))location.href='my-stuff.html'}
         else if(mode==='reset'){await sb.auth.resetPasswordForEmail(email,{redirectTo:base+'my-stuff.html'});msg('If this email is registered, a reset link is on its way.',1)}
-        else if(mode==='signup'){const {error}=await sb.auth.signUp({email,password:p,options:{emailRedirectTo:base+'my-stuff.html'}});if(error)throw error;msg('Check your email to confirm your account.',1)}
+        else if(mode==='signup'){
+          const name=String(f.get('full_name')||'').trim(),mobile=String(f.get('mobile')||'').trim(),company=String(f.get('company')||'').trim();
+          if(!name)throw new Error('Please type your full name.');
+          if(mobile.replace(/\D/g,'').length<7)throw new Error('Please type a valid mobile number.');
+          if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error('Please type a valid email address.');
+          if(p.length<8)throw new Error('Use at least 8 characters for the password.');
+          const {data,error}=await sb.auth.signUp({email,password:p,options:{emailRedirectTo:base+'subscribe.html',data:{signup:'web',full_name:name,mobile,company}}});
+          if(error)throw error;
+          if(data&&data.session){close();if(!/subscribe/.test(location.pathname))location.href='subscribe.html'}   // email confirmation is off: already signed in
+          else msg('Almost done. Open the email we sent you and press the confirmation link. You will return here to subscribe.',1)}
         else{if(p.length<8)throw new Error('Use at least 8 characters.');const {error}=await sb.auth.updateUser({password:p});if(error)throw error;close();location.href='my-stuff.html'}
       }catch(e){msg(e.message)}finally{btn.disabled=false}};
     back.classList.add('open');setTimeout(()=>{const i=form.querySelector('input');i&&i.focus({preventScroll:true})},50);
@@ -97,5 +106,5 @@
     }catch(e){console.warn('KHIP auth:',e)}
   })();
   window.KHIPTenderNotice={clear:tnClear};
-  window.KHIPAuth={ready,open:()=>open('login'),user:()=>user,client:()=>sb,config:()=>C,onChange:f=>subs.push(f)};
+  window.KHIPAuth={ready,open:m=>open(m==='signup'?'signup':'login'),user:()=>user,client:()=>sb,config:()=>C,onChange:f=>subs.push(f)};
 })();

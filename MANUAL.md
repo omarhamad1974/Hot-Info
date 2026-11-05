@@ -70,7 +70,7 @@ window.KHIP_SUPABASE={
   url:'https://abcdefgh.supabase.co',
   anonKey:'eyJ...your anon key...',
   bucket:'client-files',
-  allowSignUp:false
+  allowSignUp:true   // shows "Create account"; also switch it on in Supabase (2.8)
 };
 ```
 Commit the change. (The anon key is meant to be public; the database rules protect the data.)
@@ -100,10 +100,10 @@ If you skip this, you can still upload to existing folders, but you must create 
 
 ### 2.8 Supabase: authentication settings
 All under **Authentication**:
-1. **Sign In / Providers, Email**: turn **off** "Allow new users to sign up". Keep "Confirm email" on. Without this anyone could create an account through the API.
+1. **Sign In / Providers, Email**: turn **on** "Allow new users to sign up" and keep "Confirm email" on. Visitors can then create their own account; it sees no files until you approve a subscription. (Turn it off again if you want to go back to invite-only.)
 2. **URL Configuration**:
    - **Site URL**: your site address (for example `https://www.yourdomain.com`).
-   - **Redirect URLs**: add `https://www.yourdomain.com/my-stuff.html` and `https://www.yourdomain.com/admin.html`. While testing locally you may also add `http://localhost:8000/**`; remove it before launch.
+   - **Redirect URLs**: add `https://www.yourdomain.com/my-stuff.html`, `https://www.yourdomain.com/subscribe.html` and `https://www.yourdomain.com/admin.html`. While testing locally you may also add `http://localhost:8000/**`; remove it before launch.
    Invite and reset links only work for addresses on this list.
 3. **Email Templates** (optional but recommended): edit **Invite user** and **Reset password** so the wording and sender name read like KHIP. Keep the `{{ .ConfirmationURL }}` link.
 4. **Emails sent**: Supabase's built-in sender allows only a few emails per hour. For real use, add your own mail service under **Project Settings, Authentication, SMTP Settings** (any provider; use an address on your domain). Do this before inviting many clients.
@@ -120,7 +120,7 @@ Under **Authentication, Sessions**, leave the defaults. Sessions then have no fi
 6. **Website content** area: connect with the GitHub token, edit the tagline, press **Save to GitHub**, and reload the site after a minute or two to see it.
 7. Remove the test client (admin, person icon) and delete its files.
 
-Launch checklist: [ ] token created and stored  [ ] `supabase-config.js` filled  [ ] SQL run, one admin row  [ ] function deployed  [ ] sign-ups off  [ ] Site URL and Redirect URLs set  [ ] SMTP set  [ ] test invite and download done  [ ] localhost redirect removed.
+Launch checklist: [ ] token created and stored  [ ] `supabase-config.js` filled  [ ] SQL run, one admin row  [ ] function deployed  [ ] sign-ups on (step 19 run)  [ ] Site URL and Redirect URLs set  [ ] SMTP set  [ ] test invite and download done  [ ] localhost redirect removed.
 
 ---
 
@@ -211,7 +211,7 @@ To remove an admin: `delete from public.admins where lower(email) = lower('colle
 ## 5. Security and care
 - Treat the GitHub token like a password; use a short expiry, one repository, Contents permission only.
 - Never paste the Supabase `service_role` key into any file in the repository.
-- Keep sign-ups off. Use a strong, unique admin password (a password manager, plus two-factor on GitHub and Supabase accounts).
+- Sign-ups are on: new accounts see nothing until you approve a subscription, and each one is listed in Leads. Use a strong, unique admin password (a password manager, plus two-factor on GitHub and Supabase accounts).
 - Do not send sensitive files through the website's WhatsApp box; it only opens WhatsApp.
 - Backups: use the download icon in the content admin regularly; the repository history also keeps every version. For client files, keep your original copies; consider a periodic download of the bucket from Supabase **Storage**.
 - Free-plan Supabase projects pause after a week without activity. If the portal says it cannot load files, open the Supabase dashboard and restore the project.
@@ -246,27 +246,34 @@ See README, "Tenders page for users and the notification update". Order of work 
 
 **2 · Classification & notification**: choose the sectors (**Auto-classify** suggests them from keywords), **Confirm sectors**, approve (the circle), then **Send tender notification update**. Filters: Waiting approval, Approved, Needs sector.
 
-**3 · Settings**: the tenders featured in the website's Hot News slider (add with search, remove). A sector with featured tenders shows only those; a sector with none shows its latest. "Tenders per sector" is edited in the website content (button on this tab).
+**3 · Featured** (was "3 · Settings"): the tenders featured in the website's Hot News slider (add with search, remove). A sector with featured tenders shows only those; a sector with none shows its latest. "Tenders per sector" is edited in the website content (button on this tab).
 
 **4 · Generate file**: pick a publishing-date range (default today), a status and the columns, then download **Excel**, **Word** or **PDF** (PDF: choose Save as PDF in the print window). One flat table, no sector, no grouping.
 
 See TENDERS-REDESIGN.md for the design decisions.
 
-## Payments: subscribe with a receipt, you approve (steps P1 to P4)
+## Payments: sign up, subscribe with a receipt, you approve (steps P1 to P5)
 Plan and phases: `PAYMENTS-PLAN.md`. There is **no payment gateway**. The user pays in their own banking / wallet app (CIB, InstaPay, Vodafone Cash or Fawry), uploads the receipt or QR screenshot, and you approve it.
 
 **One-time setup**
 1. Supabase > SQL Editor: run `supabase-step18-payments.sql` once (after steps 1 to 17). It is safe to run again; your prices and account details are never overwritten.
-2. Admin > **Payments** > **Packages & prices**: type the price per sector for 6 months, 1 year and 2 years (the same price for every sector). The weekly package stays at 0: free, no receipt, but you still approve it. It can be taken once per sector (clear "Max times per sector" to allow repeats).
-3. Admin > Payments > **Payment methods**: for each method fill in the account holder, account / number / InstaPay address / Fawry code, the instructions (English and Arabic) and an optional QR image, then switch it **On**. Users only see methods that are On.
-4. Optional: admin > Website content > Menu: add the destination **Subscribe page** so the header and bottom bar link to `subscribe.html`. The page is also linked from **My files** (button "Subscribe or renew").
+2. Admin > **Settings** > **Packages & prices**: type the price per sector for 6 months, 1 year and 2 years (the same price for every sector). The weekly package stays at 0: free, no receipt, but you still approve it. It can be taken once per sector (clear "Max times per sector" to allow repeats).
+3. Admin > **Settings** > **Payment methods**: for each method fill in the account holder, account / number / InstaPay address / Fawry code, the instructions (English and Arabic) and an optional QR image, then switch it **On**. Users only see methods that are On.
+4. Run `supabase-step19-signup-and-orders.sql` once (after step 18) and turn on "Allow new users to sign up" in Supabase (2.8). This adds self sign-up into Leads, one package per sector, and the live alert for new requests.
+5. Optional: admin > Website content > Menu: add the destination **Subscribe page** so the header and bottom bar link to `subscribe.html`. The page is also linked from **My files** (button "Subscribe or renew").
 
-**What the user does** (`subscribe.html`, English or Arabic): choose a package, choose one or more sectors (price x number of sectors), pay the amount shown, attach the receipt (JPG, PNG, WebP or PDF, up to 5 MB; big photos are shrunk automatically) and press Send. The page lists their requests with the status and your note, and lets them cancel a pending request.
+**What the user does**
+1. Presses Login > **Create account** (name, mobile, company, email, password) and confirms the email. The new account is added to your **Leads** automatically.
+2. On `subscribe.html` (English or Arabic) taps a package under each sector, one by one. Each sector can have a different package. Under every selected sector the page shows the **start and end date** (start = today, or the day after the current period ends for a renewal; end = start + duration - 1 day). The order list shows each line and the **total**.
+3. Chooses a payment option (CIB, InstaPay, Vodafone Cash, Fawry). The page shows the exact amount, account name and number with **Copy** buttons, the instructions and the QR.
+4. Pays in their own app (outside the website), then uploads the receipt (JPG, PNG, WebP or PDF, up to 5 MB; big photos are shrunk) and presses **I have paid: send for approval**.
+5. Sees "Waiting for our confirmation". Nothing is activated yet. The page lists their requests with the status and your note, and lets them cancel a pending request.
+The dates shown assume approval today: a subscription really starts on the day you approve it.
 
-**What you do** (admin > Payments > Requests): open the receipt (**View receipt**), check the amount, then **Approve** (optional start date and note; the subscription starts today, or the day after the current one ends for a renewal) or **Reject** (a reason is required and the user can read it). A red badge on the Payments button shows how many requests wait. Approved requests appear in Users & sectors like any other subscription.
+**What you do** (admin > Payments > Requests): open the receipt (**View receipt**), check the amount, then **Approve** (optional start date and note; the subscription starts today, or the day after the current one ends for a renewal) or **Reject** (a reason is required and the user can read it). A red badge on the Payments button and in the browser tab title shows how many requests wait, and a message pops up at once when a new request arrives while the admin page is open. The top of Requests is the **pending report** (how many wait, the total amount to confirm, the oldest request) and **Download report (CSV)** saves the list on screen. Each request shows its sector lines (sector, package, price). Approving confirms the payment and activates every sector of the order, each with its own duration; the person's lead becomes Converted. Approved requests appear in Users & sectors like any other subscription.
 
 **Good to know**
 - The amount is calculated in the database, never taken from the browser.
 - Receipts are private: only the user and admins can open them. QR images are public (users must see them).
 - The manual Subscribe dialog (Users & sectors) now also offers **6 months**.
-- Not included on purpose: automatic payment matching, e-mail or WhatsApp alerts, self sign-up. See "Ideas for later" in `PAYMENTS-PLAN.md`.
+- Not included on purpose: automatic payment matching and e-mail or WhatsApp alerts (the alert is inside the admin page only; it does not reach you when the page is closed). See "Ideas for later" in `PAYMENTS-PLAN.md`.

@@ -28,6 +28,15 @@
   .p-lab{display:block;font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:#78716c;margin-bottom:.3rem}
   .p-pill{display:inline-block;font-size:.6875rem;border-radius:999px;padding:.15rem .65rem}
   .p-h{font-family:inherit}
+  .p-sec{background:#fff;border:2px solid #e7e5e4;border-radius:1rem;padding:1rem 1.1rem;transition:border-color .2s,background .2s}
+  .p-sec.on{border-color:rgb(var(--c-accent-rgb));background:rgb(var(--c-accent-soft-rgb,239 246 255) / .5)}
+  .p-chip{border:1.5px solid #d6d3d1;background:#fff;border-radius:.85rem;padding:.55rem .8rem;text-align:start;min-width:6.5rem;flex:1 1 6.5rem;cursor:pointer;transition:border-color .15s,background .15s;font:inherit;color:rgb(var(--c-ink-rgb))}
+  .p-chip:hover:not(:disabled){border-color:#78716c}
+  .p-chip.on{border-color:rgb(var(--c-accent-rgb));background:rgb(var(--c-accent-rgb));color:#fff}
+  .p-chip.on span{color:#fff!important}
+  .p-chip:disabled{opacity:.5;cursor:not-allowed}
+  .p-bar{position:sticky;bottom:.75rem;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:.75rem;background:rgb(var(--c-ink-rgb));color:#fff;border-radius:1rem;padding:.7rem 1rem;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+  .p-bar a{color:#fff;text-decoration:underline;text-underline-offset:3px;font-size:.875rem}
 </style>
 </head>
 <body class="font-sans font-light antialiased">
@@ -47,15 +56,15 @@
   <div id="msg" class="hidden mt-6 card !transform-none p-4 text-sm" role="status" aria-live="polite"></div>
   <div id="state" class="mt-8" aria-live="polite"></div>
   <form id="form" class="hidden mt-8 grid gap-8 max-w-3xl" autocomplete="off" novalidate>
-    <section aria-labelledby="h1"><h2 id="h1" class="font-display text-2xl font-semibold text-title mb-3" data-i18n="pay_step1">1. Choose a package</h2><div id="s-pkg" class="grid gap-3 sm:grid-cols-2"></div></section>
-    <section aria-labelledby="h2"><h2 id="h2" class="font-display text-2xl font-semibold text-title mb-3" data-i18n="pay_step2">2. Choose your sectors</h2><div id="s-sec" class="grid gap-3 sm:grid-cols-2"></div></section>
-    <section id="s-sum" class="card !transform-none p-5" aria-live="polite"></section>
+    <section aria-labelledby="h1"><h2 id="h1" class="font-display text-2xl font-semibold text-title mb-1" data-i18n="pay_step1">1. Choose your sectors and packages</h2><p class="text-sm text-stone-500 mb-3" data-i18n="pay_sec_hint">Tap a package under each sector you want. Tap it again to remove it.</p>
+      <div id="s-sec" class="grid gap-3"></div><div id="s-bar" class="mt-3"></div></section>
+    <section aria-labelledby="h2"><h2 id="h2" class="font-display text-2xl font-semibold text-title mb-3" data-i18n="pay_step2">2. Check your order</h2><div id="s-sum" class="card !transform-none p-5" aria-live="polite"></div></section>
     <div id="s-paid" class="hidden grid gap-8">
-      <section aria-labelledby="h3"><h2 id="h3" class="font-display text-2xl font-semibold text-title mb-1" data-i18n="pay_step3">3. Pay</h2><p class="text-sm text-stone-500 mb-3" data-i18n="pay_paid_hint">Pay the exact amount in your own app, then attach the receipt below.</p>
+      <section aria-labelledby="h3"><h2 id="h3" class="font-display text-2xl font-semibold text-title mb-1" data-i18n="pay_step3">3. Choose how to pay</h2><p class="text-sm text-stone-500 mb-3" data-i18n="pay_paid_hint">Pay the exact amount in your own app (outside this website). Copy the details below, then come back and upload the receipt.</p>
         <div id="s-meth" class="grid gap-3 sm:grid-cols-2"></div><div id="s-mdet" class="mt-4"></div></section>
-      <section aria-labelledby="h4"><h2 id="h4" class="font-display text-2xl font-semibold text-title mb-3" data-i18n="pay_step4">4. Send your receipt</h2>
+      <section aria-labelledby="h4"><h2 id="h4" class="font-display text-2xl font-semibold text-title mb-3" data-i18n="pay_step4">4. Upload your receipt</h2>
         <label class="block"><span class="p-lab" data-i18n="pay_receipt">Receipt or QR screenshot</span><input id="f-file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="p-in"></label>
-        <p class="text-xs text-stone-500 mt-1" data-i18n="pay_receipt_hint">JPG, PNG, WebP or PDF, up to 5 MB.</p></section>
+        <p class="text-xs text-stone-500 mt-1" data-i18n="pay_receipt_hint">JPG, PNG, WebP or PDF, up to 5 MB.</p><div id="f-prev" class="mt-2"></div></section>
     </div>
     <label class="block"><span class="p-lab" data-i18n="pay_note">Note (optional)</span><input id="f-note" maxlength="500" dir="auto" class="p-in"></label>
     <div><button id="b-send" type="submit" class="auth-btn !h-12 !px-8" style="background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))"><i class="ph-light ph-paper-plane-tilt"></i><span id="b-send-t" data-i18n="pay_send">Send request</span></button></div>
@@ -70,13 +79,13 @@ const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.targ
 document.querySelectorAll('.fu').forEach(e=>io.observe(e));
 </script>
 <script>
-/* Subscribe: pick a package + sectors, pay in your own app, upload the receipt. No payment gateway.
-   The amount is calculated in the database (request_subscription); the admin approves in admin > Payments. */
+/* Subscribe: every sector gets its own package, the total is added up, the user pays in their own app and uploads the receipt.
+   No payment gateway. Prices are calculated in the database (request_subscription_items); the admin approves in admin > Payments. */
 const K=window.KLang,T=(k,v)=>K?K.t(k,v):k,rtl=()=>!!(K&&K.rtl);
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PRB='payment-receipts',PAB='payment-assets',MAXB=5*1024*1024;
-const S={pkgs:[],meths:[],secs:[],until:{},reqs:[],pkg:'',pick:new Set(),method:'',busy:false,ok:false};
+const S={pkgs:[],meths:[],secs:[],until:{},reqs:[],pick:{},method:'',busy:false,ok:false};   // pick = { sectorId: packageCode }
 const nm=(o,k)=>(rtl()&&o[k+'_ar'])||o[k]||'';
 const cur=c=>!c||c==='EGP'?T('pay_egp'):c;
 const money=(n,c)=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2})+' '+cur(c);
@@ -87,63 +96,95 @@ const methOf=c=>S.meths.find(m=>m.code===c);
 const secName=id=>{const s=S.secs.find(x=>x.id===id);return s?s.name:id};
 const qr=p=>KHIPAuth.client().storage.from(PAB).getPublicUrl(p).data.publicUrl;
 
+// ---- dates: start (today, or the day after the current period ends) and end = start + duration - 1 day, same rule as the database
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());
+const parseD=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(Date.UTC(a,b-1,c))};
+const addDays=(s,n)=>{const d=parseD(s);d.setUTCDate(d.getUTCDate()+n);return iso(d)};
+function addDur(s,dur){   // like Postgres: adding months keeps the day, or the last day of a shorter month
+  const d=parseD(s),y=d.getUTCFullYear(),m=d.getUTCMonth(),dd=d.getUTCDate();
+  if(dur==='1 week')d.setUTCDate(dd+7);
+  else{const t=m+(dur==='6 months'?6:dur==='1 year'?12:24),ny=y+Math.floor(t/12),nm2=t%12,last=new Date(Date.UTC(ny,nm2+1,0)).getUTCDate();d.setTime(Date.UTC(ny,nm2,Math.min(dd,last)))}
+  return iso(d)}
+function dates(sid,p){
+  const u=S.until[sid],renew=!!(u&&u>=today()),st=renew?addDays(u,1):today();
+  return{st,en:addDays(addDur(st,p.duration),-1),renew,until:u}}
+
 function flash(t,ok=true){const m=$('msg');m.textContent=t;m.className='mt-6 card !transform-none p-4 text-sm '+(ok?'text-emerald-900 bg-emerald-50 border-emerald-200':'text-red-900 bg-red-50 border-red-200');m.scrollIntoView({behavior:'smooth',block:'center'})}
-function note(icon,t,sub,btn){
+function note(icon,t,sub,btn,btn2){
   $('form').classList.add('hidden');$('mine').classList.add('hidden');
-  $('state').innerHTML=`<div class="card !transform-none p-10 text-center max-w-xl"><i class="ph-light ${icon} text-5xl text-stone-400"></i><p class="mt-3 font-display text-2xl font-semibold text-title">${esc(t)}</p>${sub?`<p class="mt-1 text-sm text-stone-500">${esc(sub)}</p>`:''}${btn?`<button id="n-btn" class="auth-btn" style="margin:1.25rem auto 0"><i class="ph-light ph-user"></i><span style="display:inline">${esc(btn)}</span></button>`:''}</div>`;
-  const b=$('n-btn');if(b)b.onclick=()=>KHIPAuth.open();
+  const bt=(id,ic,l,dark)=>`<button id="${id}" class="auth-btn" style="margin:0;${dark?'background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))':''}"><i class="ph-light ${ic}"></i><span style="display:inline">${esc(l)}</span></button>`;
+  $('state').innerHTML=`<div class="card !transform-none p-10 text-center max-w-xl"><i class="ph-light ${icon} text-5xl text-stone-400"></i><p class="mt-3 font-display text-2xl font-semibold text-title">${esc(t)}</p>${sub?`<p class="mt-1 text-sm text-stone-500">${esc(sub)}</p>`:''}${btn?`<div class="mt-5 flex flex-wrap justify-center gap-3">${bt('n-btn','ph-user',btn)}${btn2?bt('n-btn2','ph-user-plus',btn2,1):''}</div>`:''}</div>`;
+  const b=$('n-btn');if(b)b.onclick=()=>KHIPAuth.open('login');
+  const c=$('n-btn2');if(c)c.onclick=()=>KHIPAuth.open('signup');
 }
 
-// ---- which sectors can be picked for the chosen package (free package: once per sector; no double pending request)
-function blocked(sid){
-  const p=pkgOf(S.pkg);if(!p)return '';
-  const mine=S.reqs.filter(r=>r.package_code===p.code&&(r.sector_ids||[]).includes(sid));
+// ---- requests: old ones have one package for all sectors, new ones have a line per sector
+const reqLines=r=>r.items&&r.items.length?r.items.map(i=>({sid:i.sector_id,pkg:i.package,price:i.price})):(r.sector_ids||[]).map(x=>({sid:x,pkg:r.package_code}));
+// can this sector + package be picked? (free package: once per sector; no second pending request for the same package)
+function blocked(sid,code){
+  const p=pkgOf(code);if(!p)return '';
+  const mine=S.reqs.filter(r=>reqLines(r).some(l=>l.sid===sid&&l.pkg===code));
   if(mine.some(r=>r.status==='pending'))return T('pay_in_review');
   if(p.max_per_user_sector!=null&&mine.filter(r=>r.status==='pending'||r.status==='approved').length>=p.max_per_user_sector)return T('pay_used');
   return '';
 }
-function paintPkgs(){
-  $('s-pkg').innerHTML=S.pkgs.map(p=>{const free=!(Number(p.price)>0),on=S.pkg===p.code;
-    return `<label class="p-opt ${on?'on':''}"><input type="radio" name="pkg" value="${esc(p.code)}" ${on?'checked':''}>
-      <span class="block font-display text-2xl font-semibold text-title leading-tight">${esc(nm(p,'name'))}</span>
-      <span class="block mt-1 text-lg ${free?'text-emerald-700':'text-ink'}">${free?esc(T('pay_free')):esc(money(p.price,p.currency))+' <span class="text-xs text-stone-500">'+esc(T('pay_per_sector'))+'</span>'}</span></label>`}).join('');
-}
+function lines(){   // the order: one line per sector that has a valid package
+  return S.secs.filter(x=>S.pick[x.id]&&pkgOf(S.pick[x.id])&&!blocked(x.id,S.pick[x.id])).map(x=>{const p=pkgOf(S.pick[x.id]),d=dates(x.id,p);return{s:x,p,d,price:Number(p.price)}})}
+const total=()=>lines().reduce((a,l)=>a+l.price,0);
+const curOf=()=>{const l=lines()[0];return l?l.p.currency:'EGP'};
+
 function paintSecs(){
   const t=today();
-  $('s-sec').innerHTML=S.secs.map(s=>{const b=blocked(s.id),on=S.pick.has(s.id)&&!b,u=S.until[s.id];
-    return `<label class="p-opt ${on?'on':''} ${b?'off':''}"><input type="checkbox" name="sec" value="${esc(s.id)}" ${on?'checked':''} ${b?'disabled':''}>
-      <span class="flex items-start justify-between gap-3"><span><span class="block font-medium text-ink">${esc(s.name)}</span>
-      ${u&&u>=t?`<span class="block text-xs text-emerald-700 mt-1">${esc(T('pay_active_until',{x:day(u)}))}</span>`:''}${b?`<span class="block text-xs text-amber-700 mt-1">${esc(b)}</span>`:''}</span>
-      <i class="ph-light ${on?'ph-check-square':'ph-square'} text-2xl ${on?'text-brand-600':'text-stone-300'}"></i></span></label>`}).join('');
+  $('s-sec').innerHTML=S.secs.map(sc=>{
+    const u=S.until[sc.id],act=u&&u>=t,pk=S.pick[sc.id],sel=pk&&pkgOf(pk)&&!blocked(sc.id,pk)?pkgOf(pk):null;
+    const chips=S.pkgs.map(p=>{const b=blocked(sc.id,p.code),on=!!sel&&sel.code===p.code,free=!(Number(p.price)>0);
+      return `<button type="button" class="p-chip ${on?'on':''}" data-sec="${esc(sc.id)}" data-pkg="${esc(p.code)}" aria-pressed="${on}" ${b?'disabled':''}>
+        <span class="block font-medium leading-tight">${esc(nm(p,'name'))}</span>
+        <span class="block text-xs ${free?'text-emerald-700':'text-stone-600'}">${free?esc(T('pay_free')):esc(money(p.price,p.currency))}</span>
+        ${b?`<span class="block text-[11px] text-amber-700">${esc(b)}</span>`:''}</button>`}).join('');
+    const d=sel?dates(sc.id,sel):null;
+    return `<div class="p-sec ${sel?'on':''}"><div class="flex items-start justify-between gap-3"><div><p class="font-medium text-ink">${esc(sc.name)}</p>
+      ${act?`<p class="text-xs text-emerald-700 mt-0.5">${esc(T('pay_active_until',{x:day(u)}))}</p>`:''}</div>
+      <i class="ph-light ${sel?'ph-check-circle text-brand-600':'ph-circle text-stone-300'} text-2xl"></i></div>
+      <div class="mt-3 flex flex-wrap gap-2">${chips}</div>
+      ${d?`<div class="mt-3 rounded-xl bg-white border border-stone-200 px-3 py-2 text-sm"><p class="flex flex-wrap items-center gap-x-2"><i class="ph-light ph-calendar-check text-lg text-brand-600"></i><b>${esc(T('pay_starts',{x:day(d.st)}))}</b><span class="text-stone-400">&rarr;</span><b>${esc(T('pay_ends',{x:day(d.en)}))}</b></p>
+        ${d.renew?`<p class="text-xs text-stone-500 mt-1">${esc(T('pay_renews',{x:day(d.until)}))}</p>`:''}</div>`:''}</div>`}).join('');
 }
-function total(){const p=pkgOf(S.pkg);return p?Number(p.price)*[...S.pick].filter(x=>!blocked(x)).length:0}
 function paintSum(){
-  const p=pkgOf(S.pkg),n=[...S.pick].filter(x=>!blocked(x)).length,free=p&&!(Number(p.price)>0),renew=[...S.pick].some(x=>S.until[x]&&S.until[x]>=today());
-  $('s-sum').innerHTML=!p?`<p class="text-sm text-stone-500">${esc(T('pay_pick_pkg'))}</p>`
-    :`<div class="flex flex-wrap items-end justify-between gap-3"><div><p class="p-lab !mb-0">${esc(T('pay_total'))}</p><p class="font-display text-4xl font-semibold text-title">${free?esc(T('pay_free')):esc(money(total(),p.currency))}</p></div>
-      <p class="text-sm text-stone-600">${esc(nm(p,'name'))} &middot; ${esc(T('pay_sel_n',{x:n}))}</p></div>
-      ${free?`<p class="text-sm text-stone-600 mt-3">${esc(T('pay_free_note'))}</p>`:''}${renew?`<p class="text-sm text-stone-600 mt-2">${esc(T('pay_renew_note'))}</p>`:''}`;
-  const paid=p&&Number(p.price)>0;$('s-paid').classList.toggle('hidden',!paid);if(paid)paintMeths();
+  const L=lines(),tot=total(),paid=tot>0,c=curOf();
+  $('s-bar').innerHTML=L.length?`<div class="p-bar"><span class="text-sm">${esc(T('pay_sel_n',{x:L.length}))} &middot; <b class="text-lg">${paid?esc(money(tot,c)):esc(T('pay_free'))}</b></span><a href="#h2">${esc(T('pay_step2').replace(/^\S+\s*/,''))}</a></div>`:'';
+  $('s-sum').innerHTML=!L.length?`<p class="text-sm text-stone-500">${esc(T('pay_empty_order'))}</p>`
+    :`<div class="grid gap-3">${L.map(l=>`<div class="flex items-start justify-between gap-3 border-b border-stone-100 pb-3"><div class="min-w-0"><p class="font-medium text-ink break-words">${esc(l.s.name)}</p>
+        <p class="text-sm text-stone-600">${esc(nm(l.p,'name'))}</p><p class="text-xs text-stone-500 mt-0.5">${esc(day(l.d.st))} &rarr; ${esc(day(l.d.en))}</p></div>
+        <p class="text-ink whitespace-nowrap">${l.price>0?esc(money(l.price,l.p.currency)):`<span class="text-emerald-700">${esc(T('pay_free'))}</span>`}</p></div>`).join('')}</div>
+      <div class="flex flex-wrap items-end justify-between gap-3 mt-4"><div><p class="p-lab !mb-0">${esc(T('pay_total'))}</p><p class="font-display text-4xl font-semibold text-title">${paid?esc(money(tot,c)):esc(T('pay_free'))}</p></div></div>
+      <p class="text-xs text-stone-500 mt-3">${esc(T('pay_date_note'))}</p>
+      ${!paid?`<p class="text-sm text-stone-600 mt-2">${esc(T('pay_free_note'))}</p>`:''}`;
+  $('s-paid').classList.toggle('hidden',!paid);if(paid)paintMeths();
+  $('b-send-t').textContent=paid?T('pay_send_paid'):T('pay_send');
 }
+const copyBtn=(v,l)=>`<button type="button" data-copy="${esc(v)}" class="text-xs border border-stone-300 hover:border-stone-500 rounded-full px-3 py-1"><i class="ph-light ph-copy"></i> ${esc(l)}</button>`;
 function paintMeths(){
   if(!S.meths.length){$('s-meth').innerHTML=`<p class="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3 sm:col-span-2">${esc(T('pay_none_methods'))}</p>`;$('s-mdet').innerHTML='';return}
   if(!methOf(S.method))S.method='';
   $('s-meth').innerHTML=S.meths.map(m=>`<label class="p-opt ${S.method===m.code?'on':''}"><input type="radio" name="meth" value="${esc(m.code)}" ${S.method===m.code?'checked':''}><span class="font-medium text-ink">${esc(nm(m,'name'))}</span></label>`).join('');
-  const m=methOf(S.method),p=pkgOf(S.pkg);
+  const m=methOf(S.method),tot=total(),c=curOf();
   $('s-mdet').innerHTML=!m?'':`<div class="card !transform-none p-5 grid gap-4 sm:grid-cols-[1fr_auto] items-start">
-    <dl class="grid gap-3 text-sm"><div><dt class="p-lab !mb-0">${esc(T('pay_amount'))}</dt><dd class="font-display text-3xl font-semibold text-title">${esc(money(total(),p&&p.currency))}</dd></div>
-      ${m.account_name?`<div><dt class="p-lab !mb-0">${esc(T('pay_account_name'))}</dt><dd class="text-ink break-words" dir="auto">${esc(m.account_name)}</dd></div>`:''}
-      ${m.account_number?`<div><dt class="p-lab !mb-0">${esc(T('pay_account_no'))}</dt><dd class="flex items-center gap-2 flex-wrap"><span class="text-ink text-lg break-all" dir="ltr">${esc(m.account_number)}</span><button type="button" data-copy="${esc(m.account_number)}" class="text-xs border border-stone-300 hover:border-stone-500 rounded-full px-3 py-1"><i class="ph-light ph-copy"></i> ${esc(T('pay_copy'))}</button></dd></div>`:''}
+    <dl class="grid gap-3 text-sm"><div><dt class="p-lab !mb-0">${esc(T('pay_pay_exact'))}</dt><dd class="flex items-center gap-2 flex-wrap"><span class="font-display text-3xl font-semibold text-title">${esc(money(tot,c))}</span>${copyBtn(String(tot),T('pay_copy_amount'))}</dd></div>
+      ${m.account_name?`<div><dt class="p-lab !mb-0">${esc(T('pay_account_name'))}</dt><dd class="flex items-center gap-2 flex-wrap"><span class="text-ink break-words" dir="auto">${esc(m.account_name)}</span>${copyBtn(m.account_name,T('pay_copy'))}</dd></div>`:''}
+      ${m.account_number?`<div><dt class="p-lab !mb-0">${esc(T('pay_account_no'))}</dt><dd class="flex items-center gap-2 flex-wrap"><span class="text-ink text-lg break-all" dir="ltr">${esc(m.account_number)}</span>${copyBtn(m.account_number,T('pay_copy'))}</dd></div>`:''}
       ${nm(m,'instructions')?`<div class="whitespace-pre-line text-stone-700 leading-7" dir="auto">${esc(nm(m,'instructions'))}</div>`:''}</dl>
     ${m.qr_path?`<figure class="text-center"><img src="${esc(qr(m.qr_path))}" alt="${esc(T('pay_scan'))}" class="w-40 h-40 object-contain rounded-xl border border-stone-200 bg-white mx-auto"><figcaption class="text-xs text-stone-500 mt-1">${esc(T('pay_scan'))}</figcaption></figure>`:''}</div>`;
 }
 const STAT={pending:['bg-amber-100 text-amber-800','pay_pending'],approved:['bg-emerald-100 text-emerald-800','pay_approved'],rejected:['bg-red-100 text-red-800','pay_rejected'],cancelled:['bg-stone-200 text-stone-700','pay_cancelled']};
 function paintMine(){
   $('mine').classList.toggle('hidden',false);
-  $('mine-l').innerHTML=!S.reqs.length?`<p class="text-sm text-stone-500">${esc(T('pay_none_req'))}</p>`:S.reqs.map(r=>{const p=pkgOf(r.package_code)||{name:r.package_code},[c,k]=STAT[r.status]||STAT.pending;
-    return `<div class="card !transform-none p-4"><div class="flex flex-wrap items-center justify-between gap-2"><p class="font-medium text-ink">${esc(T('pay_ref',{x:r.ref}))} &middot; ${esc(nm(p,'name'))}</p><span class="p-pill ${c}">${esc(T(k))}</span></div>
-      <p class="text-sm text-stone-600 mt-1">${esc((r.sector_ids||[]).map(secName).join(rtl()?'، ':', '))}</p>
-      <p class="text-xs text-stone-500 mt-1">${Number(r.amount)>0?esc(money(r.amount,r.currency))+' &middot; ':''}${esc(T('pay_sent_on',{x:day(r.created_at)}))}</p>
+  $('mine-l').innerHTML=!S.reqs.length?`<p class="text-sm text-stone-500">${esc(T('pay_none_req'))}</p>`:S.reqs.map(r=>{const [c,k]=STAT[r.status]||STAT.pending;
+    const ls=reqLines(r).map(l=>{const p=pkgOf(l.pkg)||{name:l.pkg};return `<li class="flex justify-between gap-3"><span class="min-w-0 break-words">${esc(secName(l.sid))} <span class="text-stone-400">&middot;</span> ${esc(nm(p,'name'))}</span>${l.price!=null?`<span class="whitespace-nowrap text-stone-500">${Number(l.price)>0?esc(money(l.price,r.currency)):esc(T('pay_free'))}</span>`:''}</li>`}).join('');
+    return `<div class="card !transform-none p-4"><div class="flex flex-wrap items-center justify-between gap-2"><p class="font-medium text-ink">${esc(T('pay_ref',{x:r.ref}))}</p><span class="p-pill ${c}">${esc(T(k))}</span></div>
+      <ul class="text-sm text-stone-700 mt-2 grid gap-1">${ls}</ul>
+      <p class="text-xs text-stone-500 mt-2">${Number(r.amount)>0?`<b>${esc(T('pay_total'))}: ${esc(money(r.amount,r.currency))}</b> &middot; `:''}${esc(T('pay_sent_on',{x:day(r.created_at)}))}</p>
       ${r.admin_note?`<p class="text-sm mt-2 rounded-lg ${r.status==='rejected'?'bg-red-50 text-red-900':'bg-stone-50 text-stone-700'} p-2 break-words"><b>${esc(T('pay_reason'))}:</b> ${esc(r.admin_note)}</p>`:''}
       ${r.status==='pending'?`<button data-cancel="${esc(r.id)}" class="mt-3 text-sm border border-stone-300 hover:border-stone-500 rounded-full px-4 py-1.5">${esc(T('pay_cancel'))}</button>`:''}
       ${r.status==='approved'?`<a href="my-stuff.html" class="mt-3 inline-block text-sm text-brand-700 underline underline-offset-4">${esc(T('pay_open_files'))}</a>`:''}</div>`}).join('');
@@ -151,17 +192,18 @@ function paintMine(){
 function paintAll(){
   if(K)K.dom();
   if(!S.ok)return;
+  Object.keys(S.pick).forEach(k=>{if(!pkgOf(S.pick[k])||blocked(k,S.pick[k]))delete S.pick[k]});
   $('state').innerHTML='';$('form').classList.remove('hidden');
   if(!S.pkgs.length){$('form').classList.add('hidden');$('state').innerHTML=`<p class="text-stone-600">${esc(T('pay_no_pkgs'))}</p>`}
-  paintPkgs();paintSecs();paintSum();paintMine();
+  paintSecs();paintSum();paintMine();
 }
-
+const readUntil=pr=>{S.until={};(pr.data||[]).forEach(p=>{if(!S.until[p.sector_id]||p.end_date>S.until[p.sector_id])S.until[p.sector_id]=p.end_date})};
 async function load(){
   const A=KHIPAuth,sb=A.client(),u=A.user();
   if(K){try{await K.data('./app-data.json')}catch(_){}K.dom()}
   S.ok=false;$('msg').classList.add('hidden');
   if(!sb)return note('ph-plug',T('pay_err_load'));
-  if(!u)return note('ph-lock-simple',T('pay_signin'),T('pay_signin_sub'),T('pay_login'));
+  if(!u){const C=A.config();return note('ph-lock-simple',T('pay_signin'),T('pay_signin_sub'),T('pay_login'),C&&C.allowSignUp?T('pay_create'):'')}
   $('state').innerHTML='<div class="card !transform-none p-6 animate-pulse h-40 max-w-3xl"></div>';
   const [pk,me,sc,pr,rq]=await Promise.all([
     sb.from('payment_packages').select('*').eq('active',true).order('sort_order'),
@@ -171,12 +213,11 @@ async function load(){
     sb.from('subscription_requests').select('*').order('created_at',{ascending:false}).limit(50)]);
   if(pk.error||sc.error)return note('ph-warning-circle',T('pay_err_load'));
   S.pkgs=pk.data||[];S.meths=me.error?[]:(me.data||[]);S.secs=sc.data||[];S.reqs=rq.error?[]:(rq.data||[]);
-  S.until={};(pr.data||[]).forEach(p=>{if(!S.until[p.sector_id]||p.end_date>S.until[p.sector_id])S.until[p.sector_id]=p.end_date});
-  if(!pkgOf(S.pkg))S.pkg='';S.ok=true;paintAll();
+  readUntil(pr);S.ok=true;paintAll();
 }
 async function reloadReqs(){
   const sb=KHIPAuth.client(),[rq,pr]=await Promise.all([sb.from('subscription_requests').select('*').order('created_at',{ascending:false}).limit(50),sb.from('subscription_periods').select('sector_id,end_date')]);
-  if(!rq.error)S.reqs=rq.data||[];S.until={};(pr.data||[]).forEach(p=>{if(!S.until[p.sector_id]||p.end_date>S.until[p.sector_id])S.until[p.sector_id]=p.end_date});
+  if(!rq.error)S.reqs=rq.data||[];readUntil(pr);
 }
 // photos from phones are large: shrink big images before upload
 async function shrink(f){
@@ -185,13 +226,19 @@ async function shrink(f){
     c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
     const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.85));return b?new File([b],'receipt.jpg',{type:'image/jpeg'}):f}catch(_){return f}
 }
+let prevUrl='';
+function paintPrev(){
+  const f=$('f-file').files[0],box=$('f-prev');if(prevUrl){URL.revokeObjectURL(prevUrl);prevUrl=''}
+  if(!f){box.innerHTML=`<p class="text-xs text-amber-700">${esc(T('pay_receipt_req'))}</p>`;return}
+  const img=/^image\//.test(f.type);if(img)prevUrl=URL.createObjectURL(f);
+  box.innerHTML=`<div class="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-2"><i class="ph-light ph-check-circle text-2xl text-emerald-700"></i>${img?`<img src="${esc(prevUrl)}" alt="" class="w-14 h-14 object-cover rounded-lg border border-stone-200">`:'<i class="ph-light ph-file-pdf text-3xl text-stone-600"></i>'}<div class="min-w-0 text-sm"><p class="text-emerald-900">${esc(T('pay_receipt_ok'))}</p><p class="text-xs text-stone-600 truncate" dir="ltr">${esc(f.name)}</p></div></div>`;
+}
 async function send(){
   if(S.busy)return;
-  const sb=KHIPAuth.client(),u=KHIPAuth.user(),p=pkgOf(S.pkg),secs=[...S.pick].filter(x=>!blocked(x));
-  if(!u)return KHIPAuth.open();
-  if(!p)return flash(T('pay_pick_pkg'),false);
-  if(!secs.length)return flash(T('pay_pick_sec'),false);
-  const paid=Number(p.price)>0;let file=null,path=null;
+  const sb=KHIPAuth.client(),u=KHIPAuth.user(),L=lines();
+  if(!u)return KHIPAuth.open('login');
+  if(!L.length)return flash(T('pay_pick_sec'),false);
+  const paid=total()>0;let file=null,path=null;
   if(paid){
     if(!S.method)return flash(T('pay_err_method'),false);
     file=$('f-file').files[0];if(!file)return flash(T('pay_err_receipt'),false);
@@ -205,18 +252,25 @@ async function send(){
       path=`${u.id}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
       const up=await sb.storage.from(PRB).upload(path,file,{contentType:file.type,cacheControl:'3600'});if(up.error)throw up.error;
     }
-    const r=await sb.rpc('request_subscription',{p_package:p.code,p_sectors:secs,p_method:paid?S.method:null,p_receipt:paid?path:null,p_note:$('f-note').value.trim()||null});
+    const r=await sb.rpc('request_subscription_items',{p_items:L.map(l=>({sector_id:l.s.id,package:l.p.code})),p_method:paid?S.method:null,p_receipt:paid?path:null,p_note:$('f-note').value.trim()||null});
     if(r.error){if(path){try{await sb.storage.from(PRB).remove([path])}catch(_){}}throw r.error}
-    S.pick.clear();$('f-file').value='';$('f-note').value='';
-    await reloadReqs();paintAll();flash(T('pay_sent')+' '+T('pay_files_hint'));
+    S.pick={};S.method='';$('f-file').value='';$('f-note').value='';paintPrev();
+    await reloadReqs();paintAll();
+    $('state').innerHTML=`<div class="card !transform-none p-6 max-w-3xl border-emerald-200 bg-emerald-50"><p class="flex items-center gap-2 font-display text-2xl font-semibold text-emerald-900"><i class="ph-light ph-hourglass-medium"></i>${esc(T('pay_wait_title'))}</p><p class="text-sm text-emerald-900 mt-1">${esc(T('pay_sent'))}</p><p class="text-sm text-emerald-900 mt-1">${esc(T('pay_wait_sub'))}</p></div>`;
+    $('state').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){flash(e.message||String(e),false)}
-  finally{S.busy=false;$('b-send').disabled=false;$('b-send-t').textContent=T('pay_send')}
+  finally{S.busy=false;$('b-send').disabled=false;paintSum()}
 }
+$('s-sec').addEventListener('click',e=>{
+  const b=e.target.closest('[data-sec]');if(!b||b.disabled)return;
+  const sid=b.dataset.sec,code=b.dataset.pkg;
+  if(S.pick[sid]===code)delete S.pick[sid];else S.pick[sid]=code;   // tap again = remove
+  paintSecs();paintSum();
+});
 $('form').addEventListener('change',e=>{
   const t=e.target;
-  if(t.name==='pkg'){S.pkg=t.value;paintPkgs();paintSecs();paintSum()}
-  else if(t.name==='sec'){t.checked?S.pick.add(t.value):S.pick.delete(t.value);paintSecs();paintSum()}
-  else if(t.name==='meth'){S.method=t.value;paintMeths()}
+  if(t.name==='meth'){S.method=t.value;paintMeths()}
+  else if(t.id==='f-file')paintPrev();
 });
 $('form').addEventListener('submit',e=>{e.preventDefault();send()});
 document.addEventListener('click',async e=>{
@@ -230,7 +284,7 @@ document.addEventListener('click',async e=>{
 });
 if(window.KMENU)KMENU.onChange(()=>{paintAll()});
 KHIPAuth.onChange(()=>{load()});
-KHIPAuth.ready.then(load);
+KHIPAuth.ready.then(()=>{load();paintPrev()});
 </script>
 </body>
 </html>

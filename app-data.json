@@ -359,9 +359,9 @@
     }
   ],
   "social": {
-    "linkedin": "",
+    "linkedin": "https://www.linkedin.com/company/hotinformationonline/",
     "youtube": "",
-    "facebook": "",
+    "facebook": "https://web.facebook.com/HOTinformation.eg",
     "instagram": "",
     "x": "",
     "tiktok": "",
@@ -406,16 +406,23 @@
       "text": "#3a4051"
     },
     "custom": [],
-    "sectionWidth": "61",
+    "sectionWidth": "85",
     "sections": {
       "home-about": {
-        "mode": "color",
+        "mode": "image",
         "overlay": 0,
-        "image": "mw3c9b1d-84335.jpg",
-        "color": "role:accentSoft"
-      },
-      "home-carousel": {
-        "overlapMobile": "30"
+        "image": "mw0nqqhc-abstract-glass-window-roof-architecture-exterior.jpg",
+        "imageFx": {
+          "ov": {
+            "type": "matt",
+            "color": "#1760de",
+            "opacity": 70
+          },
+          "mask": {
+            "shape": "leaf",
+            "fit": "cover"
+          }
+        }
       }
     },
     "sectionWidthTablet": "68",

@@ -7,7 +7,7 @@ Rule: every phase is added to the previous full version, so the newest zip alway
 - The admin top-bar tab **Tender images** is renamed **Tenders**. Its default screen is a spreadsheet-like table (Arabic data entry).
 - The older screens are kept, as sub-views next to the table: **Tenders table** (new, default) | **Newspaper images** (the old Images/OCR/review pipeline) | **By sector**.
 - The table writes to the same `tenders` table the rest of the system already uses (entity, subject = the description, publish_date, session_date, booklet_price, bid_bond, status, sector_ids, sectors_confirmed). New column: `governorate`.
-- Entities come from the existing `known_entities` list (Entities button). Governorates are a fixed list of the 27 Egyptian governorates plus "All governorates" (in the admin code).
+- Entities come from the existing `known_entities` list (admin > Settings > Entities). Governorates are a fixed list of the 27 Egyptian governorates plus "All governorates" (in the admin code).
 - A row is shown to subscribers only when it is Approved and its sectors are Confirmed (unchanged rule). In the table, the **Publish** button approves the row; the **Sector** cell picks the sectors and confirms them.
 - Public "More" (T4) shows the full description, entity, governorate, publishing date and session date. Booklet price, bid bond, link and documents stay for subscribers only (change in step16 if you want otherwise).
 
@@ -32,8 +32,8 @@ Rule: every phase is added to the previous full version, so the newest zip alway
 
 ## T3: Words outside the Arabic dictionary (DONE, this zip)
 - Unknown words in the Description are underlined in red while typing and after reading from an image; a red chip list under the cell shows them. Click a chip (or double-click the word) = **Add to dictionary** or **Ignore**.
-- Dictionary = built-in starter vocabulary of tender language (`tender-dict.js`, about 900 words) + every word in PUBLISHED tenders + entity names + words you add/ignore + an **uploaded word list** (Dictionary button: plain text one word per line, or a Hunspell `ar.dic`). A word also counts as known with a common prefix or ending (والتوريد, للمناقصة, مناقصاتها...).
-- IMPORTANT: the built-in list is only a starter. Upload a large Arabic word list once (Dictionary button) for good coverage. It could not be downloaded in the building session.
+- Dictionary = built-in starter vocabulary of tender language (`tender-dict.js`, about 900 words) + every word in PUBLISHED tenders + entity names + words you add/ignore + an **uploaded word list** (admin > Settings > Dictionary: plain text one word per line, or a Hunspell `ar.dic`). A word also counts as known with a common prefix or ending (والتوريد, للمناقصة, مناقصاتها...).
+- IMPORTANT: the built-in list is only a starter. Upload a large Arabic word list once (admin > Settings > Dictionary) for good coverage. It could not be downloaded in the building session.
 - `supabase-step16-tender-words.sql` (new): tables `tender_words` and `tender_dict_chunks` (admin only). Without it everything still works; added words are then kept in this browser only.
 - Files: admin.html, tender-dict.js (new), supabase-step16-tender-words.sql (new).
 

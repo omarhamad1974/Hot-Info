@@ -38,7 +38,7 @@ Decision: a user can take the free week **once per sector** (column `max_per_use
 - New **Payments** tab in admin.html: Requests (filters, receipt viewer, Approve / Reject), Packages (prices, on/off, Arabic names), Payment methods (account details, instructions, QR upload, on/off).
 - Red badge with the number of pending requests. 6 months added to the manual Subscribe dialog.
 - Files: admin.html.
-- How to use: run `supabase-step18-payments.sql` first. Then open admin > Payments > Packages & prices (enter the 6 months / 1 year / 2 years price, the weekly package stays 0) and > Payment methods (account details, QR, switch On). Requests appear under Requests; Approve opens a dialog (optional start date and note), Reject needs a reason.
+- How to use: run `supabase-step18-payments.sql` first. Then open admin > Settings > Packages & prices (enter the 6 months / 1 year / 2 years price, the weekly package stays 0) and > Payment methods (account details, QR, switch On). Requests appear under Requests; Approve opens a dialog (optional start date and note), Reject needs a reason.
 
 ## P3: User page subscribe.html (DONE)
 - New page: choose sectors, choose package, see price, pay-by instructions, upload receipt, send. Free week skips payment. My requests list with status and rejection reason, cancel for pending.
@@ -48,3 +48,11 @@ Decision: a user can take the free week **once per sector** (column `max_per_use
 ## P4: Polish (DONE)
 - validator checks, MANUAL.md section, README step.
 - Ideas for later: email / WhatsApp alert to you on a new request, self sign-up, automatic renewal reminders pointing to subscribe.html.
+
+## P5: Sign-up, per-sector orders, live alerts (DONE) - `supabase-step19-signup-and-orders.sql`
+- Self sign-up on (`allowSignUp:true` + Supabase setting). The sign-up form sends name, mobile, company; a database trigger creates the profile and a Lead (status Lead). Sending a request makes it Potential, approving makes it Converted.
+- An order has one line per sector with its own package: `subscription_requests.items` (jsonb). Old requests keep working. Prices and the total are calculated in `request_subscription_items()`.
+- subscribe.html: sectors one by one with package chips, start / end date per sector, running total, payment details with Copy buttons, receipt upload required for paid orders.
+- Admin: pending report, sector lines on each request, CSV download, live toast + badge (Supabase Realtime) + title counter.
+- Still later: e-mail / WhatsApp alert when the admin page is closed (needs a mail service and an Edge Function), automatic renewal reminders.
+

@@ -34,10 +34,11 @@ details[open]>summary .chev{transform:rotate(90deg)}
       -->
       <button data-pane="tenders1" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-table"></i> 1 &middot; Input tender<span id="bd-tenders2" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Tenders waiting to be sent to Classification"></span></button>
       <button data-pane="tenders2" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-tags"></i> 2 &middot; Classification &amp; notification<span id="bd-tenders3" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Tenders waiting for classification and approval"></span></button>
-      <button data-pane="tenders3" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-sliders"></i> 3 &middot; Settings</button>
+      <button data-pane="tenders3" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-star"></i> 3 &middot; Featured</button>
       <button data-pane="tenders4" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-file-export"></i> 4 &middot; Generate file</button>
       <button data-pane="payments" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-wallet"></i> Payments<span id="bd-payments" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Payment requests waiting for approval"></span></button>
       <button data-pane="directory" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-address-book"></i> Directory<span id="bd-directory" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Entries waiting for approval"></span></button>
+      <button data-pane="settings" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-gear"></i> Settings</button>
     </nav>
     <!-- hidden for now: Search (remove these comment marks and the SEARCH_ON line in the script to bring it back)
     <button data-k="gsearch" class="text-xs font-bold px-2.5 py-1.5 rounded-lg text-gray-300 hover:bg-white/10 whitespace-nowrap" title="Search everything (Ctrl+K)" aria-label="Search everything"><i class="fas fa-magnifying-glass"></i><span class="hidden sm:inline"> Search</span></button>
@@ -148,7 +149,7 @@ function showPane(p){
   pane=p;history.replaceState(null,'','#'+p);
   $('pane-content').classList.toggle('hidden',p!=='content');$('pane-clients').classList.toggle('hidden',p==='content');
   document.querySelectorAll('.pane-btn').forEach(b=>{const on=b.dataset.pane===p;b.className='pane-btn text-xs font-bold px-3 py-1.5 rounded-lg '+(on?'bg-white text-gray-900':'text-gray-300 hover:bg-white/10')});
-  const hi=$('pane-hint');if(hi)hi.textContent=({content:'Edit the website text, photos, news, team and languages.',clients:'Manage users, their subscriptions to sectors, and the files in each sector.',leads:'People who may become subscribers.',issues:'The HOT Info issues table.',tenders1:'Input: upload images, read them (OCR), type or import tender rows from Excel. Press Done to send a row to Classification.',tenders2:'Classification: choose and confirm sectors, approve tenders and send the notification update.',tenders3:'Settings: what is featured on the website.',tenders4:'Generate a tenders file (PDF, Excel or Word) for a date range.',directory:'Companies, institutions and freelancers shown in the public Directory: approve, edit, import.',payments:'Subscription requests: check the receipt, approve or reject. Set package prices and payment methods.'})[p]||'';
+  const hi=$('pane-hint');if(hi)hi.textContent=({content:'Edit the website text, photos, news, team and languages.',clients:'Manage users, their subscriptions to sectors, and the files in each sector.',leads:'People who may become subscribers.',issues:'The HOT Info issues table.',tenders1:'Input: upload images, read them (OCR), type or import tender rows from Excel. Press Done to send a row to Classification.',tenders2:'Classification: choose and confirm sectors, approve tenders and send the notification update.',tenders3:'Featured: choose which tenders are featured in the Hot News slider of the website.',tenders4:'Generate a tenders file (PDF, Excel or Word) for a date range.',directory:'Companies, institutions and freelancers shown in the public Directory: approve, edit, import.',payments:'Subscription requests: check the receipt, approve or reject.',settings:'Entities, keywords, the Arabic dictionary, payment packages and payment methods.'})[p]||'';
   if(p!=='content')K.go(p);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pane]');if(b)showPane(b.dataset.pane)});
@@ -963,7 +964,7 @@ if(tk&&$('f-o').value){$('f-t').value=tk;$('f-s').checked=true;connect({o:$('f-o
 const K=(()=>{
   const C=window.KHIP_SUPABASE||{},BUCKET=C.bucket||'client-files';
   const configured=!!(C.url&&C.anonKey&&!/YOUR-/.test(C.url)&&window.supabase);
-  let sb=null,me=null,clients=[],folders=[],noFn=false,cur=null,curLabel='',path=[],started=false,sectors=[],sectErr=false,tabK='overview',recovery=/type=recovery/.test(location.hash);
+  let sb=null,me=null,clients=[],folders=[],noFn=false,cur=null,curLabel='',path=[],started=false,sectors=[],sectErr=false,tabK='overview',sSec='',sNext='',recovery=/type=recovery/.test(location.hash);
   const redirect=location.origin+location.pathname.replace(/[^/]*$/,'')+'my-stuff.html';
   const adminUrl=location.origin+location.pathname+'#clients';
   const main=()=>$('k-main');
@@ -1029,9 +1030,23 @@ const K=(()=>{
     try{const tc=q=>q.select('id',{count:'exact',head:true});
       const [a,b,d,pq]=await Promise.all([tc(sb.from('tenders')).eq('written',false),tc(sb.from('tenders')).eq('written',true).eq('status','draft'),sb.from('directory_entries').select('id',{count:'exact',head:true}).eq('status','pending'),sb.from('subscription_requests').select('id',{count:'exact',head:true}).eq('status','pending')]);
       const set=(id,n)=>{const e=$(id);if(!e)return;e.textContent=n>99?'99+':n;e.classList.toggle('hidden',!(n>0))};
-      set('bd-tenders2',a.error?0:(a.count||0));set('bd-tenders3',b.error?0:(b.count||0));set('bd-directory',d.error?0:(d.count||0));set('bd-payments',pq.error?0:(pq.count||0))}catch(_){}
+      set('bd-tenders2',a.error?0:(a.count||0));set('bd-tenders3',b.error?0:(b.count||0));set('bd-directory',d.error?0:(d.count||0));set('bd-payments',pq.error?0:(pq.count||0));
+      const np=pq.error?0:(pq.count||0);document.title=(np?'('+np+') ':'')+document.title.replace(/^\(\d+\)\s*/,'')}catch(_){}
   }
   window.kBadges=badges;
+  // Live alert for new subscription requests (needs supabase-step19 for realtime) plus a safety refresh every 90 seconds.
+  let payCh=null,payPoll=null;
+  function payWatch(){
+    try{
+      if(payCh){sb.removeChannel(payCh);payCh=null}
+      payCh=sb.channel('khip-pay-requests').on('postgres_changes',{event:'*',schema:'public',table:'subscription_requests'},async ev=>{
+        if(ev.eventType==='INSERT'){const r=ev.new||{};toast('New subscription request #'+(r.ref||'')+(Number(r.amount)>0?' ('+Number(r.amount).toLocaleString('en-US')+' '+(r.currency||'EGP')+')':' (free)')+' is waiting for your approval')}
+        badges();
+        if(tabK==='payments'&&$('k-modal').classList.contains('hidden')){try{await loadPayments();paintPayments()}catch(_){}}
+      }).subscribe();
+    }catch(_){}
+    clearInterval(payPoll);payPoll=setInterval(()=>{if(!document.hidden)badges()},90000);
+  }
   async function enter(user){
     const {data,error}=await sb.rpc('is_admin');
     if(error||data!==true){
@@ -1040,7 +1055,7 @@ const K=(()=>{
     }
     me=user;err('');
     $('k-login').classList.add('hidden');$('k-app').classList.remove('hidden');$('k-who').textContent='Signed in as '+user.email+' \u00b7 page version 03-Nov-c tender workflow';
-    cur=null;path=[];home();badges();
+    cur=null;path=[];home();badges();payWatch();
   }
 
   // ---- sign in / reset ----
@@ -1123,18 +1138,19 @@ const K=(()=>{
   const label=r=>((profiles[r.id]||{}).full_name||r.email);
   const badge=r=>!r.account?pill('bg-gray-100 text-gray-600','Folder only')
     :r.confirmed?pill('bg-emerald-50 text-emerald-700','Account active'):pill('bg-amber-100 text-amber-800','Invite pending');
-  const T_TITLES=['','Read & name tenders (old)','1 \u00b7 Input tender','2 \u00b7 Classification & notification','','3 \u00b7 Settings','4 \u00b7 Generate tenders file'];
-  const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues',tenders:'Tenders',directory:'Directory',payments:'Payments'};
+  const T_TITLES=['','Read & name tenders (old)','1 \u00b7 Input tender','2 \u00b7 Classification & notification','','3 \u00b7 Featured','4 \u00b7 Generate tenders file'];
+  const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues',tenders:'Tenders',directory:'Directory',payments:'Payments',settings:'Settings'};
   const setW=w=>{main().className=w==='wide'?'p-3 space-y-3':w==='mid'?'max-w-6xl mx-auto p-4 space-y-3':'max-w-3xl mx-auto p-4 space-y-3'};
   async function home(){
     cur=null;path=[];$('k-title').textContent=(tabK==='tenders'?T_TITLES[tStep]:TITLES[tabK])||'Admin';main().innerHTML=LOADING;
-    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await((tStep===5||tStep===6)?0:tStep===2?(async()=>{await loadTableView();await loadT1()})():tStep===1?loadT1():(tStep===3&&tView==='sector')?(async()=>{await loadSectorData();await loadSectorView();await tPipeLoad()})():(tView='table',loadTableView()));else if(tabK==='directory')await loadDirectory();else if(tabK==='payments')await loadPayments();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
+    if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await((tStep===5||tStep===6)?0:tStep===2?(async()=>{await loadTableView();await loadT1()})():tStep===1?loadT1():(tStep===3&&tView==='sector')?(async()=>{await loadSectorData();await loadSectorView();await tPipeLoad()})():(tView='table',loadTableView()));else if(tabK==='directory')await loadDirectory();else if(tabK==='payments')await loadPayments();else if(tabK==='settings')await loadAdminSettings();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
     paintHome();
   }
-  const paintHome=()=>{setW(tabK==='issues'||(tabK==='tenders'&&(tStep<3||tView==='table'))?'wide':(tabK==='leads'||tabK==='tenders'||tabK==='directory'||tabK==='payments')?'mid':'narrow');tabK==='payments'?paintPayments():tabK==='directory'?paintDirectory():tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
+  const paintHome=()=>{setW(tabK==='issues'||(tabK==='tenders'&&(tStep<3||tView==='table'))?'wide':(tabK==='leads'||tabK==='tenders'||tabK==='directory'||tabK==='payments'||tabK==='settings')?'mid':'narrow');tabK==='settings'?paintAdminSettings():tabK==='payments'?paintPayments():tabK==='directory'?paintDirectory():tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
   function go(p){ // called by the top bar: leads | clients | issues | tenders
     if(p==='tenders')p='tenders1';
     if(/^tenders[1-4]$/.test(p)){tStep=({1:2,2:3,3:5,4:6})[+p.slice(7)];tabK='tenders';tView='table';TR=null;tbF.st='all';tbSel.clear();tbCap=100}
+    else if(p==='settings'){tabK='settings';sSec=sNext;sNext=''}
     else tabK=p==='clients'?(['overview','clients','sectors'].includes(tabK)?tabK:'overview'):p;
     if(!started||!sb)start();else if(me)home();
   }
@@ -1888,6 +1904,17 @@ const K=(()=>{
   const pSecs=ids=>(ids||[]).map(i=>{const s=sectors.find(x=>x.id===i);return s?s.name:i}).join(', ');
   const pStat=s=>s==='approved'?pill('bg-emerald-100 text-emerald-800','Approved'):s==='rejected'?pill('bg-red-100 text-red-800','Rejected'):s==='cancelled'?pill('bg-gray-200 text-gray-700','Cancelled by user'):pill('bg-amber-100 text-amber-800','Pending approval');
   const pQr=p=>p?sb.storage.from(PAB).getPublicUrl(p).data.publicUrl:'';
+  // an order has one line per sector (own package and price); requests made before step 19 have one package for all sectors
+  const pLines=r=>r.items&&r.items.length?r.items.map(i=>({sid:i.sector_id,pkg:i.package,price:i.price})):(r.sector_ids||[]).map(x=>({sid:x,pkg:r.package_code,price:null}));
+  const pSecName=id=>{const x=sectors.find(y=>y.id===id);return x?x.name:id};
+  const pLinesHtml=r=>`<ul class="text-xs space-y-0.5">${pLines(r).map(l=>{const k=pPkg(l.pkg);return `<li class="flex justify-between gap-3"><span class="break-words"><b>${esc(pSecName(l.sid))}</b> &middot; ${esc(k?k.name:(l.pkg||''))}</span>${l.price!=null?`<span class="whitespace-nowrap text-gray-600">${Number(l.price)>0?esc(money(l.price,r.currency)):'Free'}</span>`:''}</li>`}).join('')}</ul>`;
+  function pCsv(){ // report of the requests on screen (current filter), one row per sector line
+    const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',rows=[['Request','Status','Sent','Name','Email','Mobile','Sector','Package','Line price','Request total','Paid via','Receipt attached','Reviewed','Admin note']];
+    pFiltered().forEach(r=>{const u=pProf[r.user_id]||{},m=pMeth(r.method_code);pLines(r).forEach(l=>{const k=pPkg(l.pkg);
+      rows.push([r.ref,r.status,pWhen(r.created_at),pUser(r.user_id),u.email||'',u.mobile||'',pSecName(l.sid),k?k.name:l.pkg,l.price!=null?l.price:'',r.amount,m?m.name:'',r.receipt_path?'yes':'no',r.reviewed_at?pWhen(r.reviewed_at):'',r.admin_note||''])})});
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(x=>x.map(q).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));
+    a.download='subscription-requests-'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
+  }
   async function loadPayments(){
     const [a,b,c,d,e]=await Promise.all([
       fetchAll('subscription_requests','*',[['created_at',false],['id',true]]),
@@ -1904,9 +1931,10 @@ const K=(()=>{
     const nP=pReqs.filter(r=>r.status==='pending').length;
     const tab=(v,l,ic,extra='')=>`<button data-k="pview" data-v="${v}" class="text-xs font-bold px-4 py-2 rounded-xl border ${pView===v?'bg-gray-900 text-white border-gray-900':'bg-white border-gray-200'}"><i class="fas ${ic}"></i> ${l}${extra}</button>`;
     main().innerHTML=(pErr?warn('<b>Payments are not set up yet.</b> Run <code>supabase-step18-payments.sql</code> in the Supabase SQL Editor (it is safe to run again), then press Refresh.'):'')
-      +`<div class="flex flex-wrap items-center gap-2">${tab('requests','Requests','fa-inbox',nP?` <span class="ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5">${nP}</span>`:'')}${tab('packages','Packages &amp; prices','fa-tags')}${tab('methods','Payment methods','fa-wallet')}
+      +`<div class="flex flex-wrap items-center gap-2">${tab('requests','Requests','fa-inbox',nP?` <span class="ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5">${nP}</span>`:'')}
+        <button data-k="paysettings" class="text-xs bg-white border border-gray-200 hover:bg-gray-50 font-bold px-4 py-2 rounded-xl" title="Prices and payment methods are now in Settings"><i class="fas fa-gear"></i> Prices &amp; payment methods</button>
         <button data-k="prefresh" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2 rounded-xl ml-auto"><i class="fas fa-rotate"></i> Refresh</button></div><div id="p-body" class="space-y-3"></div>`;
-    pView==='packages'?paintPkgs():pView==='methods'?paintMeths():paintReqs();
+    paintReqs();
   }
   // ---- Requests
   function pFiltered(){
@@ -1916,7 +1944,13 @@ const K=(()=>{
   }
   function paintReqs(){
     const n=s=>pReqs.filter(r=>r.status===s).length,c=(s,l,cls)=>`<button data-k="pchip" data-s="${s}" class="text-[11px] font-bold px-3 py-1 rounded-full border ${pF.st===s?'bg-gray-900 text-white border-gray-900':cls}">${l}</button>`;
-    $('p-body').innerHTML=`<div class="flex flex-wrap gap-1.5">${c('pending','Pending '+n('pending'),'bg-amber-50 border-amber-300 text-amber-900')+c('approved','Approved '+n('approved'),'bg-emerald-50 border-emerald-300 text-emerald-900')+c('rejected','Rejected '+n('rejected'),'bg-red-50 border-red-300 text-red-900')+c('cancelled','Cancelled '+n('cancelled'),'bg-white border-gray-200')+c('all','All '+pReqs.length,'bg-white border-gray-200')}</div>
+    const pend=pReqs.filter(r=>r.status==='pending'),pAmt=pend.reduce((a,r)=>a+Number(r.amount||0),0),oldest=pend.reduce((m,r)=>!m||String(r.created_at)<m?String(r.created_at):m,'');
+    $('p-body').innerHTML=`<div class="bg-white rounded-2xl border ${pend.length?'border-amber-300':'border-gray-200'} shadow-sm p-3 flex flex-wrap items-center gap-x-6 gap-y-2">
+        <div><p class="text-[11px] font-bold text-gray-500">Waiting for your approval</p><p class="text-2xl font-extrabold leading-none mt-1">${pend.length}</p></div>
+        <div><p class="text-[11px] font-bold text-gray-500">Payments to confirm</p><p class="text-lg font-extrabold leading-none mt-1">${esc(money(pAmt,'EGP'))}</p></div>
+        <div><p class="text-[11px] font-bold text-gray-500">Oldest waiting since</p><p class="text-sm font-bold leading-none mt-1">${pend.length?esc(pWhen(oldest)):'-'}</p></div>
+        <button data-k="pcsv" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-lg ml-auto"><i class="fas fa-file-csv"></i> Download report (CSV)</button></div>
+      <div class="flex flex-wrap gap-1.5">${c('pending','Pending '+n('pending'),'bg-amber-50 border-amber-300 text-amber-900')+c('approved','Approved '+n('approved'),'bg-emerald-50 border-emerald-300 text-emerald-900')+c('rejected','Rejected '+n('rejected'),'bg-red-50 border-red-300 text-red-900')+c('cancelled','Cancelled '+n('cancelled'),'bg-white border-gray-200')+c('all','All '+pReqs.length,'bg-white border-gray-200')}</div>
       <input id="p-q" type="search" placeholder="Search request number, user, email, mobile or sector" aria-label="Search requests" value="${esc(pF.q)}" class="${inp}"><div id="p-rows"></div>`;
     paintReqRows();
   }
@@ -1928,7 +1962,7 @@ const K=(()=>{
       return `<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 space-y-2">
         <div class="flex flex-wrap items-start justify-between gap-2"><div class="min-w-0"><p class="font-bold text-sm break-words">#${esc(r.ref)} &middot; ${esc(pUser(r.user_id))}</p>
           <p class="text-[11px] text-gray-500 break-all">${esc([u.email,u.mobile].filter(Boolean).join(' · '))}</p></div><div class="flex flex-wrap items-center gap-1.5">${pStat(r.status)}${free?pill('bg-blue-100 text-blue-800','Free'):''}</div></div>
-        <p class="text-xs"><b>${esc(pk?pk.name:r.package_code)}</b> &middot; ${esc(pSecs(r.sector_ids))}</p>
+        ${pLinesHtml(r)}
         <p class="text-xs text-gray-700"><b>${free?'No payment':esc(money(r.amount,r.currency))}</b>${m?' via '+esc(m.name):''} &middot; sent ${esc(pWhen(r.created_at))}${r.reviewed_at?' &middot; reviewed '+esc(pWhen(r.reviewed_at)):''}</p>
         ${r.user_note?`<p class="text-xs bg-gray-50 border border-gray-200 rounded-lg p-2 break-words"><b>User note:</b> ${esc(r.user_note)}</p>`:''}
         ${r.admin_note?`<p class="text-xs bg-amber-50 border border-amber-200 rounded-lg p-2 break-words"><b>Your note:</b> ${esc(r.admin_note)}</p>`:''}
@@ -1949,7 +1983,9 @@ const K=(()=>{
   function pApproveDialog(r){
     const pk=pPkg(r.package_code);
     modal(`<h2 class="font-extrabold text-lg mb-1">Approve request #${esc(r.ref)}</h2>
-      <p class="text-xs text-gray-700 mb-3">${esc(pUser(r.user_id))} &middot; <b>${esc(pk?pk.name:r.package_code)}</b> &middot; ${esc(pSecs(r.sector_ids))} &middot; ${Number(r.amount)>0?esc(money(r.amount,r.currency)):'free'}</p>
+      <p class="text-xs text-gray-700 mb-1">${esc(pUser(r.user_id))} &middot; <b>${Number(r.amount)>0?esc(money(r.amount,r.currency)):'free'}</b></p>
+      <div class="mb-3 bg-gray-50 border border-gray-200 rounded-lg p-2">${pLinesHtml(r)}</div>
+      ${Number(r.amount)>0?`<p class="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-2 mb-3">Open the receipt first and confirm it shows <b>${esc(money(r.amount,r.currency))}</b> paid to your ${pMeth(r.method_code)?esc(pMeth(r.method_code).name):''} account. Approving confirms the payment.</p>`:''}
       <form data-k-form="papprove" data-id="${esc(r.id)}" class="space-y-3">
         <label class="${fl}">Start date <span class="font-normal text-gray-500">(leave empty = today, or the day after the current subscription ends)</span><input type="date" name="start" class="${mt}"></label>
         <label class="${fl}">Note to the user (optional)<input name="note" maxlength="300" class="${mt}"></label>
@@ -2004,6 +2040,7 @@ const K=(()=>{
     async prefresh(){main().innerHTML=LOADING;await loadPayments();paintPayments()},
     pchip:t=>{pF.st=t.dataset.s;pCap=100;paintReqs()},
     pmore:()=>{pCap+=100;paintReqRows()},
+    pcsv:()=>pCsv(),
     async preceipt(t){const r=pReqs.find(x=>x.id===t.dataset.id);if(r)await pReceipt(r)},
     papprove:t=>{const r=pReqs.find(x=>x.id===t.dataset.id);if(r)pApproveDialog(r)},
     preject:t=>{const r=pReqs.find(x=>x.id===t.dataset.id);if(r)pRejectDialog(r)},
@@ -2112,8 +2149,6 @@ const K=(()=>{
         <label class="${lab} w-36">Publish date<input data-tf="date" type="date" value="${esc(TF.date)}" class="${mt} !py-1.5"></label>
         <button data-k="tpick" class="${btn1} !py-2"><i class="fas fa-image"></i> Choose image</button>
         <button data-k="tcam" class="${btn1} !py-2"><i class="fas fa-camera"></i> Take photo</button>
-        <button data-k="tkwopen" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl whitespace-nowrap"><i class="fas fa-key"></i> Keywords</button>
-        <button data-k="tentman" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl whitespace-nowrap"><i class="fas fa-building-columns"></i> Entities</button>
       </div>
       <datalist id="t-papers">${tPapers.map(p=>`<option value="${esc(p)}">`).join('')}</datalist>
       <input id="t-file" type="file" accept="image/jpeg,image/png,image/webp" class="hidden">
@@ -2361,7 +2396,7 @@ const K=(()=>{
   }
   Object.assign(ACT,{
     tentman(){tEntModal()},
-    tentdone(){closeM();if(TR&&tById(TR))paintReview()},
+    tentdone(){closeM();if(tabK==='settings')paintAdminSettings();else if(tabK==='tenders'&&TR&&tById(TR))paintReview()},
     async tentaddmany(){const n=await tEntSave($('te-add').value.split(/[\n,،;]+/));if(!n)return toast('Type at least one name.',false);tEntModal();toast(n+' added')},
     async tentdel(t){const r=await sb.from('known_entities').delete().eq('id',t.dataset.id);if(r.error)throw r.error;await loadSectorData();tEntModal()},
     async tentadd(t){const r=tFind(t.dataset.id);if(!r)return;
@@ -2444,8 +2479,6 @@ const K=(()=>{
       <button data-k="ttext" data-id="${esc(img.id)}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-language"></i> Text</button>
       <button data-k="treparse" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-rotate"></i> Read rows again</button>
       <span class="inline-flex rounded-xl overflow-hidden border border-gray-200 text-xs font-bold">${[['cards','Cards','fa-table-cells-large'],['table','Table','fa-table']].map(([k,l,i])=>`<button data-k="trv" data-v="${k}" class="px-3 py-2 ${k===tRV?'bg-gray-900 text-white':'bg-white hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</span>
-      <button data-k="tkwopen" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-key"></i> Keywords</button>
-      <button data-k="tentman" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-building-columns"></i> Entities</button>
       <button data-k="tclassify" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-tags"></i> Classify</button>
       <button data-k="tadd" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-plus"></i> Add row</button>
       <button data-k="twarnonly" id="t-warnonly" class="text-xs font-bold px-3 py-2 rounded-xl ${tWarnOnly?'bg-gray-900 text-white':'bg-gray-100 hover:bg-gray-200'}" title="Hide the rows that look clean"><i class="fas fa-triangle-exclamation"></i> Warnings only</button>
@@ -2699,7 +2732,7 @@ const K=(()=>{
   const tMatch=r=>{const hay=tFold((r.subject||'')+' '+(r.entity||''));return tSect.filter(s=>tKw.some(k=>k.sector_id===s.id&&k.f&&hay.includes(k.f))).map(s=>s.id)};
   async function tClassify(rows){ // only tenders with no sector yet; the result is a SUGGESTION until the admin confirms
     if(tKwErr)throw new Error('Run supabase-step6-sectors.sql first, then press Refresh.');
-    if(!tKw.length)throw new Error('There are no keywords yet. Press Keywords and add some.');
+    if(!tKw.length)throw new Error('There are no keywords yet. Open Settings > Keywords and add some.');
     const todo=rows.filter(r=>!(r.sector_ids||[]).length),groups={};
     todo.forEach(r=>{const ids=tMatch(r);if(ids.length){r._ids=ids;(groups[ids.join(',')]=groups[ids.join(',')]||[]).push(r)}});
     let hit=0;
@@ -2793,10 +2826,7 @@ const K=(()=>{
         <div class="flex gap-1">${chips}</div>
         <div class="ml-auto flex flex-wrap items-center gap-2">
           ${w?`<button data-k="tbadd" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Add an empty row to type in"><i class="fas fa-plus"></i> Add typed row</button><button data-k="tbselunread" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Select the rows that have an image but no text yet"><i class="fas fa-check-double"></i> Select unread</button>${sb2('tbocrsel','fa-wand-magic-sparkles','Read selected (OCR)','Read the text of the selected images')}${sb2('tbbulkset','fa-calendar-check','Set date / governorate (selected)','Give the selected rows the same publishing date and/or governorate')}${sb2('tbdelsel','fa-trash','Delete selected','Delete the selected rows and their images')}${sb2('tbwritesel','fa-check','Done (selected)','Send the selected rows to Classification')}`
-            :`<button data-k="tbclassify" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Suggest sectors from the keywords for the visible rows that have none"><i class="fas fa-tags"></i> Auto-classify</button>${sb2('tbapprovesel','fa-circle-check','Approve selected','Approve the selected tenders')}${sb2('tbconfsel','fa-check-double','Confirm sectors (selected)','Confirm the sectors of the selected tenders (they need at least one sector)')}${sb2('tbbacksel','fa-rotate-left','Back to Input','Send the selected rows back to Input')}`}
-          <button data-k="tdict" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg" title="Arabic dictionary used to underline unknown words"><i class="fas fa-spell-check"></i> Dictionary</button>
-          <button data-k="tentman" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-building-columns"></i> Entities</button>
-          <button data-k="tkwopen" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg"><i class="fas fa-key"></i> Keywords</button></div></div>
+            :`<button data-k="tbclassify" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap" title="Suggest sectors from the keywords for the visible rows that have none"><i class="fas fa-tags"></i> Auto-classify</button>${sb2('tbapprovesel','fa-circle-check','Approve selected','Approve the selected tenders')}${sb2('tbconfsel','fa-check-double','Confirm sectors (selected)','Confirm the sectors of the selected tenders (they need at least one sector)')}${sb2('tbbacksel','fa-rotate-left','Back to Input','Send the selected rows back to Input')}`}</div></div>
       <details class="text-[11px] text-gray-600"><summary class="cursor-pointer font-bold">${w?'How Input works':'How Classification works'}</summary><ol class="list-decimal ms-5 mt-1 space-y-0.5">${w
         ?'<li><b>Add rows:</b> choose or take an image, import rows from the Excel template, or add a typed row.</li><li><b>Columns:</b> if the image has several columns, set the number under the image and press Lines to place the cut lines, then read it. Columns are read right to left.</li><li><b>Read:</b> press قراءة on a row, or select rows and Read selected. The text goes only into the Description; nothing else is filled in.</li><li><b>Check:</b> words underlined in red are not in the dictionary.</li><li><b>Done</b> sends the row to Classification. It needs an entity and a description.</li>'
         :'<li><b>Sector:</b> press Auto-classify (keywords) or choose sectors by hand, then confirm.</li><li><b>Approve:</b> press the circle (or select rows and Approve selected). Subscribers of the sectors of the tender can then see it.</li><li><b>Featured on the website:</b> the Hot News slider is managed in tab 3 (Settings).</li><li><b>Notify:</b> when you have approved the new tenders, press Send tender notification update (it needs the By sector view for the counter).</li>'}</ol></details>
@@ -3270,7 +3300,7 @@ const K=(()=>{
       closeM();$('k-modal-box').classList.remove('!max-w-2xl');await tBcLoad();await tPipeLoad();paintTenders();toast('Notification update sent')},
     tkw(){TKF='';tKwModal()},
     async tkwopen(t){TKF=(t&&t.dataset.s)||'';await loadSectorData();tKwModal()},
-    tkwdone(){closeM();tView==='sector'&&paintSectorView()},
+    tkwdone(){closeM();if(tabK==='settings')paintAdminSettings();else if(tabK==='tenders'&&tView==='sector')paintSectorView()},
     async tkwadd(t){const s=t.dataset.s,inp1=$('kw-'+s);if(!inp1)return;
       const list=[...new Set(inp1.value.split(/[,،;\n]+/).map(x=>x.trim()).filter(x=>x.length>=2))];if(!list.length)return toast('Type at least one keyword (2 letters or more).',false);
       const r=await sb.from('sector_keywords').upsert(list.map(keyword=>({sector_id:s,keyword})),{onConflict:'sector_id,keyword',ignoreDuplicates:true});if(r.error)throw r.error;
@@ -3890,6 +3920,34 @@ const K=(()=>{
       r.hot_featured=on;SET.feat=SET.feat.filter(x=>x.id!==id);SET.cand=SET.cand.filter(x=>x.id!==id);(on?SET.feat:SET.cand).unshift(r);
       const m=tbl.find(x=>x.id===id);if(m)m.hot_featured=on;setPaintLists();toast(on?'Featured on the website':'Removed from featured')},
     setopencontent(){showPane('content')}
+  });
+  // ======================= Settings tab: tender lists + payment setup =======================
+  // Entities, Keywords and the Arabic dictionary open in their dialogs; payment packages and methods are shown here.
+  async function loadAdminSettings(){await Promise.all([loadPayments().catch(()=>{}),loadSectorData().catch(()=>{})])}
+  function paintAdminSettings(){
+    if(sSec==='packages'||sSec==='methods'){
+      main().innerHTML=(pErr?warn('<b>Payments are not set up yet.</b> Run <code>supabase-step18-payments.sql</code> in the Supabase SQL Editor (it is safe to run again), then reopen Settings.'):'')
+        +`<div class="flex items-center gap-2"><button data-k="setback" class="text-xs bg-white border border-gray-200 hover:bg-gray-50 font-bold px-3 py-2 rounded-xl"><i class="fas fa-arrow-left"></i> Settings</button><h2 class="font-extrabold text-sm">${sSec==='packages'?'Payment packages &amp; prices':'Payment methods'}</h2></div><div id="p-body" class="space-y-3"></div>`;
+      sSec==='packages'?paintPkgs():paintMeths();return;
+    }
+    const card=(k,ic,t,d,n)=>`<button data-k="${k}" class="text-left bg-white rounded-2xl border border-gray-200 shadow-sm hover:border-gray-400 p-4 flex items-start gap-3 w-full"><i class="fas ${ic} text-brand-600 mt-0.5 w-5 text-center"></i><span class="flex-1 min-w-0"><span class="block font-bold text-sm">${t}${n!==''&&n!=null?` <span class="text-gray-400 font-normal">(${n})</span>`:''}</span><span class="block text-[11px] text-gray-600 mt-0.5">${d}</span></span><i class="fas fa-chevron-right text-gray-300 mt-1"></i></button>`;
+    const head=t=>`<p class="text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">${t}</p>`;
+    const onM=pMeths.filter(m=>m.active).length;
+    main().innerHTML=`<div>${head('Tenders')}<div class="grid gap-2 sm:grid-cols-2">`
+      +card('setent','fa-building-columns','Entities','Known authority names. They are used to check and fix the entity of each tender.',typeof tEnt!=='undefined'&&!tEntErr?tEnt.length:'')
+      +card('tkwopen','fa-key','Keywords','The words that suggest a sector for a tender.',typeof tKw!=='undefined'&&!tKwErr?tKw.length:'')
+      +card('tdict','fa-spell-check','Dictionary','The Arabic word list used to underline unknown words. Add, ignore or upload words.','')
+      +`</div></div><div>${head('Payments')}<div class="grid gap-2 sm:grid-cols-2">`
+      +card('setpk','fa-tags','Packages &amp; prices','Price per sector for 6 months, 1 year and 2 years, the free week, and which packages users can see.',pErr?'':pPkgs.length)
+      +card('setpm','fa-wallet','Payment methods','CIB, InstaPay, Vodafone Cash and Fawry: account details, instructions and QR.',pErr?'':onM+' of '+pMeths.length+' on')
+      +`</div></div>`;
+  }
+  Object.assign(ACT,{
+    async setent(){await loadSectorData();tEntModal()},
+    setpk:()=>{sSec='packages';paintAdminSettings()},
+    setpm:()=>{sSec='methods';paintAdminSettings()},
+    setback:()=>{sSec='';paintAdminSettings()},
+    paysettings:()=>{sNext='packages';showPane('settings')}
   });
   // ---- events ----
   Object.assign(ACT,{

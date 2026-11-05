@@ -68,10 +68,10 @@ Client sign-in is no longer in the bar: clients open `my-stuff.html` directly, w
    ```
    Without it, the Client files area still works for uploading to existing folders, and you can create logins in the dashboard.
 5. **Authentication settings** (Authentication, ...). Also see MANUAL.md 2.8 and 2.9 (own email sender, session length):
-   - *Sign In / Providers, Email*: turn **off** "Allow new users to sign up" and keep "Confirm email" on. This stops strangers creating accounts.
-   - *URL Configuration*: set *Site URL* to your site, and add `https://YOUR-SITE/my-stuff.html` and `https://YOUR-SITE/admin.html` to *Redirect URLs*.
+   - *Sign In / Providers, Email*: turn **on** "Allow new users to sign up" (visitors create their own account and land in Leads) and keep "Confirm email" on. A new account sees no files until you approve a subscription.
+   - *URL Configuration*: set *Site URL* to your site, and add `https://YOUR-SITE/my-stuff.html`, `https://YOUR-SITE/subscribe.html` and `https://YOUR-SITE/admin.html` to *Redirect URLs*.
    - *Email Templates* (optional): edit the "Invite user" text so it reads like KHIP.
-6. Keep `allowSignUp:false` in `supabase-config.js`.
+6. Keep `allowSignUp:true` in `supabase-config.js` (shows the "Create account" link). Run `supabase-step19-signup-and-orders.sql` after step 18.
 
 ### How access works
 - Files sit in the private `client-files` bucket. Users have no private folders any more; they read only the sector libraries they are subscribed to.
@@ -157,4 +157,11 @@ See `TENDERS-PLAN.md` (all phases) . The top-bar tab **Tender images** is now **
 Tenders in the admin are now four tabs: 1 Input tender (scan + read in one table, column cutter, Excel import by template, bulk date/governorate/delete), 2 Classification & notification, 3 Settings (Hot News slider), 4 Generate file (Excel, Word, PDF by publishing-date range). No automatic filling or text-to-cell mapping. Also new: section overlap and order (Sections tab, `SECTIONS-OVERLAP-STEPS.md`) and mask size, feather and rotation (`IMAGE-EFFECTS-STEPS.md`). Files: `admin.html`, `theme.js`, `scripts/validate.js`. No new SQL (needs the step 9 and step 18 SQL already run). Manual: `MANUAL.md`, "Tenders".
 
 ## Update 2026-11-05: Payments (phases P1 to P4)
-Manual online payment with admin approval, no gateway. Run `supabase-step18-payments.sql` once, then set prices and payment methods in admin > **Payments**. Users subscribe at `subscribe.html` (also linked from My files): pick a package and sectors, pay in their own app, upload the receipt; you approve in admin > Payments > Requests. Packages: weekly (free, needs approval, once per sector), 6 months, 1 year, 2 years (same price for all sectors). Full steps in MANUAL.md ("Payments"), design in PAYMENTS-PLAN.md. `node scripts/validate.js` now also checks the payments files and the English / Arabic texts.
+Manual online payment with admin approval, no gateway. Run `supabase-step18-payments.sql` once, then set prices and payment methods in admin > **Settings**. Users subscribe at `subscribe.html` (also linked from My files): pick a package and sectors, pay in their own app, upload the receipt; you approve in admin > Payments > Requests. Packages: weekly (free, needs approval, once per sector), 6 months, 1 year, 2 years (same price for all sectors). Full steps in MANUAL.md ("Payments"), design in PAYMENTS-PLAN.md. `node scripts/validate.js` now also checks the payments files and the English / Arabic texts.
+
+## Update 2026-11-05: Sign-up, per-sector orders, live admin alerts (step 19)
+Run `supabase-step19-signup-and-orders.sql` once (after step 18) and turn on "Allow new users to sign up" in Supabase. Visitors now create their own account (name, mobile, company, email, password); each new account is added to **Leads** automatically (Lead, then Potential when a request is sent, then Converted when you approve). On `subscribe.html` the user picks a package **for each sector separately**, sees the start and end dates and the running total, copies the payment details of CIB / InstaPay / Vodafone Cash / Fawry, pays in their own app and uploads the receipt. Admin > Payments > Requests shows a pending report (count, amount to confirm, oldest), a live alert and a red badge for every new request, the sector lines of each order, and a CSV download. The sectors are activated only when you press Approve. Details in MANUAL.md ("Payments") and PAYMENTS-PLAN.md (P5).
+
+## Update 2026-11-05: Settings tab
+New **Settings** tab in the admin top bar. It holds the setup pages that used to sit inside other tabs: **Entities**, **Keywords** and **Dictionary** (removed from the tender screens) and **Packages & prices** and **Payment methods** (removed from Payments, which now shows requests only, with a shortcut to Settings). The old tender step "3 · Settings" is renamed **3 · Featured**.
+
