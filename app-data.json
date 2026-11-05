@@ -412,6 +412,18 @@
         "overlay": 0,
         "image": "mw0nqqhc-abstract-glass-window-roof-architecture-exterior.jpg",
         "color": "role:accentSoft"
+      },
+      "about-team": {
+        "hidden": true
+      },
+      "about-advantages": {
+        "hidden": true
+      },
+      "about-value": {
+        "hidden": true
+      },
+      "about-map": {
+        "hidden": true
       }
     },
     "sectionWidthTablet": "68",
