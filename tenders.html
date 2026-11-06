@@ -25,8 +25,29 @@
   .t-sub{white-space:pre-line;line-height:1.9}
   .t-fact dt{font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:#78716c}
   .t-fact dd{margin:.125rem 0 0;font-weight:400;color:rgb(var(--c-ink-rgb))}
-  .t-in{width:100%;border:1px solid #d6d3d1;background:#fff;border-radius:.75rem;padding:.55rem .8rem;font:inherit;font-size:.875rem;color:rgb(var(--c-ink-rgb))}
-  .t-lab{display:block;font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:#78716c;margin-bottom:.25rem}
+  /* compact filter bar: one line on desktop, wraps on phones */
+  .t-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+  .t-f{position:relative;display:flex;align-items:center;min-width:0;flex:1 1 9rem}
+  .t-grow{flex:3 1 14rem}.t-w{flex:2 1 10rem}.t-d{flex:0 1 9.5rem;gap:.35rem}.t-in.t-s{flex:0 0 auto;width:auto}
+  .t-ic{position:absolute;inset-inline-start:.6rem;color:#a8a29e;font-size:1rem;pointer-events:none}
+  .t-f .t-ic+.t-in{padding-inline-start:2rem}
+  .t-in{width:100%;border:1px solid #d6d3d1;background:#fff;border-radius:.6rem;padding:.38rem .65rem;font:inherit;font-size:.8125rem;line-height:1.35;color:rgb(var(--c-ink-rgb))}
+  .t-lab{font-size:.6875rem;color:#78716c;white-space:nowrap}
+  .t-clear{font-size:.75rem;border:1px solid #d6d3d1;border-radius:999px;padding:.25rem .8rem;background:#fff;color:rgb(var(--c-ink-rgb));white-space:nowrap}
+  .t-clear:hover{border-color:rgb(var(--c-ink-rgb))}.t-clear.hidden,.t-f.hidden{display:none}
+  @media(max-width:639px){.t-d{flex:1 1 40%}.t-in.t-s{flex:1 1 100%}}
+  /* phones: search + one "Filters (n)" button; the rest opens on tap and active filters show as removable chips */
+  .t-ftoggle,.t-chips{display:none}
+  .t-chipx{display:inline-flex;align-items:center;gap:.35rem;min-height:2rem;max-width:100%;font-size:.75rem;border:1px solid rgb(var(--c-ink-rgb));background:rgb(var(--c-ink-rgb) / .06);color:rgb(var(--c-ink-rgb));border-radius:999px;padding:.25rem .55rem .25rem .8rem;cursor:pointer}
+  .t-chipx span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:16rem}
+  .t-chipx:hover{background:rgb(var(--c-ink-rgb) / .12)}
+  @media(max-width:639px){
+    .t-ftoggle{display:inline-flex;align-items:center;gap:.35rem;flex:0 0 auto;min-height:2.1rem;font-size:.8125rem;border:1px solid #d6d3d1;border-radius:.6rem;padding:.3rem .75rem;background:#fff;color:rgb(var(--c-ink-rgb));cursor:pointer}
+    .t-ftoggle.on,.t-ftoggle[aria-expanded="true"]{background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))}
+    .t-grow{flex:1 1 0}.t-w{flex:1 1 100%}
+    .t-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}.t-chips:empty{display:none}
+    #filters:not(.f-open) .t-w,#filters:not(.f-open) #t-bar2>:not(#f-count):not(#f-clear){display:none}
+  }
   .t-pill{display:inline-block;font-size:.6875rem;border-radius:999px;padding:.15rem .6rem}
   .t-more{border:1px solid rgb(var(--c-ink-rgb));border-radius:999px;padding:.7rem 2rem;font-size:.875rem;background:#fff;color:rgb(var(--c-ink-rgb));cursor:pointer;transition:background .2s,color .2s}
   .t-more:hover:not(:disabled){background:rgb(var(--c-ink-rgb));color:#fff}.t-more:disabled{opacity:.6;cursor:wait}
@@ -51,15 +72,20 @@
 
   <div id="notice" class="hidden mt-6 card !transform-none p-4 sm:p-5 flex items-center gap-4 border-l-4" style="border-left-color:rgb(var(--c-gold-rgb));background:rgb(var(--c-sand-rgb) / .3)" role="status"></div>
 
-  <form id="filters" class="hidden mt-8 card !transform-none p-4 sm:p-5" autocomplete="off" aria-label="Filter tenders">
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-      <label class="lg:col-span-2"><span class="t-lab">Search</span><input id="f-q" type="search" class="t-in" placeholder="Entity or subject" dir="auto"></label>
-      <label class="lg:col-span-2"><span class="t-lab">Publishing entity</span><input id="f-entity" list="entities" class="t-in" placeholder="Type to find an entity" dir="auto"><datalist id="entities"></datalist></label>
-      <label class="lg:col-span-2"><span class="t-lab">Sector</span><select id="f-sector" class="t-in"><option value="">All my sectors</option></select></label>
-      <label><span class="t-lab">Date</span><select id="f-by" class="t-in"><option value="publish">Publishing date</option><option value="session">Session date</option></select></label>
-      <label><span class="t-lab">From</span><input id="f-from" type="date" class="t-in"></label>
-      <label><span class="t-lab">To</span><input id="f-to" type="date" class="t-in"></label>
-      <div class="sm:col-span-2 lg:col-span-3 flex items-end justify-end gap-3"><span id="f-count" class="text-sm text-stone-500 mr-auto" aria-live="polite"></span><button type="button" id="f-clear" class="text-sm border border-stone-300 hover:border-stone-500 text-ink px-5 py-2 rounded-full transition hidden">Clear filters</button></div>
+  <form id="filters" class="hidden mt-6 card !transform-none p-3" autocomplete="off" aria-label="Filter tenders">
+    <div class="t-bar">
+      <div class="t-f t-grow"><i class="ph-light ph-magnifying-glass t-ic" aria-hidden="true"></i><input id="f-q" type="search" class="t-in" placeholder="Search entity or subject" aria-label="Search" dir="auto"></div>
+      <button type="button" id="f-toggle" class="t-ftoggle" aria-expanded="false"><i class="ph-light ph-funnel" aria-hidden="true"></i><span>Filters<span id="f-n"></span></span></button>
+      <div class="t-f t-w"><i class="ph-light ph-buildings t-ic" aria-hidden="true"></i><input id="f-entity" list="entities" class="t-in" placeholder="Publishing entity" aria-label="Publishing entity" dir="auto"><datalist id="entities"></datalist></div>
+      <div class="t-f t-w"><i class="ph-light ph-stack t-ic" aria-hidden="true"></i><select id="f-sector" class="t-in" aria-label="Sector"><option value="">All my sectors</option></select></div>
+    </div>
+    <div id="f-chips" class="t-chips" aria-label="Active filters"></div>
+    <div id="t-bar2" class="t-bar mt-2">
+      <select id="f-by" class="t-in t-s" aria-label="Filter dates by"><option value="publish">Published</option><option value="session">Session</option></select>
+      <label class="t-f t-d"><span class="t-lab">From</span><input id="f-from" type="date" class="t-in"></label>
+      <label class="t-f t-d"><span class="t-lab">To</span><input id="f-to" type="date" class="t-in"></label>
+      <span id="f-count" class="text-xs text-stone-500 ms-auto whitespace-nowrap" aria-live="polite"></span>
+      <button type="button" id="f-clear" class="t-clear hidden"><i class="ph-light ph-x"></i> Clear</button>
     </div>
   </form>
 
@@ -87,6 +113,16 @@ let R={recent:{rows:[],total:0},older:{rows:[],total:0,open:false}};
 
 const readF=()=>({q:$('f-q').value.trim(),entity:$('f-entity').value.trim(),sector:$('f-sector').value,by:$('f-by').value,from:$('f-from').value||null,to:$('f-to').value||null});
 const active=f=>!!(f.q||f.entity||f.sector||f.from||f.to);
+// Phones: the filters behind the "Filters (n)" button show as chips you can remove one by one. n counts the filters inside the panel (not the search box).
+function syncFilterUI(){
+  const f=readF(),c=[];
+  if(f.entity)c.push(['entity',f.entity]);
+  if(f.sector){const o=$('f-sector').selectedOptions[0];c.push(['sector',sectorName[f.sector]||(o&&o.text)||f.sector])}
+  if(f.from||f.to)c.push(['dates',(f.by==='session'?'Session':'Published')+': '+(f.from?day(f.from):'…')+' – '+(f.to?day(f.to):'…')]);
+  $('f-chips').innerHTML=c.map(([k,t])=>`<button type="button" class="t-chipx" data-rm="${k}" aria-label="Remove filter: ${esc(t)}"><span>${esc(t)}</span><i class="ph-light ph-x" aria-hidden="true"></i></button>`).join('');
+  $('f-n').textContent=c.length?` (${c.length})`:'';
+  $('f-toggle').classList.toggle('on',c.length>0);
+}
 const params=(scope,f,offset,limit)=>({p_scope:scope,p_from:f.from,p_to:f.to,p_date_by:f.by,p_entity:f.entity||null,p_sector:f.sector||null,p_q:f.q||null,p_limit:limit,p_offset:offset});
 async function fetchTenders(scope,f,offset,limit){
   const {data,error}=await sb.rpc('my_tenders',params(scope,f,offset,limit));
@@ -124,7 +160,7 @@ function card(r,fresh){
 
 function paint(){
   const f=readF(),rc=R.recent,ol=R.older,filtering=active(f);
-  $('f-clear').classList.toggle('hidden',!filtering);
+  $('f-clear').classList.toggle('hidden',!filtering);syncFilterUI();
   const total=rc.total+(ol.open?ol.total:0);
   let h='';
   h+=`<h2 class="text-xs uppercase tracking-wider text-stone-500 mb-3">Published in the last 7 days <span class="normal-case tracking-normal">(${rc.total})</span></h2>`;
@@ -199,6 +235,9 @@ $('filters').addEventListener('submit',e=>e.preventDefault());
 $('filters').addEventListener('input',e=>{if(e.target.id==='f-q'||e.target.id==='f-entity'){clearTimeout(dt);dt=setTimeout(load,350)}});
 $('filters').addEventListener('change',e=>{if(e.target.id!=='f-q'&&e.target.id!=='f-entity'){
   if(e.target.id==='f-by'&&!$('f-from').value&&!$('f-to').value)return;load()}});
+$('f-toggle').onclick=()=>{const o=$('filters').classList.toggle('f-open');$('f-toggle').setAttribute('aria-expanded',String(o))};
+$('f-chips').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const k=b.dataset.rm;
+  if(k==='entity')$('f-entity').value='';else if(k==='sector')$('f-sector').value='';else if(k==='dates')$('f-from').value=$('f-to').value='';load()});
 $('f-clear').onclick=()=>{$('f-q').value=$('f-entity').value=$('f-from').value=$('f-to').value='';$('f-sector').value='';$('f-by').value='publish';load()};
 document.addEventListener('click',e=>{
   const m=e.target.closest('[data-more]'),v=e.target.closest('[data-view]');

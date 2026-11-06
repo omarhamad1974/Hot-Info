@@ -236,6 +236,13 @@ To remove an admin: `delete from public.admins where lower(email) = lower('colle
 See README, "Tenders page for users and the notification update". Order of work for each batch: upload the images, read and review the rows, approve them, classify and **confirm the sectors**, then press **Send tender notification update** (Tender images tab).
 
 
+## Admin: five areas and Search everything (Phase 16a)
+The admin top bar has five areas: **Website**, **Tenders**, **Users & money**, **Directory**, **Settings**. Tenders and Users & money show a small sub-menu with their pages underneath. Red numbers show what is waiting.
+Press **Ctrl+K** (Cmd+K on Mac) anywhere in the admin to jump to a page or setting, or to find a user, tender or directory entry. Arrow keys move, Enter opens, Esc closes.
+
+## Filters on phones (Phase 16e)
+On a phone, Tenders and Directory show the search box and a **Filters** button. Tap it to open the other filters. Active ones appear as chips; tap a chip to remove that filter, or **Clear** to remove all.
+
 ## Tenders (admin > top bar, four tabs)
 **1 · Input tender** (scan and read in one table)
 1. Add rows: **Choose image** / **Take photo** (set the details bar first), **Add typed row**, or **Import sheet** (use the **Template** button; every column is optional, empty cells stay empty, nothing is filled in automatically).
@@ -277,3 +284,13 @@ The dates shown assume approval today: a subscription really starts on the day y
 - Receipts are private: only the user and admins can open them. QR images are public (users must see them).
 - The manual Subscribe dialog (Users & sectors) now also offers **6 months**.
 - Not included on purpose: automatic payment matching and e-mail or WhatsApp alerts (the alert is inside the admin page only; it does not reach you when the page is closed). See "Ideas for later" in `PAYMENTS-PLAN.md`.
+
+## Expiring subscriptions: who to remind
+Admin > **Users & sectors** > **Expiring** (the amber number is how many users end within 14 days).
+1. Choose the window: next 7, 14 or 30 days, or **Just ended** (last 14 days). **Hide already reminded** shows only people you have not contacted yet.
+2. Choose the message language (English or Arabic). The message lists each sector with its end date and the link to the subscribe page.
+3. Press **WhatsApp** or **Email** on a user. Your app opens with the message ready: press Send there. **Copy message** is for SMS or any other app. KHIP does not send anything by itself.
+4. After you press a button the sectors show "reminded dd-mm-yy". When the user renews, a new period starts and the mark is clear again.
+5. A user with a renewal request already waiting shows "renewal request waiting": approve it in Payments instead of reminding.
+Mobile numbers are converted for WhatsApp (01xxxxxxxxx becomes 201xxxxxxxxx). If a user has no mobile or email on file, the card says so.
+

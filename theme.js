@@ -174,11 +174,28 @@
     st.textContent='.kfx{position:relative;display:block;overflow:hidden}.kfx>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}.kfx-ov{position:absolute;inset:0;display:block;pointer-events:none}.kfx-sec{position:relative;isolation:isolate}.kfx-bg{position:absolute;inset:0;z-index:-1;pointer-events:none}[data-sec].ov-on{position:relative;margin-bottom:calc(var(--ov-m,0) * -1px)}[data-sec].ov-next{position:relative}@media(min-width:768px){[data-sec].ov-on{margin-bottom:calc(var(--ov-t,0) * -1px)}}@media(min-width:1024px){[data-sec].ov-on{margin-bottom:calc(var(--ov-d,0) * -1px)}}';
     (document.head||document.documentElement).appendChild(st);
   })();
+  /* Header colours (theme.header: bg, opacity, text, active, border; each a colour reference). Nothing saved = the header looks as before. */
+  function hdr(T){
+    const H=(T||{}).header||{},id='khip-header';let st=document.getElementById(id);
+    const bg=resolve(H.bg,T),tx=resolve(H.text,T),ac=resolve(H.active,T),bd=resolve(H.border,T),root=document.documentElement;
+    if(!bg&&!tx&&!ac&&!bd){if(st)st.remove();root.removeAttribute('data-hdr');return}
+    const h='header.sticky.top-0',op=clamp(num(H.opacity,90),0,100)/100,css=[];
+    if(bg)css.push(`${h}{background-color:${rgba(bg,op)}!important}`);
+    if(bd)css.push(`${h}{border-color:${bd}!important}${h} [data-social] a{border-color:${bd}!important}`);
+    if(tx)css.push(`${h} nav a:not([aria-current]),${h} .brand-ink,${h} [data-social] a,${h} .lang-btn{color:${tx}!important}${h} .lang-btn{background:transparent!important;border-color:${tx}!important}`);
+    if(tx)css.push(`${h} .k-burger{color:${tx}!important;border-color:${tx}!important}`);
+    if(ac)css.push(`${h} nav a[aria-current],${h} nav a:hover,${h} [data-social] a:hover{color:${ac}!important}`);
+    if(!st){st=document.createElement('style');st.id=id;document.head.appendChild(st)}
+    st.textContent=css.join('\n');root.setAttribute('data-hdr','1');
+  }
   function vars(T){
+    hdr(T);
     const c=palette(T),r=document.documentElement.style;
     for(const k in c)r.setProperty(vname(k),parts(c[k]).join(' '));
     const w=Math.min(100,Math.max(40,parseFloat((T||{}).sectionWidth)||66.667));
     const wt=T&&T.sectionWidthTablet!=null&&T.sectionWidthTablet!==''?Math.min(100,Math.max(40,parseFloat(T.sectionWidthTablet)||w)):w;
+    {const bw=v=>{v=parseFloat(v);return isFinite(v)&&v>0?Math.min(100,Math.max(40,v)):null},bt=bw((T||{}).barWidthTablet),bd=bw((T||{}).barWidthDesktop);   // bottom bar (WhatsApp box + buttons)
+      bt?r.setProperty('--bar-wt',bt+'%'):r.removeProperty('--bar-wt');bd?r.setProperty('--bar-wd',bd+'%'):r.removeProperty('--bar-wd')}
     r.setProperty('--sec-wn',(w/100).toFixed(4));r.setProperty('--sec-wd',(w/100).toFixed(4));r.setProperty('--sec-wt',(wt/100).toFixed(4));
   }
   function paint(T){
@@ -189,6 +206,12 @@
       const oldLayer=el.querySelector(':scope>.kfx-bg');if(oldLayer)oldLayer.remove();
       const s0=S[el.dataset.sec]||{},pw=v=>{v=parseFloat(v);return isFinite(v)?Math.min(100,Math.max(40,v))/100:null};
       el.toggleAttribute('data-off',s0.hidden===true);                       // hidden from the admin page
+      el.toggleAttribute('data-full',s0.fullWidth===true);                   // picture carousel: edge to edge
+      {const hv=v=>{v=parseFloat(v);return isFinite(v)&&v>0?Math.min(1400,Math.max(120,v)):null},hm=hv(s0.heightMobile),ht=hv(s0.heightTablet),hd=hv(s0.heightDesktop);   // carousel height in px per screen size
+        ['--hh-m','--hh-t','--hh-d'].forEach(p=>el.style.removeProperty(p));
+        if(s0.heroScreen===true)el.setAttribute('data-hh','screen');
+        else if(hm||ht||hd){el.setAttribute('data-hh','custom');if(hm)el.style.setProperty('--hh-m',hm+'px');if(ht)el.style.setProperty('--hh-t',ht+'px');if(hd)el.style.setProperty('--hh-d',hd+'px')}
+        else el.removeAttribute('data-hh')}
       if(el.id)document.querySelectorAll('a[href="#'+el.id+'"],[data-go="'+el.id+'"]').forEach(a=>{a.toggleAttribute('data-off',s0.hidden===true)});
       const wt=pw(s0.widthTablet),wd=pw(s0.widthDesktop);
       wt!==null?el.style.setProperty('--sec-wt',wt.toFixed(4)):el.style.removeProperty('--sec-wt');

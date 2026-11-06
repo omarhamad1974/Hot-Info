@@ -165,3 +165,6 @@ Run `supabase-step19-signup-and-orders.sql` once (after step 18) and turn on "Al
 ## Update 2026-11-05: Settings tab
 New **Settings** tab in the admin top bar. It holds the setup pages that used to sit inside other tabs: **Entities**, **Keywords** and **Dictionary** (removed from the tender screens) and **Packages & prices** and **Payment methods** (removed from Payments, which now shows requests only, with a shortcut to Settings). The old tender step "3 · Settings" is renamed **3 · Featured**.
 
+## Update 2026-11-05: Expiring subscriptions (admin > Users & sectors > Expiring)
+A new **Expiring** tab lists the users whose last period for a sector ends in the next 7, 14 or 30 days, or ended in the last 14 days, with a count on the tab. Each user shows the sectors and end dates, and buttons **WhatsApp**, **Email** and **Copy message** (English or Arabic, with the subscribe link). The buttons open your WhatsApp or mail app with the message ready; nothing is sent automatically. The sectors are then marked "reminded" (`subscription_periods.reminder_sent_at`, already in the database, no new SQL), and a renewal clears the mark. Users with a renewal request already waiting are labelled.
+

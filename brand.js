@@ -12,9 +12,13 @@
   function apply(b){
     b=b||{};
     const src=b.image&&String(b.image).trim()?url(String(b.image).trim()):DEF;
+    const hsrc=b.headerImage&&String(b.headerImage).trim()?url(String(b.headerImage).trim()):src;   // header logo uploaded separately (falls back to the main logo)
+    const hh=parseFloat(b.headerLogoHeight);
     document.querySelectorAll('[data-brand-logo]').forEach(im=>{
-      if(im.dataset.brandSrc===src)return;
-      im.dataset.brandSrc=src;im.style.display='';im.src=src;
+      const inHdr=!!im.closest('header'),want=inHdr?hsrc:src;
+      if(inHdr){im.toggleAttribute('data-hlogo',hsrc!==src);isFinite(hh)&&hh>0?im.style.setProperty('height',Math.min(96,Math.max(20,hh))+'px','important'):im.style.removeProperty('height')}
+      if(im.dataset.brandSrc===want)return;
+      im.dataset.brandSrc=want;im.style.display='';im.src=want;
       const n=im.parentNode&&im.parentNode.querySelector('[data-brand-name]');if(n)n.hidden=true;
     });
     const rtl=!!(window.KLang&&window.KLang.rtl),t=String((rtl?b.taglineAr:b.tagline)||'').trim();

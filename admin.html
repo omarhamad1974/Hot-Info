@@ -24,26 +24,26 @@ details[open]>summary .chev{transform:rotate(90deg)}
   <div class="max-w-3xl mx-auto px-4 h-12 flex items-center gap-3">
     <div id="adm-logo" class="h-7 min-w-[1.75rem] rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center font-black text-xs flex-shrink-0 overflow-hidden"><span id="adm-kh">KH</span><img id="adm-img" alt="" class="hidden h-7 w-auto max-w-[8rem] object-contain bg-white px-1"></div>
     <nav class="flex gap-1 flex-1 overflow-x-auto" aria-label="Admin areas">
-      <button data-pane="content" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-pen-to-square"></i> Website content</button>
-      <!-- hidden for now: Leads
-      <button data-pane="leads" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-filter"></i> Leads</button>
-      -->
-      <button data-pane="clients" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-users-gear"></i> Users &amp; sectors</button>
-      <!-- hidden for now: HOT Info Issues
-      <button data-pane="issues" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-table"></i> HOT Info Issues</button>
-      -->
-      <button data-pane="tenders1" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-table"></i> 1 &middot; Input tender<span id="bd-tenders2" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Tenders waiting to be sent to Classification"></span></button>
-      <button data-pane="tenders2" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-tags"></i> 2 &middot; Classification &amp; notification<span id="bd-tenders3" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Tenders waiting for classification and approval"></span></button>
-      <button data-pane="tenders3" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-star"></i> 3 &middot; Featured</button>
-      <button data-pane="tenders4" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-file-export"></i> 4 &middot; Generate file</button>
-      <button data-pane="payments" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-wallet"></i> Payments<span id="bd-payments" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Payment requests waiting for approval"></span></button>
-      <button data-pane="directory" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-address-book"></i> Directory<span id="bd-directory" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Entries waiting for approval"></span></button>
-      <button data-pane="settings" class="pane-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-gear"></i> Settings</button>
+      <button data-area="website" class="area-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap flex-shrink-0"><i class="fas fa-pen-to-square"></i> Website</button>
+      <button data-area="tenders" class="area-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap flex-shrink-0"><i class="fas fa-gavel"></i> Tenders<span id="bd-a-tenders" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Tenders waiting for you"></span></button>
+      <button data-area="money" class="area-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap flex-shrink-0"><i class="fas fa-users-gear"></i> Users &amp; money<span id="bd-a-money" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Payment requests waiting for approval"></span></button>
+      <button data-area="directory" class="area-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap flex-shrink-0"><i class="fas fa-address-book"></i> Directory<span id="bd-directory" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Entries waiting for approval"></span></button>
+      <button data-area="settings" class="area-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap flex-shrink-0"><i class="fas fa-gear"></i> Settings</button>
     </nav>
-    <!-- hidden for now: Search (remove these comment marks and the SEARCH_ON line in the script to bring it back)
-    <button data-k="gsearch" class="text-xs font-bold px-2.5 py-1.5 rounded-lg text-gray-300 hover:bg-white/10 whitespace-nowrap" title="Search everything (Ctrl+K)" aria-label="Search everything"><i class="fas fa-magnifying-glass"></i><span class="hidden sm:inline"> Search</span></button>
-    -->
+    <button id="open-search" type="button" class="text-xs font-bold px-2.5 py-1.5 rounded-lg text-gray-300 hover:bg-white/10 whitespace-nowrap flex-shrink-0" title="Search everything (Ctrl+K)" aria-label="Search everything"><i class="fas fa-magnifying-glass"></i><span class="hidden sm:inline"> Search <kbd class="ml-1 text-[10px] font-normal bg-white/10 rounded px-1">Ctrl K</kbd></span></button>
     <a href="index.html" target="_blank" rel="noopener" class="hidden sm:block text-[11px] text-gray-300 hover:text-white whitespace-nowrap"><i class="fas fa-arrow-up-right-from-square"></i> View site</a>
+  </div>
+  <!-- Sub-menu: the pages inside the chosen area (only Tenders and Users &amp; money have more than one) -->
+  <div data-sub="tenders" class="hidden max-w-3xl mx-auto px-4 pb-1.5 flex gap-1 overflow-x-auto" aria-label="Tenders pages">
+    <button data-pane="tenders1" class="pane-btn text-xs font-bold px-3 py-1 rounded-lg whitespace-nowrap flex-shrink-0"><i class="fas fa-table"></i> 1 &middot; Input tender<span id="bd-tenders2" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Tenders waiting to be sent to Classification"></span></button>
+    <button data-pane="tenders2" class="pane-btn text-xs font-bold px-3 py-1 rounded-lg whitespace-nowrap flex-shrink-0"><i class="fas fa-tags"></i> 2 &middot; Classification &amp; notification<span id="bd-tenders3" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Tenders waiting for classification and approval"></span></button>
+    <button data-pane="tenders3" class="pane-btn text-xs font-bold px-3 py-1 rounded-lg whitespace-nowrap flex-shrink-0"><i class="fas fa-star"></i> 3 &middot; Featured</button>
+    <button data-pane="tenders4" class="pane-btn text-xs font-bold px-3 py-1 rounded-lg whitespace-nowrap flex-shrink-0"><i class="fas fa-file-export"></i> 4 &middot; Generate file</button>
+  </div>
+  <div data-sub="money" class="hidden max-w-3xl mx-auto px-4 pb-1.5 flex gap-1 overflow-x-auto" aria-label="Users and money pages">
+    <button data-pane="clients" class="pane-btn text-xs font-bold px-3 py-1 rounded-lg whitespace-nowrap flex-shrink-0"><i class="fas fa-users"></i> Users &amp; sectors</button>
+    <button data-pane="payments" class="pane-btn text-xs font-bold px-3 py-1 rounded-lg whitespace-nowrap flex-shrink-0"><i class="fas fa-wallet"></i> Payments<span id="bd-payments" class="hidden ml-1 bg-red-600 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5 align-middle" title="Payment requests waiting for approval"></span></button>
+    <!-- hidden for now: Leads (data-pane="leads") belongs here when it comes back -->
   </div>
   <p id="pane-hint" class="max-w-3xl mx-auto px-4 pb-1.5 text-[11px] text-gray-400 truncate"></p>
 </div>
@@ -126,6 +126,19 @@ details[open]>summary .chev{transform:rotate(90deg)}
 
 <div id="k-modal" class="hidden fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-3"><div id="k-modal-box" role="dialog" aria-modal="true" class="bg-white rounded-2xl w-full max-w-md max-h-[92vh] overflow-y-auto p-5 shadow-2xl"></div></div>
 
+<!-- Search everything (Ctrl+K): jump to a page, a setting, a user, a tender or a directory entry -->
+<div id="cmdk" class="hidden fixed inset-0 z-[60] bg-black/40 flex items-start justify-center p-3 pt-[8vh]">
+  <div role="dialog" aria-modal="true" aria-label="Search everything" class="bg-white rounded-2xl w-full max-w-xl max-h-[80vh] shadow-2xl flex flex-col overflow-hidden">
+    <div class="p-3 border-b border-gray-200 flex items-center gap-2">
+      <i class="fas fa-magnifying-glass text-gray-400" aria-hidden="true"></i>
+      <input id="cmdk-q" type="search" autocomplete="off" placeholder="Go to a page or setting, or find a user, tender or directory entry..." aria-label="Search everything" class="flex-1 min-w-0 text-sm outline-none bg-transparent">
+      <button type="button" id="cmdk-x" class="text-[11px] font-bold text-gray-500 hover:text-gray-800 px-2 py-1 rounded-lg bg-gray-100" aria-label="Close search">Esc</button>
+    </div>
+    <div id="cmdk-res" class="overflow-auto p-2 flex-1" role="listbox"></div>
+    <p class="px-3 py-2 text-[11px] text-gray-500 border-t border-gray-100"><kbd class="bg-gray-100 rounded px-1">&uarr;</kbd> <kbd class="bg-gray-100 rounded px-1">&darr;</kbd> to move, <kbd class="bg-gray-100 rounded px-1">Enter</kbd> to open, <kbd class="bg-gray-100 rounded px-1">Esc</kbd> to close</p>
+  </div>
+</div>
+
 <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 hidden max-w-sm px-4 py-2.5 rounded-xl text-sm font-bold shadow-xl text-white" role="status"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -140,19 +153,27 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(m,ok=true){const t=$('toast');t.textContent=m;t.className=`fixed bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-sm px-4 py-2.5 rounded-xl text-sm font-bold shadow-xl text-white ${ok?'bg-emerald-600':'bg-red-600'}`;clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hidden'),ok?4000:7000)}
 const inp='w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white font-normal';
+const inpc='px-2.5 py-1.5 text-[13px] rounded-lg border border-gray-300 bg-white font-normal'; // compact boxes for filter bars (inline, one line)
 const PH='المحتوى العربي'; // shown on the site wherever Arabic has not been written (About, service pages, team, testimonials)
 const PHSEC=new Set(['employees','testimonials','services']);
 const sizeOf=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
 
 let pane='content';
+/* Five areas group the old ten tabs. Pages that are hidden for now (leads, issues) still map to an area. */
+const AREAS={website:['content'],tenders:['tenders1','tenders2','tenders3','tenders4','issues'],money:['clients','payments','leads'],directory:['directory'],settings:['settings']};
+const areaOf=p=>Object.keys(AREAS).find(a=>AREAS[a].includes(p))||'website';
+const lastIn={};
 function showPane(p){
   pane=p;history.replaceState(null,'','#'+p);
+  const ar=areaOf(p);lastIn[ar]=p;
   $('pane-content').classList.toggle('hidden',p!=='content');$('pane-clients').classList.toggle('hidden',p==='content');
-  document.querySelectorAll('.pane-btn').forEach(b=>{const on=b.dataset.pane===p;b.className='pane-btn text-xs font-bold px-3 py-1.5 rounded-lg '+(on?'bg-white text-gray-900':'text-gray-300 hover:bg-white/10')});
+  document.querySelectorAll('.area-btn').forEach(b=>{const on=b.dataset.area===ar;b.className='area-btn text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap flex-shrink-0 '+(on?'bg-white text-gray-900':'text-gray-300 hover:bg-white/10');if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  document.querySelectorAll('[data-sub]').forEach(r=>r.classList.toggle('hidden',r.dataset.sub!==ar));
+  document.querySelectorAll('.pane-btn').forEach(b=>{const on=b.dataset.pane===p;b.className='pane-btn text-xs font-bold px-3 py-1 rounded-lg whitespace-nowrap flex-shrink-0 '+(on?'bg-white/25 text-white':'text-gray-300 hover:bg-white/10');if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   const hi=$('pane-hint');if(hi)hi.textContent=({content:'Edit the website text, photos, news, team and languages.',clients:'Manage users, their subscriptions to sectors, and the files in each sector.',leads:'People who may become subscribers.',issues:'The HOT Info issues table.',tenders1:'Input: upload images, read them (OCR), type or import tender rows from Excel. Press Done to send a row to Classification.',tenders2:'Classification: choose and confirm sectors, approve tenders and send the notification update.',tenders3:'Featured: choose which tenders are featured in the Hot News slider of the website.',tenders4:'Generate a tenders file (PDF, Excel or Word) for a date range.',directory:'Companies, institutions and freelancers shown in the public Directory: approve, edit, import.',payments:'Subscription requests: check the receipt, approve or reject.',settings:'Entities, keywords, the Arabic dictionary, payment packages and payment methods.'})[p]||'';
   if(p!=='content')K.go(p);
 }
-document.addEventListener('click',e=>{const b=e.target.closest('[data-pane]');if(b)showPane(b.dataset.pane)});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pane]');if(b){showPane(b.dataset.pane);return}const a=e.target.closest('[data-area]');if(a)showPane(lastIn[a.dataset.area]||AREAS[a.dataset.area][0])});
 
 /* ============================ WEBSITE CONTENT ============================ */
 const SC={
@@ -163,7 +184,7 @@ const SC={
  testimonials:{label:'Testimonials',icon:'fa-quote-right',one:'testimonial',title:'name',req:['name','text'],f:[['name','Client name'],['role','Role and company (eg, CEO, Acme)'],['text','Testimonial','plain']]},
  employees:{label:'Team',icon:'fa-users',one:'team member',title:'name',req:['name','position'],f:[['name','Name'],['position','Position'],['image','Photo (square; resized and cropped to fit automatically)','img']]},
 };
-const GEN=[['aboutMainText','About text (home page)','area'],['about','Short tagline'],['hot.perSector','HOT News: how many tenders to show under each sector (1 to 12, default 6)'],['brand.image','Logo: used in the header, the home page and the About page (upload a PNG with a transparent background for the best result)','img'],['brand.tagline','Header text next to the logo (leave empty for the built-in "Intellectual Properties")'],['chatPrompts','Suggestions typed into the WhatsApp box (one per line)','lines'],['newsCategories','News categories / labels (one per line)','lines']];
+const GEN=[['aboutMainText','About text (home page)','area'],['about','Short tagline'],['hot.perSector','HOT News: how many tenders to show under each sector (1 to 12, default 6)'],['brand.headerImage','Header logo (optional: leave empty to use the logo below in the header too)','img'],['brand.image','Logo: home page and About page (and the header, when no header logo is uploaded). A PNG with a transparent background looks best','img'],['brand.tagline','Header text next to the logo (leave empty for the built-in "Intellectual Properties")'],['chatPrompts','Suggestions typed into the WhatsApp box (one per line)','lines'],['newsCategories','News categories / labels (one per line)','lines']];
 const DEFCATS=['General','KHIP News','Intellectual Property','Patents','Trademarks','Translation'];
 let S={},D=null,sha='',tab='general',dirty=false,openItem=null,q='',ASSETS=[],lang='en',DEN=null,DAR=null,shaAR='';
 
@@ -175,7 +196,7 @@ const b64=u8=>{let s='';for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode
 const unb64=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g,'')),c=>c.charCodeAt(0)));
 // the logo chosen in General > Logo also replaces the "KH" box in this bar (falls back to KH if the image cannot load)
 function admLogo(){const im=$('adm-img'),kh=$('adm-kh'),box=$('adm-logo');if(!im||typeof D==='undefined'||!D)return;
-  const v=String((D.brand&&D.brand.image)||'khip-logo.jpg').trim(),src=imgSrc(v);if(im.dataset.v===src)return;im.dataset.v=src;
+  const v=String((D.brand&&(D.brand.headerImage||D.brand.image))||'khip-logo.jpg').trim(),src=imgSrc(v);if(im.dataset.v===src)return;im.dataset.v=src;
   im.onload=()=>{im.classList.remove('hidden');kh.classList.add('hidden');box.classList.remove('bg-gradient-to-tr')};
   im.onerror=()=>{im.classList.add('hidden');kh.classList.remove('hidden');box.classList.add('bg-gradient-to-tr')};im.src=src}
 function mark(on=true){try{admLogo()}catch(_){}dirty=on;$('save').disabled=!on;$('discard').disabled=!on;$('state').textContent=on?'Unsaved changes':'All changes saved'}
@@ -426,7 +447,9 @@ function viewBg(){
   <div class="bg-white p-4 rounded-2xl border border-gray-200"><h2 class="font-extrabold text-lg">Width of all sections</h2><p class="text-xs text-gray-600">The normal width of the page sections, as a share of the screen (67% is about two thirds). Each section can have its own width: open a section below and move its Tablet / Desktop slider (untick "Same as site" first).</p>
     <label class="block text-xs font-bold mt-3">Tablet: <span id="swt-out">${esc(t.sectionWidthTablet)}%</span><input type="range" min="50" max="100" step="1" data-p="theme.sectionWidthTablet" data-out="swt-out" value="${esc(t.sectionWidthTablet)}" aria-label="Section width on tablet" class="w-full mt-1"></label>
     <label class="block text-xs font-bold mt-3">Desktop: <span id="sw-out">${esc(t.sectionWidth)}%</span><input type="range" min="50" max="100" step="1" data-p="theme.sectionWidth" data-out="sw-out" value="${esc(t.sectionWidth)}" aria-label="Section width on desktop" class="w-full mt-1"></label>
-  </div>`
+  </div>
+  <div class="bg-white p-4 rounded-2xl border border-gray-200"><h2 class="font-extrabold text-lg">Bottom bar width</h2><p class="text-xs text-gray-600">The bar at the bottom of every page (WhatsApp box and the buttons), as a share of the screen. Phones always use the full width.</p>
+    <div class="grid sm:grid-cols-2 gap-2 mt-2">${wSlider('Width on tablet','theme.barWidthTablet',t.barWidthTablet,70,'bar-t','Standard','standard (about 768 px)')}${wSlider('Width on desktop','theme.barWidthDesktop',t.barWidthDesktop,50,'bar-d','Standard','standard (about 768 px)')}</div></div>`
   +TH.SECTIONS.map(([key,label])=>{
     const s=t.sections[key]||{},mode=s.mode==='color'||s.mode==='image'?s.mode:'default';
     if(s.mode==='image'&&!s.imageFx&&parseFloat(s.overlay)>0){s.imageFx={ov:{type:'matt',color:'role:ink',opacity:Math.round(parseFloat(s.overlay))}};delete s.overlay}   // the old darken slider becomes a matt overlay
@@ -451,6 +474,11 @@ const hexRgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
 const rgbHex=a=>'#'+a.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
 const mixHex=(a,b,w)=>{const x=hexRgb(a),y=hexRgb(b);return rgbHex(x.map((v,i)=>v*(1-w)+y[i]*w))};
 const BRAND_USE=['Titles and the main brand color','Icons, links, buttons on hover','Thin lines and quote marks','Dark panels and the bottom bar','Sand buttons (WhatsApp, inquiries)','Page background','Paragraph text'];
+function hdrPrev(t){ // live preview strip for the header colours (inline style)
+  const H=t.header||{},c=k=>TH.resolve(H[k],t),bg=c('bg'),tx=c('text'),bd=c('border'),op=Math.min(100,Math.max(0,+(H.opacity??90)))/100,p=bg?TH.HEX.test(bg)?bg:'#ffffff':'#ffffff';
+  const [r,g,b]=[1,3,5].map(i=>parseInt(p.slice(i,i+2),16));
+  return `background:rgba(${r},${g},${b},${bg?op:.9});color:${tx||'#57534e'};border-bottom:1px solid ${bd||'#e7e5e4'}`;
+}
 function brandTheme(){
   const t=theme();
   t.brand=TH.brandPal(t);                       // always 7 colors, with the default values filled in
@@ -490,9 +518,20 @@ function viewBrand(){
       <div class="rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 overflow-hidden" style="font-family:${fam?fontStack(t,fam):'inherit'};font-size:${size};line-height:1.35;color:${TH.resolve(col,t)||'#1f2937'}">${esc(txt)}</div></div>`;
   };
   const cf=(c,i)=>`<div class="flex items-center gap-2 py-2 border-b border-gray-100 last:border-0"><input data-p="theme.customFonts.${i}.name" value="${esc(c.name)}" aria-label="Font name" class="${inp} flex-1 min-w-0"><label class="text-[11px] font-bold text-gray-600 flex items-center gap-1 flex-shrink-0"><input type="checkbox" data-chk="theme.customFonts.${i}.ar" ${c.ar?'checked':''}> has Arabic</label><button data-act="font-del" data-i="${i}" aria-label="Remove font" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex-shrink-0"><i class="fas fa-trash text-xs"></i></button></div>`;
-  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><div><h2 class="font-extrabold text-lg">Logo and name</h2><p class="text-xs text-gray-600 mt-1">Upload the logo once. It is used in three places: tiny in the header (next to the vertical line and the name), on the home page and on the About page.</p></div>
-    ${fld('',['brand.image','Logo (a PNG with a transparent background looks best)','img'])}${fld('',['brand.tagline','Name after the vertical line in the header (leave empty for "Intellectual Properties")'])}
+  $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><div><h2 class="font-extrabold text-lg">Logo and name</h2><p class="text-xs text-gray-600 mt-1">Two logos: a <b>header logo</b> (small, next to the vertical line and the name) and the <b>main logo</b> (home page and About page). If you do not upload a header logo, the main logo is used in the header too.</p></div>
+    ${fld('',['brand.headerImage','Header logo (optional; e.g. a white logo for a dark header)','img'])}
+    <label class="block text-[11px] font-bold text-gray-600">Header logo height: <span id="hlh-out">${esc((D.brand||{}).headerLogoHeight||'automatic')}</span> px<span class="font-normal"> (20 to 96 px; <button type="button" data-act="hlh-auto" class="underline">automatic</button>)</span><input type="range" min="20" max="96" step="2" data-p="brand.headerLogoHeight" data-out="hlh-out" data-pct="1" value="${esc((D.brand||{}).headerLogoHeight||46)}" class="w-full mt-1" aria-label="Header logo height"></label>
+    ${fld('',['brand.image','Main logo: home page and About page (a PNG with a transparent background looks best)','img'])}${fld('',['brand.tagline','Name after the vertical line in the header (leave empty for "Intellectual Properties")'])}
     <p class="text-[11px] text-gray-500">The Arabic version of this name is in the General tab (switch to عربي first).</p></div>
+  <div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><div><h2 class="font-extrabold text-lg">Header colours</h2><p class="text-xs text-gray-600 mt-1">The top bar of every page. Leave a colour on "Default" to keep the current look (white bar, grey links).</p></div>
+    <div class="rounded-xl border border-gray-200 px-3 py-2 flex items-center gap-4 flex-wrap text-sm" style="${hdrPrev(t)}"><span class="font-bold" data-hp="t">Intellectual Properties</span><span data-hp="t">Home</span><span data-hp="t">About</span><span class="font-bold" style="color:${TH.resolve((t.header||{}).active,t)||'#1e40af'}">Tenders</span></div>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <div class="text-[11px] font-bold text-gray-600">Background<div class="mt-1">${colorSel(t,'theme.header.bg',(t.header||{}).bg||'',true)}</div></div>
+      <div class="text-[11px] font-bold text-gray-600">Text and menu links<div class="mt-1">${colorSel(t,'theme.header.text',(t.header||{}).text||'',true)}</div></div>
+      <div class="text-[11px] font-bold text-gray-600">Current page and hover<div class="mt-1">${colorSel(t,'theme.header.active',(t.header||{}).active||'',true)}</div></div>
+      <div class="text-[11px] font-bold text-gray-600">Bottom line<div class="mt-1">${colorSel(t,'theme.header.border',(t.header||{}).border||'',true)}</div></div></div>
+    <label class="block text-[11px] font-bold text-gray-600">Background strength: <span id="hop-out">${esc((t.header||{}).opacity??90)}</span>% <span class="font-normal">(100 = solid, lower lets the page show through)</span><input type="range" min="0" max="100" step="5" data-p="theme.header.opacity" data-out="hop-out" value="${esc((t.header||{}).opacity??90)}" class="w-full mt-1" aria-label="Header background strength"></label>
+    <button data-act="hdr-reset" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-rotate-left"></i> Back to the default header</button></div>
   <div class="bg-white p-4 rounded-2xl border border-gray-200"><div class="flex items-start justify-between gap-2"><div><h2 class="font-extrabold text-lg">Brand palette</h2><p class="text-xs text-gray-600 mt-1">Your 7 brand colors. Every color picker in this page lists them first (section backgrounds, heading colors...). The starting values are the colors the site has always used.</p></div></div>
     <div class="mt-2">${t.brand.map(pal).join('')}</div>
     <div class="flex flex-wrap gap-2 pt-3"><button data-act="brand-apply" class="text-xs bg-brand-600 hover:bg-brand-700 text-white font-bold px-3 py-2 rounded-xl"><i class="fas fa-wand-magic-sparkles"></i> Use this palette for the whole site</button><button data-act="brand-reset" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-rotate-left"></i> Back to the default palette</button></div>
@@ -527,6 +566,8 @@ function brandChange(e){
   return false;
 }
 function brandAct(a,t){
+  if(a==='hlh-auto'){if(D.brand){delete D.brand.headerLogoHeight}mark();view();return true}
+  if(a==='hdr-reset'){if(confirm('Put the header colours back to the default?')){const th=brandTheme();delete th.header;mark();view()}return true}
   if(a==='brand-apply'){
     const th=brandTheme(),b=th.brand.map(x=>x.hex);
     if(!confirm('Copy the 7 brand colors into the site colors (Colors tab)? The Colors tab values are replaced.'))return true;
@@ -549,13 +590,14 @@ function brandAct(a,t){
 /* ---------- Sections: hide + width; Contact tab ---------- */
 const WOPTS=sel=>`<option value="" ${!sel?'selected':''}>Same as the whole site</option>`+[50,55,60,65,70,75,80,85,90,95,100].map(v=>`<option value="${v}" ${String(sel)===String(v)?'selected':''}>${v}%</option>`).join('');
 // width of ONE section: a slider like the whole-site ones; the tick box "Same as the whole site" removes the override
-function wSlider(label,path,val,glob,id){
+function wSlider(label,path,val,glob,id,def='Same as site',txt='same as the whole site'){
   const own=val!==undefined&&val!==null&&val!=='',v=own?val:(glob||67);
-  return `<div class="rounded-lg border border-gray-200 p-2.5"><div class="flex items-center justify-between gap-2 text-[11px] font-bold text-gray-600"><span>${label}: <span id="wo-${id}">${own?esc(v)+'%':'same as the whole site'}</span></span><label class="flex items-center gap-1 font-normal"><input type="checkbox" data-wdef="${path}" data-wid="${id}" ${own?'':'checked'}> Same as site</label></div><input type="range" min="50" max="100" step="1" data-p="${path}" data-out="wo-${id}" value="${esc(v)}" ${own?'':'disabled'} aria-label="${esc(label)}" class="w-full mt-1 disabled:opacity-40"></div>`;
+  return `<div class="rounded-lg border border-gray-200 p-2.5"><div class="flex items-center justify-between gap-2 text-[11px] font-bold text-gray-600"><span>${label}: <span id="wo-${id}">${own?esc(v)+'%':txt}</span></span><label class="flex items-center gap-1 font-normal"><input type="checkbox" data-wdef="${path}" data-wid="${id}" data-wtxt="${esc(txt)}" ${own?'':'checked'}> ${def}</label></div><input type="range" min="50" max="100" step="1" data-p="${path}" data-out="wo-${id}" value="${esc(v)}" ${own?'':'disabled'} aria-label="${esc(label)}" class="w-full mt-1 disabled:opacity-40"></div>`;
 }
 function secExtra(key,s){
   const base=`theme.sections.${key}.`;
   return `<label class="flex items-center gap-2 text-sm font-bold"><input type="checkbox" data-chk="${base}hidden" data-view="1" ${s.hidden?'checked':''}> Hide this section on the website</label>`
+   +(key==='home-carousel'?`<div class="rounded-lg border border-brand-100 bg-brand-50 p-2.5 flex flex-wrap items-center gap-x-5 gap-y-2"><label class="flex items-center gap-2 text-sm font-bold"><input type="checkbox" data-chk="${base}fullWidth" ${s.fullWidth?'checked':''}> Full screen width (edge to edge, no rounded corners)</label></div><div class="rounded-lg border border-brand-100 bg-brand-50 p-2.5 space-y-2"><p class="text-[11px] font-bold text-gray-700">Carousel height <span class="font-normal">(pixels; leave empty for the standard height: phone 240, tablet 320, desktop 432)</span></p><div class="grid grid-cols-3 gap-2">${[['Phone','heightMobile','240'],['Tablet (768px+)','heightTablet','as phone'],['Desktop (1024px+)','heightDesktop','as tablet']].map(([l,f,ph])=>`<label class="text-[11px] font-bold">${l}<input type="number" min="120" max="1400" step="10" inputmode="numeric" data-p="${base+f}" value="${esc(s[f]??'')}" placeholder="${ph}" class="${inp} mt-1"></label>`).join('')}</div><label class="flex items-center gap-2 text-xs font-bold"><input type="checkbox" data-chk="${base}heroScreen" ${s.heroScreen?'checked':''}> Fill the whole screen height (ignores the numbers above)</label></div>`:'')
    +(TH.NOWIDTH.includes(key)?'':`<div class="grid sm:grid-cols-2 gap-2">${wSlider('Width on tablet',base+'widthTablet',s.widthTablet,theme().sectionWidthTablet,key+'-t')}${wSlider('Width on desktop',base+'widthDesktop',s.widthDesktop,theme().sectionWidth,key+'-d')}</div>`)
    +(TH.NOWIDTH.includes(key)?'':`<div class="rounded-lg border border-gray-200 p-2.5 space-y-2"><p class="text-[11px] font-bold text-gray-600">Overlap with the next section <span class="font-normal">(pixels; empty or 0 = no overlap)</span></p><div class="grid grid-cols-3 gap-2">${[['Mobile','overlapMobile','0'],['Tablet (768px+)','overlapTablet','as mobile'],['Desktop (1024px+)','overlapDesktop','as tablet']].map(([l,f,ph])=>`<label class="text-[11px] font-bold">${l}<input type="number" min="0" max="600" step="5" inputmode="numeric" data-p="${base+f}" value="${esc(s[f]??'')}" placeholder="${ph}" class="${inp} mt-1"></label>`).join('')}</div><label class="block text-[11px] font-bold">Order<select data-p="${base}overlapOrder" class="${inp} mt-1"><option value="above" ${s.overlapOrder!=='behind'?'selected':''}>Above the next section (this one covers it)</option><option value="behind" ${s.overlapOrder==='behind'?'selected':''}>Behind the next section (the next one covers this)</option></select></label></div>`);
 }
@@ -643,6 +685,10 @@ function viewMenu(){
   const head=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><div><h2 class="font-extrabold text-lg">Menu</h2><p class="text-xs text-gray-600 mt-1">The menu at the top of every page (big screens) and the bar at the bottom (all screens), in English and Arabic. Each item has a name in both languages, a destination and an icon, and can be shown in the top menu, the bottom bar, both, or hidden. The bottom bar looks best with 6 items or fewer.</p></div>
     ${custom?`<div class="flex flex-wrap gap-2"><button data-act="menu-add" class="text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] font-bold px-3.5 py-2 rounded-xl"><i class="fas fa-plus"></i> Add an item</button><button data-act="menu-off" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl"><i class="fas fa-rotate-left"></i> Go back to the built-in menus</button></div>`
     :`<div class="rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs p-3">The website is using the built-in menus (they differ a little from page to page). Press the button to edit them: the list below becomes the menu of every page.<div class="mt-2"><button data-act="menu-on" class="text-xs bg-brand-600 hover:bg-brand-700 text-white font-bold px-3.5 py-2 rounded-xl"><i class="fas fa-pen"></i> Customise the menu</button></div></div>`}</div>`;
+  const sd=(D.menu&&D.menu.side)||{},sideCard=custom?`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-2"><div><h2 class="font-extrabold text-lg">Side menu (hamburger)</h2><p class="text-xs text-gray-600 mt-1">A hamburger button in the header opens a menu that slides in from the side, on every screen size. Turn it on, then tick <b>In the side menu</b> on the items you want in it.</p></div>
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-2"><label class="flex items-center gap-2 text-sm font-bold"><input type="checkbox" data-chk="menu.side.enabled" ${sd.enabled?'checked':''}> Show the side menu</label>
+      <label class="text-[11px] font-bold text-gray-700 flex items-center gap-2">Button and menu on<select data-p="menu.side.position" class="${inpc}"><option value="start" ${sd.position!=='end'?'selected':''}>The left (right in Arabic)</option><option value="end" ${sd.position==='end'?'selected':''}>The right (left in Arabic)</option></select></label>
+      <label class="flex items-center gap-2 text-xs font-bold"><input type="checkbox" data-chk="menu.side.only" ${sd.only?'checked':''}> Replace the links in the top menu (show only the button)</label></div></div>`:'';
   const row=(it,i)=>{
     const known=MENU_DEST.some(d=>d[0]===it.link),sel=known?it.link:'__custom',base=`menu.items.${i}.`;
     const dis=custom?'':'disabled';
@@ -653,9 +699,9 @@ function viewMenu(){
       <div class="grid grid-cols-2 gap-2"><label class="block text-[11px] font-bold text-gray-600">Opens<select data-menu-dest="${i}" class="${inp} mt-1" ${dis}>${MENU_DEST.map(d=>`<option value="${d[0]}" ${sel===d[0]?'selected':''}>${d[1]}</option>`).join('')}<option value="__custom" ${sel==='__custom'?'selected':''}>Another address...</option></select></label>
         <label class="block text-[11px] font-bold text-gray-600">Icon (bottom bar)<select data-p="${base}icon" class="${inp} mt-1" ${dis}>${MENU_ICONS.map(d=>`<option value="${d[0]}" ${it.icon===d[0]?'selected':''}>${d[1]}</option>`).join('')}</select></label></div>
       ${sel==='__custom'?`<label class="block text-[11px] font-bold text-gray-600">Address (https://... or a page of this site)<input data-p="${base}link" value="${esc(it.link||'')}" class="${inp} mt-1" ${dis}></label>`:''}
-      <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold"><label class="flex items-center gap-1.5"><input type="checkbox" data-chk="${base}header" ${it.header?'checked':''} ${dis}> In the top menu</label><label class="flex items-center gap-1.5"><input type="checkbox" data-chk="${base}bar" ${it.bar?'checked':''} ${dis}> In the bottom bar</label><label class="flex items-center gap-1.5"><input type="checkbox" data-chk="${base}hidden" data-view="1" ${it.hidden?'checked':''} ${dis}> Hide it</label></div></div>`;
+      <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold"><label class="flex items-center gap-1.5"><input type="checkbox" data-chk="${base}header" ${it.header?'checked':''} ${dis}> In the top menu</label><label class="flex items-center gap-1.5"><input type="checkbox" data-chk="${base}bar" ${it.bar?'checked':''} ${dis}> In the bottom bar</label><label class="flex items-center gap-1.5"><input type="checkbox" data-chk="${base}side" ${it.side?'checked':''} ${dis}> In the side menu</label><label class="flex items-center gap-1.5"><input type="checkbox" data-chk="${base}hidden" data-view="1" ${it.hidden?'checked':''} ${dis}> Hide it</label></div></div>`;
   };
-  $('view').innerHTML=head+items.map(row).join('');
+  $('view').innerHTML=head+sideCard+items.map(row).join('');
 }
 function menuChange(e){
   const el=e.target;if(!D||!el.dataset.menuDest)return false;
@@ -667,7 +713,7 @@ function menuAct(a,t){
   const items=()=>D.menu.items,mv=(i,d)=>{const j=i+d;if(j<0||j>=items().length)return;[items()[i],items()[j]]=[items()[j],items()[i]];mark();view()};
   if(a==='menu-on'){D.menu={items:MENU_DEFAULT()};mark();view();return true}
   if(a==='menu-off'){if(confirm('Remove your menu and go back to the built-in menus of each page?')){delete D.menu;mark();view()}return true}
-  if(a==='menu-add'){items().push({id:'m'+Date.now().toString(36),en:'New item',ar:'عنصر جديد',link:'index.html',icon:'ph-star',header:true,bar:false});mark();view();return true}
+  if(a==='menu-add'){items().push({id:'m'+Date.now().toString(36),en:'New item',ar:'عنصر جديد',link:'index.html',icon:'ph-star',header:true,bar:false,side:false});mark();view();return true}
   if(a==='menu-up'){mv(+t.dataset.i,-1);return true}
   if(a==='menu-down'){mv(+t.dataset.i,1);return true}
   if(a==='menu-del'){if(confirm('Delete this menu item?')){items().splice(+t.dataset.i,1);mark();view()}return true}
@@ -906,7 +952,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   if(e.target.dataset&&e.target.dataset.wdef&&D){const c=e.target,r=c.closest('div.rounded-lg').querySelector('input[type=range]'),o=$('wo-'+c.dataset.wid);
-    if(c.checked){set(D,c.dataset.wdef,'');r.disabled=true;if(o)o.textContent='same as the whole site'}
+    if(c.checked){set(D,c.dataset.wdef,'');r.disabled=true;if(o)o.textContent=c.dataset.wtxt||'same as the whole site'}
     else{r.disabled=false;set(D,c.dataset.wdef,r.value);if(o)o.textContent=r.value+'%'}
     mark();return}
   if(e.target.dataset&&e.target.dataset.md){const f=e.target.files&&e.target.files[0];if(f)importMd(f,e.target.dataset.md);e.target.value='';return}
@@ -964,7 +1010,7 @@ if(tk&&$('f-o').value){$('f-t').value=tk;$('f-s').checked=true;connect({o:$('f-o
 const K=(()=>{
   const C=window.KHIP_SUPABASE||{},BUCKET=C.bucket||'client-files';
   const configured=!!(C.url&&C.anonKey&&!/YOUR-/.test(C.url)&&window.supabase);
-  let sb=null,me=null,clients=[],folders=[],noFn=false,cur=null,curLabel='',path=[],started=false,sectors=[],sectErr=false,tabK='overview',sSec='',sNext='',recovery=/type=recovery/.test(location.hash);
+  let sb=null,me=null,clients=[],folders=[],noFn=false,cur=null,curLabel='',path=[],started=false,sectors=[],sectErr=false,tabK='overview',sSec='',sNext='',exSel='14',exLang='en',exHide=false,exPend={},exPendAt=0,recovery=/type=recovery/.test(location.hash);
   const redirect=location.origin+location.pathname.replace(/[^/]*$/,'')+'my-stuff.html';
   const adminUrl=location.origin+location.pathname+'#clients';
   const main=()=>$('k-main');
@@ -1006,17 +1052,17 @@ const K=(()=>{
 
   // ---- Admin improvement 11: one search box for users, tenders, tender images and the directory ----
   let gsSeq=0,gsT=null;
-  async function gsRun(raw){
-    const box=$('gs-res');if(!box)return;const q=raw.trim(),my=++gsSeq;
-    if(q.length<2){box.innerHTML='<p class="text-xs text-gray-500">Type at least 2 letters. Searches users, tenders, tender images (newspaper name) and the directory.</p>';return}
-    box.innerHTML='<p class="text-xs text-gray-500">Searching...</p>';
+  async function gsRun(raw){ // returns the HTML of the matches (users, tenders, tender images, directory), or null when the search is stale
+    const q=raw.trim(),my=++gsSeq;
+    if(!sb||!me)return '';
+    if(q.length<2)return '';
     const like='%'+q.replace(/[%,()*\\]/g,' ').trim()+'%',lq=q.toLowerCase();
     const safe=async f=>{try{return await f}catch(_){return {data:[]}}};
     const [t,d,im]=await Promise.all([
       safe(sb.from('tenders').select('id,image_id,entity,subject,session_date,status').or(`entity.ilike.${like},subject.ilike.${like}`).order('publish_date',{ascending:false}).limit(8)),
       safe(sb.from('directory_entries').select('id,name,name_ar,city,status').or(`name.ilike.${like},name_ar.ilike.${like},city.ilike.${like},email.ilike.${like},whatsapp.ilike.${like}`).limit(8)),
       safe(sb.from('tender_images').select('id,source_paper,page,publish_date,status').ilike('source_paper',like).order('publish_date',{ascending:false}).limit(6))]);
-    if(my!==gsSeq||!$('gs-res'))return;
+    if(my!==gsSeq)return null;
     const us=(clients||[]).map(c=>({c,p:profiles[c.id]||{}})).filter(({c,p})=>[p.full_name,c.email,p.email,p.mobile,p.company].some(v=>String(v||'').toLowerCase().includes(lq))).slice(0,8);
     const sec=(title,icon,list,row)=>list.length?`<p class="text-[11px] font-bold text-gray-500 mt-3 mb-1"><i class="fas ${icon}"></i> ${title} (${list.length})</p><div class="space-y-1">${list.map(row).join('')}</div>`:'';
     const b=(kind,id,v,html)=>`<button data-k="gsgo" data-kind="${kind}" data-id="${esc(id||'')}" data-v="${esc(v||'')}" class="w-full text-left bg-white hover:bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs">${html}</button>`;
@@ -1024,13 +1070,14 @@ const K=(()=>{
       +sec('Tenders','fa-gavel',t.data||[],r=>b('tender',r.image_id,'',`<span dir="rtl" lang="ar" class="block font-bold leading-6">${esc(r.entity||'-')}</span><span dir="rtl" lang="ar" class="block text-gray-700 leading-5">${esc((r.subject||'').slice(0,120))}</span><span class="text-gray-500">${r.session_date?fd(r.session_date):'no session date'} · ${r.status==='approved'?'approved':'draft'}</span>`))
       +sec('Tender images','fa-camera',im.data||[],r=>b('tender',r.id,'',`<b>${esc(r.source_paper||'No source')}</b>${r.page?' · p. '+esc(r.page):''} <span class="text-gray-500">${r.publish_date?fd(r.publish_date):''}</span>`))
       +sec('Directory','fa-address-book',d.data||[],r=>b('dir',r.id,r.name,`<b>${esc(r.name)}</b>${r.name_ar?' <span dir="rtl">'+esc(r.name_ar)+'</span>':''} <span class="text-gray-500">${esc(r.city||'')} · ${esc(r.status)}</span>`));
-    $('gs-res').innerHTML=out||'<p class="text-xs text-gray-500">Nothing found.</p>';
+    return out;
   }
   async function badges(){ // red counters on the top bar: what is waiting for the admin
     try{const tc=q=>q.select('id',{count:'exact',head:true});
       const [a,b,d,pq]=await Promise.all([tc(sb.from('tenders')).eq('written',false),tc(sb.from('tenders')).eq('written',true).eq('status','draft'),sb.from('directory_entries').select('id',{count:'exact',head:true}).eq('status','pending'),sb.from('subscription_requests').select('id',{count:'exact',head:true}).eq('status','pending')]);
       const set=(id,n)=>{const e=$(id);if(!e)return;e.textContent=n>99?'99+':n;e.classList.toggle('hidden',!(n>0))};
       set('bd-tenders2',a.error?0:(a.count||0));set('bd-tenders3',b.error?0:(b.count||0));set('bd-directory',d.error?0:(d.count||0));set('bd-payments',pq.error?0:(pq.count||0));
+      set('bd-a-tenders',(a.error?0:(a.count||0))+(b.error?0:(b.count||0)));set('bd-a-money',pq.error?0:(pq.count||0));
       const np=pq.error?0:(pq.count||0);document.title=(np?'('+np+') ':'')+document.title.replace(/^\(\d+\)\s*/,'')}catch(_){}
   }
   window.kBadges=badges;
@@ -1139,26 +1186,26 @@ const K=(()=>{
   const badge=r=>!r.account?pill('bg-gray-100 text-gray-600','Folder only')
     :r.confirmed?pill('bg-emerald-50 text-emerald-700','Account active'):pill('bg-amber-100 text-amber-800','Invite pending');
   const T_TITLES=['','Read & name tenders (old)','1 \u00b7 Input tender','2 \u00b7 Classification & notification','','3 \u00b7 Featured','4 \u00b7 Generate tenders file'];
-  const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',issues:'HOT Info Issues',tenders:'Tenders',directory:'Directory',payments:'Payments',settings:'Settings'};
+  const TITLES={overview:'Users & sectors',leads:'Leads',clients:'Users & sectors',sectors:'Users & sectors',expiring:'Users & sectors',issues:'HOT Info Issues',tenders:'Tenders',directory:'Directory',payments:'Payments',settings:'Settings'};
   const setW=w=>{main().className=w==='wide'?'p-3 space-y-3':w==='mid'?'max-w-6xl mx-auto p-4 space-y-3':'max-w-3xl mx-auto p-4 space-y-3'};
   async function home(){
     cur=null;path=[];$('k-title').textContent=(tabK==='tenders'?T_TITLES[tStep]:TITLES[tabK])||'Admin';main().innerHTML=LOADING;
     if(tabK==='leads')await loadLeads();else if(tabK==='issues')await loadIssues();else if(tabK==='tenders')await((tStep===5||tStep===6)?0:tStep===2?(async()=>{await loadTableView();await loadT1()})():tStep===1?loadT1():(tStep===3&&tView==='sector')?(async()=>{await loadSectorData();await loadSectorView();await tPipeLoad()})():(tView='table',loadTableView()));else if(tabK==='directory')await loadDirectory();else if(tabK==='payments')await loadPayments();else if(tabK==='settings')await loadAdminSettings();else{await loadUsers();if(tabK==='overview'){const r=await sb.from('leads').select('status');ovLeads=r.error?null:(r.data||[]).reduce((a,l)=>(a[l.status]=(a[l.status]||0)+1,a),{})}}
     paintHome();
   }
-  const paintHome=()=>{setW(tabK==='issues'||(tabK==='tenders'&&(tStep<3||tView==='table'))?'wide':(tabK==='leads'||tabK==='tenders'||tabK==='directory'||tabK==='payments'||tabK==='settings')?'mid':'narrow');tabK==='settings'?paintAdminSettings():tabK==='payments'?paintPayments():tabK==='directory'?paintDirectory():tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
+  const paintHome=()=>{setW(tabK==='issues'||(tabK==='tenders'&&(tStep<3||tView==='table'))?'wide':(tabK==='leads'||tabK==='tenders'||tabK==='directory'||tabK==='payments'||tabK==='settings'||tabK==='expiring')?'mid':'narrow');tabK==='expiring'?paintExpiring():tabK==='settings'?paintAdminSettings():tabK==='payments'?paintPayments():tabK==='directory'?paintDirectory():tabK==='tenders'?paintTenders():tabK==='leads'?paintLeads():tabK==='issues'?paintIssues():tabK==='sectors'?paintSectors():tabK==='overview'?paintOverview():paintClients()};
   function go(p){ // called by the top bar: leads | clients | issues | tenders
     if(p==='tenders')p='tenders1';
     if(/^tenders[1-4]$/.test(p)){tStep=({1:2,2:3,3:5,4:6})[+p.slice(7)];tabK='tenders';tView='table';TR=null;tbF.st='all';tbSel.clear();tbCap=100}
     else if(p==='settings'){tabK='settings';sSec=sNext;sNext=''}
-    else tabK=p==='clients'?(['overview','clients','sectors'].includes(tabK)?tabK:'overview'):p;
+    else tabK=p==='clients'?(['overview','clients','sectors','expiring'].includes(tabK)?tabK:'overview'):p;
     if(!started||!sb)start();else if(me)home();
   }
   const warn=(t)=>`<div class="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl p-4">${t}</div>`;
-  const nav=()=>`<div class="flex gap-1.5">${[['overview','Overview','fa-chart-pie'],['clients','Users','fa-users'],['sectors','Sectors','fa-layer-group']].map(([k,l,i])=>`<button data-k="tab" data-t="${k}" class="text-xs font-bold px-4 py-2 rounded-xl ${k===tabK?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}</button>`).join('')}</div>`
+  const nav=()=>`<div class="flex flex-wrap gap-1.5">${[['overview','Overview','fa-chart-pie'],['clients','Users','fa-users'],['sectors','Sectors','fa-layer-group'],['expiring','Expiring','fa-hourglass-half']].map(([k,l,i])=>`<button data-k="tab" data-t="${k}" class="text-xs font-bold px-4 py-2 rounded-xl ${k===tabK?'bg-gray-900 text-white':'bg-white border border-gray-200 hover:bg-gray-50'}"><i class="fas ${i}"></i> ${l}${k==='expiring'&&expCount()?` <span class="ml-1 bg-amber-500 text-white text-[10px] leading-none rounded-full px-1.5 py-0.5">${expCount()}</span>`:''}</button>`).join('')}</div>`
     +(sectErr?warn('<b>Sectors are not set up yet.</b> Run <code>supabase-setup.sql</code> in the Supabase SQL Editor (it is safe to run again).'):'')
     +(!sectErr&&subErr?warn('<b>Subscriptions are not set up yet.</b> Run <code>supabase-step1-subscriptions.sql</code> in the Supabase SQL Editor (it is safe to run again), then press Refresh.'):'');
-  const btn1='text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] disabled:opacity-60 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap';
+  const btn1='text-xs bg-[#d9c8a4] hover:bg-[#cdb98f] text-[#1b2433] disabled:opacity-60 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap';
   const STF=[['all','All users'],['active','Currently subscribed'],['soon','Subscription ends in 5 days'],['ended','Subscription ended'],['upcoming','Starts later'],['none','No subscription']];
   const stMatch=(r,f)=>{if(f==='all')return true;if(!r.account)return f==='none';const k=ustate(r.id).k;return f==='active'?(k==='active'||k==='soon'):k===f};
   const pills=r=>{
@@ -1175,7 +1222,7 @@ const K=(()=>{
     +(noFn?warn('<b>Account tools are not deployed yet.</b> To create users from here, deploy the <code>admin-clients</code> function (README, step 4).'):'')
     +`<div class="flex flex-wrap gap-2"><button data-k="newuser" class="${btn1}"><i class="fas fa-user-plus"></i> New user</button><button data-k="subscribe" class="${btn1}"><i class="fas fa-calendar-plus"></i> Subscribe a user</button></div>`
     +`<div class="flex items-center justify-between pt-2"><h2 class="font-extrabold text-lg">Users <span class="text-sm font-normal text-gray-500">(${rows.length}${rows.length!==all.length?' of '+all.length:''})</span></h2></div>`
-    +`<div class="flex flex-wrap gap-2"><input id="k-filter" type="search" placeholder="Search name, email, company or mobile" aria-label="Search users" value="${esc(filter)}" class="${inp} flex-1 min-w-[12rem]"><select id="k-st" aria-label="Filter by subscription status" class="${inp} !w-auto">${STF.map(([v,l])=>`<option value="${v}" ${v===stFilter?'selected':''}>${l}</option>`).join('')}</select></div>`
+    +`<div class="flex flex-wrap items-center gap-2"><input id="k-filter" type="search" placeholder="Search name, email, company or mobile" aria-label="Search users" value="${esc(filter)}" class="${inpc} flex-1 min-w-[10rem]"><select id="k-st" aria-label="Filter by subscription status" class="${inpc}">${STF.map(([v,l])=>`<option value="${v}" ${v===stFilter?'selected':''}>${l}</option>`).join('')}</select></div>`
     +(rows.length?'':'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No users match.</p>')
     +rows.map(r=>{const p=profiles[r.id]||{},s=r.account&&!subErr?ustate(r.id):null;
       return `<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -1368,9 +1415,8 @@ const K=(()=>{
     +`<div class="flex flex-wrap items-center gap-2"><button data-k="ladd" class="${btn1}"><i class="fas fa-user-plus"></i> Add lead</button>
       <label class="${btn1} cursor-pointer"><i class="fas fa-file-excel"></i> Import from Excel<input id="l-file" type="file" accept=".xlsx,.xls,.csv" class="hidden"></label>
       <button data-k="ltpl" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl" title="Excel file with the right columns"><i class="fas fa-download"></i> Template</button></div>
-      <div id="l-chips" class="flex flex-wrap gap-1.5"></div>
-      <div class="flex flex-wrap gap-2"><input id="l-q" type="search" placeholder="Search name, mobile, email, company or note" aria-label="Search leads" value="${esc(lFilter)}" class="${inp} flex-1 min-w-[12rem]">
-      <select id="l-st" aria-label="Filter by status" class="${inp} !w-auto">${[['open','Lead + Potential'],['lead','Lead only'],['potential','Potential only'],['converted','Converted to users'],['all','All']].map(([v,t])=>`<option value="${v}" ${v===lStatus?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="flex flex-wrap items-center gap-2"><div id="l-chips" class="flex flex-wrap gap-1.5"></div><input id="l-q" type="search" placeholder="Search name, mobile, email, company or note" aria-label="Search leads" value="${esc(lFilter)}" class="${inpc} flex-1 min-w-[10rem]">
+      <select id="l-st" aria-label="Filter by status" class="${inpc}">${[['open','Lead + Potential'],['lead','Lead only'],['potential','Potential only'],['converted','Converted to users'],['all','All']].map(([v,t])=>`<option value="${v}" ${v===lStatus?'selected':''}>${t}</option>`).join('')}</select></div>
       <div id="l-rows"></div>`;
     paintLeadChips();paintLeadRows();
   }
@@ -1480,15 +1526,13 @@ const K=(()=>{
     main().innerHTML=(issuesErr?warn('<b>HOT Info Issues is not set up yet.</b> Run <code>supabase-step2-leads-and-issues.sql</code> in the Supabase SQL Editor (it is safe to run again), then press Refresh.'):'')
     +(!issuesErr&&sectErr?warn('<b>Sectors are not set up yet.</b> Run <code>supabase-setup.sql</code> in the Supabase SQL Editor, then press Refresh.'):'')
     +`<div class="flex flex-wrap items-center gap-3"><button data-k="iadd" class="${btn1}"><i class="fas fa-plus"></i> Add row</button><span id="i-state" class="text-[11px] text-gray-500">Changes save automatically when you leave a cell</span><span id="i-count" class="ml-auto text-xs font-bold text-gray-700"></span></div>
-    <div class="flex flex-wrap items-end gap-2 bg-white border border-gray-200 rounded-2xl p-3">
-      <label class="${lab} flex-1 min-w-[12rem]">Search<input data-if="q" type="search" placeholder="Brief, tender source or number" value="${esc(IF.q)}" class="${inp} mt-1"></label>
-      <label class="${lab}">Sector<select data-if="sector" class="${inp} mt-1 !w-auto block"><option value="">All sectors</option>${sectors.map(s=>`<option value="${esc(s.id)}" ${s.id===IF.sector?'selected':''}>${esc(s.name)}</option>`).join('')}</select></label>
-      <label class="${lab}">Source<select data-if="source" class="${inp} mt-1 !w-auto block"><option value="">All sources</option>${SOURCES.map(s=>`<option ${s===IF.source?'selected':''}>${s}</option>`).join('')}</select></label>
-      <label class="${lab}">Tender date from<input data-if="tf" type="date" value="${IF.tf}" class="${inp} mt-1 !w-auto block"></label>
-      <label class="${lab}">to<input data-if="tt" type="date" value="${IF.tt}" class="${inp} mt-1 !w-auto block"></label>
-      <label class="${lab}">Published from<input data-if="pf" type="date" value="${IF.pf}" class="${inp} mt-1 !w-auto block"></label>
-      <label class="${lab}">to<input data-if="pt" type="date" value="${IF.pt}" class="${inp} mt-1 !w-auto block"></label>
-      <button data-k="iclear" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2.5 rounded-xl">Clear</button></div>
+    <div class="flex flex-wrap items-center gap-1.5 bg-white border border-gray-200 rounded-xl px-2.5 py-2">
+      <input data-if="q" type="search" placeholder="Search brief, tender source or number" aria-label="Search" value="${esc(IF.q)}" class="${inpc} flex-1 min-w-[10rem]">
+      <select data-if="sector" aria-label="Sector" class="${inpc}"><option value="">All sectors</option>${sectors.map(s=>`<option value="${esc(s.id)}" ${s.id===IF.sector?'selected':''}>${esc(s.name)}</option>`).join('')}</select>
+      <select data-if="source" aria-label="Source" class="${inpc}"><option value="">All sources</option>${SOURCES.map(s=>`<option ${s===IF.source?'selected':''}>${s}</option>`).join('')}</select>
+      <span class="inline-flex items-center gap-1 ${lab}" title="Tender date range">Tender<input data-if="tf" type="date" aria-label="Tender date from" value="${IF.tf}" class="${inpc}"><span class="font-normal">-</span><input data-if="tt" type="date" aria-label="Tender date to" value="${IF.tt}" class="${inpc}"></span>
+      <span class="inline-flex items-center gap-1 ${lab}" title="Published date range">Published<input data-if="pf" type="date" aria-label="Published from" value="${IF.pf}" class="${inpc}"><span class="font-normal">-</span><input data-if="pt" type="date" aria-label="Published to" value="${IF.pt}" class="${inpc}"></span>
+      <button data-k="iclear" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-1.5 rounded-lg">Clear</button></div>
     <div id="i-sheet"></div><input id="i-img" type="file" accept="image/*" class="hidden">`;
     paintIssueRows();
   }
@@ -1637,10 +1681,9 @@ const K=(()=>{
       <label class="${btn1} cursor-pointer"><i class="fas fa-file-excel"></i> Import from Excel<input id="d-file" type="file" accept=".xlsx,.xls,.csv" class="hidden"></label>
       <button data-k="dtpl" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl" title="Excel file with the right columns"><i class="fas fa-download"></i> Template</button>
       <button data-k="dexport" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl" title="Downloads the entries you see now (respects the status chips, search and filters)"><i class="fas fa-file-export"></i> Export to Excel</button></div>
-    <div id="d-chips" class="flex flex-wrap gap-1.5"></div>
-    <div class="flex flex-wrap gap-2"><input id="d-q" type="search" placeholder="Search name, city, phone or email" aria-label="Search the directory" value="${esc(dF.q)}" class="${inp} flex-1 min-w-[12rem]">
-      <select id="d-sec" aria-label="Filter by sector" class="${inp} !w-auto">${opt('','All sectors',dF.sector)}${dSectors.map(s=>opt(s.id,s.name,dF.sector)).join('')}</select>
-      <select id="d-type" aria-label="Filter by type" class="${inp} !w-auto">${opt('','All types',dF.type)}${DTYPES.map(([v,t])=>opt(v,t,dF.type)).join('')}</select></div>
+    <div class="flex flex-wrap items-center gap-2"><div id="d-chips" class="flex flex-wrap gap-1.5"></div><input id="d-q" type="search" placeholder="Search name, city, phone or email" aria-label="Search the directory" value="${esc(dF.q)}" class="${inpc} flex-1 min-w-[10rem]">
+      <select id="d-sec" aria-label="Filter by sector" class="${inpc}">${opt('','All sectors',dF.sector)}${dSectors.map(s=>opt(s.id,s.name,dF.sector)).join('')}</select>
+      <select id="d-type" aria-label="Filter by type" class="${inpc}">${opt('','All types',dF.type)}${DTYPES.map(([v,t])=>opt(v,t,dF.type)).join('')}</select></div>
     <div id="d-rows"></div>`;
     paintDirChips();paintDirRows();
   }
@@ -1950,8 +1993,8 @@ const K=(()=>{
         <div><p class="text-[11px] font-bold text-gray-500">Payments to confirm</p><p class="text-lg font-extrabold leading-none mt-1">${esc(money(pAmt,'EGP'))}</p></div>
         <div><p class="text-[11px] font-bold text-gray-500">Oldest waiting since</p><p class="text-sm font-bold leading-none mt-1">${pend.length?esc(pWhen(oldest)):'-'}</p></div>
         <button data-k="pcsv" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-lg ml-auto"><i class="fas fa-file-csv"></i> Download report (CSV)</button></div>
-      <div class="flex flex-wrap gap-1.5">${c('pending','Pending '+n('pending'),'bg-amber-50 border-amber-300 text-amber-900')+c('approved','Approved '+n('approved'),'bg-emerald-50 border-emerald-300 text-emerald-900')+c('rejected','Rejected '+n('rejected'),'bg-red-50 border-red-300 text-red-900')+c('cancelled','Cancelled '+n('cancelled'),'bg-white border-gray-200')+c('all','All '+pReqs.length,'bg-white border-gray-200')}</div>
-      <input id="p-q" type="search" placeholder="Search request number, user, email, mobile or sector" aria-label="Search requests" value="${esc(pF.q)}" class="${inp}"><div id="p-rows"></div>`;
+      <div class="flex flex-wrap items-center gap-2"><div class="flex flex-wrap gap-1.5">${c('pending','Pending '+n('pending'),'bg-amber-50 border-amber-300 text-amber-900')+c('approved','Approved '+n('approved'),'bg-emerald-50 border-emerald-300 text-emerald-900')+c('rejected','Rejected '+n('rejected'),'bg-red-50 border-red-300 text-red-900')+c('cancelled','Cancelled '+n('cancelled'),'bg-white border-gray-200')+c('all','All '+pReqs.length,'bg-white border-gray-200')}</div>
+      <input id="p-q" type="search" placeholder="Search request number, user, email, mobile or sector" aria-label="Search requests" value="${esc(pF.q)}" class="${inpc} flex-1 min-w-[10rem]"></div><div id="p-rows"></div>`;
     paintReqRows();
   }
   function paintReqRows(){
@@ -2028,6 +2071,7 @@ const K=(()=>{
         <div class="grid sm:grid-cols-2 gap-2">
           <label class="${fl}">Account holder name<input data-pm="account_name" data-id="${esc(m.code)}" value="${esc(m.account_name||'')}" maxlength="120" class="${mt}"></label>
           <label class="${fl}">Account / number / InstaPay address / Fawry code<input data-pm="account_number" data-id="${esc(m.code)}" value="${esc(m.account_number||'')}" maxlength="120" class="${mt}"></label>
+          <label class="${fl} sm:col-span-2">External payment page (link to the bank / wallet / Fawry payment page; users get an "Open the payment page" button)<input data-pm="pay_url" data-id="${esc(m.code)}" type="url" dir="ltr" value="${esc(m.pay_url||'')}" maxlength="500" placeholder="https://..." class="${mt}"></label>
           <label class="${fl}">Instructions (English)<textarea data-pm="instructions" data-id="${esc(m.code)}" rows="2" maxlength="600" class="${mt}">${esc(m.instructions||'')}</textarea></label>
           <label class="${fl}">Instructions (Arabic)<textarea data-pm="instructions_ar" data-id="${esc(m.code)}" dir="rtl" rows="2" maxlength="600" class="${mt}">${esc(m.instructions_ar||'')}</textarea></label></div>
         <div class="flex flex-wrap items-center gap-3">
@@ -2059,9 +2103,10 @@ const K=(()=>{
         const r=await sb.from('payment_packages').update({[k]:v,updated_at:new Date().toISOString()}).eq('code',p.code);if(r.error){if(k==='active')t.checked=!!p[k];else t.value=p[k]??'';throw r.error}
         p[k]=v;toast('Saved');return}
       if(t.dataset.pm){const m=pMeth(t.dataset.id);if(!m)return;const k=t.dataset.pm;let v=k==='active'?t.checked:(t.value.trim()||null);
-        if(k==='active'&&v&&!m.account_number&&!m.qr_path){t.checked=false;return toast('Add the account number or a QR image first.',false)}
+        if(k==='pay_url'&&v){if(!/^https?:\/\//i.test(v))v='https://'+v;try{const u=new URL(v);if(!/^https?:$/.test(u.protocol))throw 0;v=u.href;t.value=v}catch(_){t.value=m.pay_url||'';return toast('That is not a valid web address.',false)}}
+        if(k==='active'&&v&&!m.account_number&&!m.qr_path&&!m.pay_url){t.checked=false;return toast('Add the account number, a QR image or a payment page link first.',false)}
         const r=await sb.from('payment_methods').update({[k]:v,updated_at:new Date().toISOString()}).eq('code',m.code);if(r.error){if(k==='active')t.checked=!!m[k];else t.value=m[k]||'';throw r.error}
-        m[k]=v;if(k==='account_number'&&!v&&!m.qr_path&&m.active){await sb.from('payment_methods').update({active:false}).eq('code',m.code);m.active=false;paintMeths();return toast('Saved. The method was switched off because it has no account number or QR.',false)}
+        m[k]=v;if((k==='account_number'||k==='pay_url')&&!v&&!m.account_number&&!m.qr_path&&!m.pay_url&&m.active){await sb.from('payment_methods').update({active:false}).eq('code',m.code);m.active=false;paintMeths();return toast('Saved. The method was switched off because it has no account number, QR or payment page link.',false)}
         toast('Saved');return}
       if(t.dataset.pmqr){const m=pMeth(t.dataset.pmqr),f=t.files[0];t.value='';if(!m||!f)return;
         if(!/^image\/(png|jpeg|webp)$/.test(f.type))return toast('Use a PNG, JPG or WebP image.',false);
@@ -3107,15 +3152,15 @@ const K=(()=>{
     +((tKwErr||tSVErr)?warn('<b>Sectors for tenders are not set up yet.</b> Run <code>supabase-step6-sectors.sql</code> in the Supabase SQL Editor (safe to run again), then press Refresh.'):'')
     +(!tSect.length&&!tKwErr?warn('There are no sectors yet. Add them first in <b>Users &amp; sectors</b>, then come back.'):'')
     +`<div class="bg-white p-3 rounded-2xl border border-gray-200 space-y-2">
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <label class="text-[11px] font-bold">Period by<select data-ts="by" class="${inp}"><option value="session_date" ${TS.by==='session_date'?'selected':''}>Session date</option><option value="publish_date" ${TS.by==='publish_date'?'selected':''}>Publish date</option></select></label>
-        <label class="text-[11px] font-bold">From<input data-ts="from" data-dmy type="text" placeholder="dd-mm-yy" inputmode="numeric" value="${esc(dmy(TS.from))}" class="${inp}"></label>
-        <label class="text-[11px] font-bold">To<input data-ts="to" data-dmy type="text" placeholder="dd-mm-yy" inputmode="numeric" value="${esc(dmy(TS.to))}" class="${inp}"></label>
-        <label class="text-[11px] font-bold">Show<select data-ts="status" class="${inp}"><option value="all" ${TS.status==='all'?'selected':''}>All tenders</option><option value="approved" ${TS.status==='approved'?'selected':''}>Approved only</option><option value="draft" ${TS.status==='draft'?'selected':''}>Drafts only</option></select></label>
+      <div class="flex flex-wrap items-center gap-1.5 text-[11px] font-bold">
+        <select data-ts="by" aria-label="Period by" class="${inpc}"><option value="session_date" ${TS.by==='session_date'?'selected':''}>By session date</option><option value="publish_date" ${TS.by==='publish_date'?'selected':''}>By publish date</option></select>
+        <span class="inline-flex items-center gap-1">From<input data-ts="from" data-dmy type="text" placeholder="dd-mm-yy" inputmode="numeric" value="${esc(dmy(TS.from))}" class="${inpc} !w-24"></span>
+        <span class="inline-flex items-center gap-1">To<input data-ts="to" data-dmy type="text" placeholder="dd-mm-yy" inputmode="numeric" value="${esc(dmy(TS.to))}" class="${inpc} !w-24"></span>
+        <select data-ts="status" aria-label="Show" class="${inpc}"><option value="all" ${TS.status==='all'?'selected':''}>All tenders</option><option value="approved" ${TS.status==='approved'?'selected':''}>Approved only</option><option value="draft" ${TS.status==='draft'?'selected':''}>Drafts only</option></select>
       </div>
-      <div class="flex flex-wrap gap-2 items-center">
+      <div class="flex flex-wrap gap-1.5 items-center">
         <button data-k="tclassifyall" class="${btn1}"><i class="fas fa-tags"></i> Classify unclassified (${none.length})</button>
-        <button data-k="tconfirmall" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-check-double"></i> Confirm suggested (${sug.length})</button>
+        <button data-k="tconfirmall" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"><i class="fas fa-check-double"></i> Confirm suggested (${sug.length})</button>
         <button data-k="tkw" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap"><i class="fas fa-key"></i> Keywords</button>
         <button data-k="texport" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl whitespace-nowrap" title="Downloads the tenders of this period and filter"><i class="fas fa-file-export"></i> Export to Excel (${tSV.length})</button>
       </div>
@@ -3921,6 +3966,79 @@ const K=(()=>{
       const m=tbl.find(x=>x.id===id);if(m)m.hot_featured=on;setPaintLists();toast(on?'Featured on the website':'Removed from featured')},
     setopencontent(){showPane('content')}
   });
+  // ======================= Expiring subscriptions: who to remind =======================
+  // Lists users whose last period for a sector ends soon (or just ended). The admin sends the reminder through
+  // WhatsApp / e-mail (opens the app with the message ready) or copies it; the period is then marked as reminded
+  // (subscription_periods.reminder_sent_at). A renewal creates a new period, so the mark starts clean again.
+  const EXW={'7':'Next 7 days','14':'Next 14 days','30':'Next 30 days','ended':'Just ended (14 days)'};
+  const exDays=d=>Math.round((Date.parse(d)-Date.parse(today()))/864e5);
+  function expRows(sel=exSel){
+    const t=today(),ended=sel==='ended',lim=addDays(t,ended?0:+sel),back=addDays(t,-14),last={},map={};
+    periods.forEach(p=>{const k=p.user_id+'|'+p.sector_id;if(!last[k]||p.end_date>last[k].end_date)last[k]=p});
+    Object.values(last).forEach(p=>{
+      const ok=ended?(p.end_date<t&&p.end_date>=back):(p.end_date>=t&&p.end_date<=lim&&p.start_date<=t);
+      if(ok)(map[p.user_id]=map[p.user_id]||[]).push(p)});
+    return Object.entries(map).map(([uid,ps])=>({uid,ps:ps.sort((a,b)=>a.end_date.localeCompare(b.end_date))}))
+      .sort((a,b)=>a.ps[0].end_date.localeCompare(b.ps[0].end_date));
+  }
+  const expCount=()=>{try{return expRows('14').length}catch(_){return 0}};
+  async function loadExpPending(){
+    const r=await sb.from('subscription_requests').select('user_id,sector_ids,items').eq('status','pending');
+    exPend={};if(!r.error)(r.data||[]).forEach(q=>{const set=exPend[q.user_id]=exPend[q.user_id]||new Set();
+      (q.items&&q.items.length?q.items.map(i=>i.sector_id):(q.sector_ids||[])).forEach(x=>set.add(x))});
+    exPendAt=Date.now();
+  }
+  const exEmail=uid=>(profiles[uid]||{}).email||((clients.find(c=>c.id===uid)||{}).email)||'';
+  const exName=uid=>(profiles[uid]||{}).full_name||exEmail(uid)||uid.slice(0,8);
+  function waNum(m){let d=String(m||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(/^0\d{10}$/.test(d))d='20'+d.slice(1);return d.length>=8?d:''}
+  function expMsg(uid,ps,lang){
+    const name=((profiles[uid]||{}).full_name||'').trim(),link=new URL('subscribe.html',location.href).href,ar=lang==='ar',t=today(),anyEnded=ps.some(p=>p.end_date<t);
+    const dt=d=>new Date(d+'T00:00:00Z').toLocaleDateString(ar?'ar-EG':'en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+    const lines=ps.map(p=>`- ${sname(p.sector_id)}: ${ar?(p.end_date<t?'انتهى':'ينتهي'):(p.end_date<t?'ended':'ends')} ${dt(p.end_date)}`).join('\n');
+    return ar?`مرحباً ${name}،\n\nاشتراكك في KHIP ${anyEnded?'انتهى':'على وشك الانتهاء'}:\n${lines}\n\nللتجديد سجّل الدخول واختر الباقة من هنا:\n${link}\nثم ادفع من تطبيقك وارفع الإيصال. نفعّل الاشتراك بعد تأكيد الدفع.\n\nشكراً،\nKHIP`
+      :`Hello ${name},\n\nYour KHIP subscription ${anyEnded?'has ended':'is about to end'}:\n${lines}\n\nTo renew, sign in and choose your package here:\n${link}\nThen pay in your own app and upload the receipt. We activate it once we confirm the payment.\n\nThank you,\nKHIP`;
+  }
+  function paintExpiring(){
+    if(Date.now()-exPendAt>60000){exPendAt=Date.now();loadExpPending().then(()=>{if(tabK==='expiring')paintExpiring()}).catch(()=>{})}
+    const t=today(),all=expRows(),rows=exHide?all.filter(r=>r.ps.some(p=>!p.reminder_sent_at)):all;
+    const chip=(k,l,on,v)=>`<button data-k="${k}" data-v="${v}" class="text-[11px] font-bold px-3 py-1 rounded-full border ${on?'bg-gray-900 text-white border-gray-900':'bg-white border-gray-200'}">${l}</button>`;
+    const ps_=p=>{const d=exDays(p.end_date),late=d<0,c=late?'bg-red-50 border-red-300 text-red-900':d<=3?'bg-amber-50 border-amber-300 text-amber-900':'bg-blue-50 border-blue-300 text-blue-900';
+      return `<span class="text-[11px] font-bold px-2.5 py-1 rounded-full border ${c} inline-flex flex-wrap items-center gap-1">${esc(sname(p.sector_id))} <span class="font-normal">${esc(late?'ended '+fd(p.end_date):d===0?'ends today':'ends '+fd(p.end_date)+' ('+d+' day'+(d===1?'':'s')+')')}</span>${p.reminder_sent_at?`<span class="font-normal text-emerald-800">&middot; reminded ${esc(fd(p.reminder_sent_at.slice(0,10)))}</span>`:''}${(exPend[p.user_id]||new Set()).has(p.sector_id)?'<span class="font-normal text-indigo-800">&middot; renewal request waiting</span>':''}</span>`};
+    main().innerHTML=nav()+`<div class="flex flex-wrap items-center gap-1.5">${Object.entries(EXW).map(([k,l])=>chip('exwin',l,exSel===k,k)).join('')}<span class="mx-1 text-gray-300">|</span>${chip('exhide','Hide already reminded',exHide,'')}</div>
+      <div class="flex flex-wrap items-center gap-1.5 text-[11px]"><span class="font-bold text-gray-600">Message language:</span>${chip('exlang','English',exLang==='en','en')}${chip('exlang','العربية',exLang==='ar','ar')}</div>
+      <p class="text-[11px] text-gray-600 bg-white border border-gray-200 rounded-2xl p-3">WhatsApp and Email open your app with the message ready: you press Send there. KHIP does not send anything by itself. After you press a button the sectors are marked <b>reminded</b>, so you do not remind twice. A renewal starts a new period and clears the mark.</p>
+      <p class="text-[11px] text-gray-500">${rows.length} user${rows.length===1?'':'s'}${exHide&&all.length!==rows.length?` (${all.length-rows.length} hidden)`:''}</p>`
+      +(!rows.length?`<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">${all.length?'Everyone in this list was already reminded.':exSel==='ended'?'No subscription ended in the last 14 days.':'No subscription ends in this period.'}</p>`
+      :`<div class="space-y-2">${rows.map(r=>{const pr=profiles[r.uid]||{},em=exEmail(r.uid),wa=waNum(pr.mobile);
+        return `<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 space-y-2"><div class="min-w-0"><p class="font-bold text-sm break-words">${esc(exName(r.uid))}</p><p class="text-[11px] text-gray-500 break-all">${esc([em,pr.mobile,pr.company].filter(Boolean).join(' · '))}</p></div>
+          <div class="flex flex-wrap gap-1.5">${r.ps.map(ps_).join('')}</div>
+          <div class="flex flex-wrap gap-1.5">
+            ${wa?`<button data-k="exwa" data-id="${esc(r.uid)}" class="text-xs bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-bold px-3 py-2 rounded-lg"><i class="fab fa-whatsapp"></i> WhatsApp</button>`:''}
+            ${em?`<button data-k="exmail" data-id="${esc(r.uid)}" class="text-xs bg-blue-50 text-blue-800 hover:bg-blue-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-envelope"></i> Email</button>`:''}
+            <button data-k="excopy" data-id="${esc(r.uid)}" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-lg"><i class="fas fa-copy"></i> Copy message</button>
+            ${!wa&&!em?'<span class="text-[11px] text-red-700 self-center">No mobile or email on file</span>':''}</div></div>`}).join('')}</div>`);
+  }
+  async function exMark(rowsOf){
+    const ids=rowsOf.map(p=>p.id),now=new Date().toISOString();
+    const r=await sb.from('subscription_periods').update({reminder_sent_at:now}).in('id',ids);
+    if(r.error){toast('The message was opened, but it could not be marked as reminded: '+r.error.message,false);return}
+    periods.forEach(p=>{if(ids.includes(p.id))p.reminder_sent_at=now});
+    if(tabK==='expiring')paintExpiring();
+  }
+  const exFind=uid=>(expRows().find(r=>r.uid===uid)||{ps:[]}).ps;
+  Object.assign(ACT,{
+    exwin:t=>{exSel=t.dataset.v;paintExpiring()},
+    exhide:()=>{exHide=!exHide;paintExpiring()},
+    exlang:t=>{exLang=t.dataset.v;paintExpiring()},
+    exwa(t){const uid=t.dataset.id,ps=exFind(uid),n=waNum((profiles[uid]||{}).mobile);if(!ps.length||!n)return;
+      window.open('https://wa.me/'+n+'?text='+encodeURIComponent(expMsg(uid,ps,exLang)),'_blank','noopener');exMark(ps)},
+    exmail(t){const uid=t.dataset.id,ps=exFind(uid),em=exEmail(uid);if(!ps.length||!em)return;
+      const a=document.createElement('a');a.href='mailto:'+encodeURIComponent(em).replace(/%40/g,'@')+'?subject='+encodeURIComponent(exLang==='ar'?'تجديد اشتراكك في KHIP':'Renew your KHIP subscription')+'&body='+encodeURIComponent(expMsg(uid,ps,exLang));
+      document.body.appendChild(a);a.click();a.remove();exMark(ps)},
+    async excopy(t){const uid=t.dataset.id,ps=exFind(uid);if(!ps.length)return;
+      try{await navigator.clipboard.writeText(expMsg(uid,ps,exLang))}catch(_){return toast('Could not copy. Use WhatsApp or Email instead.',false)}
+      toast('Message copied');exMark(ps)}
+  });
   // ======================= Settings tab: tender lists + payment setup =======================
   // Entities, Keywords and the Arabic dictionary open in their dialogs; payment packages and methods are shown here.
   async function loadAdminSettings(){await Promise.all([loadPayments().catch(()=>{}),loadSectorData().catch(()=>{})])}
@@ -3951,7 +4069,7 @@ const K=(()=>{
   });
   // ---- events ----
   Object.assign(ACT,{
-    gsearch(){if(!me)return;modal(`<h2 class="font-extrabold text-lg mb-2">Search everything</h2>
+    gsearch(){openPalette();return;modal(`<h2 class="font-extrabold text-lg mb-2">Search everything</h2>
         <input id="gs-q" type="search" autocomplete="off" placeholder="Name, email, mobile, company, tender entity or subject, newspaper, city..." aria-label="Search everything" class="${inp}">
         <div id="gs-res" class="mt-1 max-h-[60vh] overflow-auto"><p class="text-xs text-gray-500 mt-2">Type at least 2 letters. Searches users, tenders, tender images (newspaper name) and the directory.</p></div>
         <div class="flex justify-end pt-3"><button data-k="mclose" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">Close</button></div>`);
@@ -3961,8 +4079,13 @@ const K=(()=>{
       else if(kind==='dir'){dF={q:v||'',status:'all',sector:'',type:''};showPane('directory')}
       else if(kind==='tender'){if(!id)return toast('This tender has no image attached.',false);TR=id;tView='images';tStage='';showPane('tenders')}}
   });
-  const SEARCH_ON=false; // global Search is hidden for now: set to true and un-comment the Search button in the top bar
-  document.addEventListener('keydown',e=>{if(SEARCH_ON&&(e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'&&me){e.preventDefault();ACT.gsearch()}});
+  // Used by the Ctrl+K palette: open a page inside Users & money or Settings (and Settings dialogs)
+  function jump(p,sub){
+    if(p==='clients'&&sub)tabK=sub;
+    if(p==='settings')sNext=(sub==='packages'||sub==='methods')?sub:'';
+    showPane(p);
+    if(p==='settings'&&me&&['setent','tkwopen','tdict'].includes(sub))setTimeout(()=>{try{const f=ACT[sub];f&&f({dataset:{}})}catch(_){}},60);
+  }
   document.addEventListener('click',async e=>{
     const t=e.target.closest('[data-k]');if(!t||!sb)return;const k=t.dataset.k,n=t.dataset.n,em=t.dataset.e;
     try{
@@ -4084,10 +4207,100 @@ const K=(()=>{
   }));
   // A form the browser refuses to submit used to fail silently; now it says which field is the problem.
   document.addEventListener('invalid',e=>{const t=e.target;toast('Cannot continue: please check "'+(t.name||t.id||'a field')+'" ('+(t.validationMessage||'invalid')+')',false)},true);
-  return {start,go};
+  return {start,go,jump,search:gsRun};
 })();
 
-showPane(/type=recovery/.test(location.hash)?'clients':(['#leads','#clients','#issues','#tenders','#tenders1','#tenders2','#tenders3','#tenders4','#directory','#payments'].includes(location.hash.split('&')[0])?(location.hash.split('&')[0]==='#tenders'?'tenders1':location.hash.slice(1)):'content'));
+/* ============================ SEARCH EVERYTHING (Ctrl+K) ============================ */
+/* Static "go to" list: every page and setting, with extra words people may type. Users, tenders and directory entries come from the database. */
+const GOTO=[
+ ['Website content','Edit the website text, photos, news and team','fa-pen-to-square','Website','pane:content','home page text'],
+ ['General','Home page text and tagline','fa-house','Website','web:general','about tagline hot news'],
+ ['Brand','Logo and header logo','fa-gem','Website','web:brand','logo header'],
+ ['Contact','Phone, email and WhatsApp','fa-address-book','Website','web:contact','whatsapp phone email address'],
+ ['Menu','Menu and side (hamburger) menu','fa-bars','Website','web:menu','navigation hamburger links'],
+ ['Colors','Brand palette and header colors','fa-palette','Website','web:colors','palette theme'],
+ ['Sections','Backgrounds, carousel height, bottom bar width','fa-table-cells-large','Website','web:backgrounds','background hero bottom bar'],
+ ['Animation','Motion on the website','fa-wand-magic-sparkles','Website','web:motion','motion effects'],
+ ['Carousel','Home page slides','fa-images','Website','web:carousel','slides pictures hero'],
+ ['Countries (About page)','Jurisdictions','fa-globe-africa','Website','web:jurisdictions','about jurisdictions'],
+ ['News','News articles','fa-newspaper','Website','web:news','articles'],
+ ['Services','Service cards and pages','fa-balance-scale','Website','web:services','patents trademarks translation'],
+ ['Testimonials','Client quotes','fa-quote-right','Website','web:testimonials','reviews quotes'],
+ ['Team','Team members','fa-users','Website','web:employees','employees staff photos'],
+ ['1 \u00b7 Input tender','Upload images, OCR, type or import rows','fa-table','Tenders','pane:tenders1','ocr excel import upload newspaper'],
+ ['2 \u00b7 Classification & notification','Confirm sectors, approve and notify','fa-tags','Tenders','pane:tenders2','approve classify sector notify'],
+ ['3 \u00b7 Featured','Featured tenders','fa-star','Tenders','pane:tenders3','featured hot'],
+ ['4 \u00b7 Generate file','Build the tenders file','fa-file-export','Tenders','pane:tenders4','export generate'],
+ ['Users & sectors: Overview','Subscribers at a glance','fa-chart-pie','Users & money','users:overview','subscribers summary'],
+ ['Users','All users and their subscriptions','fa-users','Users & money','users:clients','clients subscribers people'],
+ ['Sectors','Sectors and their files','fa-layer-group','Users & money','users:sectors','folders files'],
+ ['Expiring subscriptions','Subscriptions ending soon','fa-hourglass-half','Users & money','users:expiring','renew ending expiry'],
+ ['Payments','Payment requests and receipts','fa-wallet','Users & money','pane:payments','receipts pending orders'],
+ ['Directory','Directory entries and approvals','fa-address-book','Directory','pane:directory','companies listings pending'],
+ ['Settings','Tender lists and payment setup','fa-gear','Settings','set:','settings'],
+ ['Entities','Known authority names','fa-building-columns','Settings','set:setent','authority publishing entity'],
+ ['Keywords','Words that suggest a sector','fa-key','Settings','set:tkwopen','sector words'],
+ ['Dictionary','Arabic word list','fa-spell-check','Settings','set:tdict','arabic words spelling'],
+ ['Packages & prices','Price per sector, free week','fa-tags','Settings','set:packages','price free week 6 months'],
+ ['Payment methods','CIB, InstaPay, Vodafone Cash, Fawry','fa-wallet','Settings','set:methods','cib instapay vodafone fawry qr account'],
+];
+const TOP_GOTO=[0,14,15,19,21,22,23,24,28,29];
+let cmSeq=0,cmT=null;
+const cmEl=()=>document.getElementById('cmdk');
+function openPalette(){const m=cmEl();m.classList.remove('hidden');const i=$('cmdk-q');i.value='';paintPalette('');i.focus()}
+function closePalette(){cmEl().classList.add('hidden')}
+function goTo(spec){
+  const [kind,arg]=[spec.slice(0,spec.indexOf(':')),spec.slice(spec.indexOf(':')+1)];
+  closePalette();
+  if(kind==='pane')showPane(arg);
+  else if(kind==='web'){
+    showPane('content');
+    if(!D)return;
+    if(lang==='ar'&&['brand','contact','menu','colors','backgrounds','motion'].includes(arg))return toast('Switch to English to edit this.',false);
+    tab=arg;openItem=null;q='';tabs();view();
+  }
+  else if(kind==='users')K.jump('clients',arg);
+  else if(kind==='set')K.jump('settings',arg);
+}
+function cmRow(g){return `<button type="button" role="option" data-go="${esc(g[4])}" class="cm-row w-full text-left rounded-xl px-3 py-2 text-xs flex items-center gap-3 hover:bg-gray-50"><i class="fas ${g[2]} text-brand-600 w-5 text-center" aria-hidden="true"></i><span class="flex-1 min-w-0"><b class="block">${esc(g[0])}</b><span class="block text-gray-500 truncate">${esc(g[1])}</span></span><span class="text-[10px] text-gray-400 whitespace-nowrap">${esc(g[3])}</span></button>`}
+function cmMark(){const rows=[...document.querySelectorAll('#cmdk-res .cm-row,#cmdk-res [data-k="gsgo"]')];rows.forEach((r,i)=>{r.classList.toggle('bg-gray-100',i===cmIdx);r.setAttribute('aria-selected',i===cmIdx?'true':'false')});const r=rows[cmIdx];r&&r.scrollIntoView({block:'nearest'})}
+let cmIdx=0;
+async function paintPalette(raw){
+  const q=raw.trim().toLowerCase(),my=++cmSeq,box=$('cmdk-res');
+  const words=q.split(/\s+/).filter(Boolean);
+  const hit=!words.length?TOP_GOTO.map(i=>GOTO[i]):GOTO.map(g=>{const hay=(g.join(' ')).toLowerCase();return words.every(w=>hay.includes(w))?[g,g[0].toLowerCase().startsWith(words[0])?0:1]:null}).filter(Boolean).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
+  const head=t=>`<p class="text-[11px] font-bold text-gray-500 px-2 mt-2 mb-1">${t}</p>`;
+  const goHtml=hit.length?head(words.length?'Go to':'Quick links')+hit.slice(0,10).map(cmRow).join(''):'';
+  box.innerHTML=goHtml+'<div id="cmdk-db"></div>';cmIdx=0;cmMark();
+  const db=$('cmdk-db');
+  if(q.length<2){db.innerHTML='<p class="text-xs text-gray-500 px-2 mt-3">Type at least 2 letters to also search users, tenders, tender images (newspaper name) and the directory.</p>';return}
+  clearTimeout(cmT);
+  cmT=setTimeout(async()=>{
+    db.innerHTML='<p class="text-xs text-gray-500 px-2 mt-3">Searching...</p>';
+    let out;try{out=await K.search(raw)}catch(_){out=''}
+    if(my!==cmSeq||out===null)return;
+    db.innerHTML=out?out.replace(/<p class="text-\[11px\] font-bold text-gray-500 mt-3 mb-1">/g,'<p class="text-[11px] font-bold text-gray-500 px-2 mt-3 mb-1">'):(hit.length?'':'<p class="text-xs text-gray-500 px-2 mt-3">Nothing found.</p>');
+    cmMark();
+  },250);
+}
+document.addEventListener('click',e=>{
+  if(e.target.closest('#open-search')){openPalette();return}
+  if(e.target.id==='cmdk'||e.target.closest('#cmdk-x')){closePalette();return}
+  const g=e.target.closest('#cmdk [data-go]');if(g){goTo(g.dataset.go);return}
+  if(e.target.closest('#cmdk [data-k="gsgo"]'))closePalette(); // K handles the jump itself
+});
+document.addEventListener('input',e=>{if(e.target.id==='cmdk-q')paintPalette(e.target.value)});
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();cmEl().classList.contains('hidden')?openPalette():closePalette();return}
+  if(cmEl().classList.contains('hidden'))return;
+  if(e.key==='Escape'){closePalette();return}
+  const rows=[...document.querySelectorAll('#cmdk-res .cm-row,#cmdk-res [data-k="gsgo"]')];
+  if(e.key==='ArrowDown'){e.preventDefault();cmIdx=Math.min(rows.length-1,cmIdx+1);cmMark()}
+  else if(e.key==='ArrowUp'){e.preventDefault();cmIdx=Math.max(0,cmIdx-1);cmMark()}
+  else if(e.key==='Enter'&&rows[cmIdx]){e.preventDefault();rows[cmIdx].click()}
+});
+
+showPane(/type=recovery/.test(location.hash)?'clients':(['#leads','#clients','#issues','#tenders','#tenders1','#tenders2','#tenders3','#tenders4','#directory','#payments','#settings'].includes(location.hash.split('&')[0])?(location.hash.split('&')[0]==='#tenders'?'tenders1':location.hash.slice(1)):'content'));
 </script>
 </body>
 </html>

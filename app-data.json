@@ -1,7 +1,7 @@
 {
   "languages": "ar",
   "about": "",
-  "aboutMainText": "Hot Information was established bla bla bla",
+  "aboutMainText": "هوت انفرمبشن \nالأفضل منذ 20 عاما .. نحن شركة ممتازة و مميزه \nهوت انفرمبشن \nالأفضل منذ 20 عاما .. نحن شركة ممتازة و مميزه \n",
   "carousel": [
     {
       "id": "1",
@@ -359,9 +359,9 @@
     }
   ],
   "social": {
-    "linkedin": "",
+    "linkedin": "https://www.linkedin.com/company/hotinformationonline/",
     "youtube": "",
-    "facebook": "",
+    "facebook": "https://web.facebook.com/HOTinformation.eg",
     "instagram": "",
     "x": "",
     "tiktok": "",
@@ -386,10 +386,11 @@
   },
   "brand": {
     "image": "mw0s6nc9-85113.png",
-    "tagline": "Business Information"
+    "tagline": "معلومات للبيزنس"
   },
   "chatPrompts": [
-    "Subscribe to HOT"
+    "اشترك مع هوت انفرمبشن",
+    "ارسل لنا استفسارك هنا"
   ],
   "theme": {
     "colors": {
@@ -402,28 +403,26 @@
       "sand": "#d9c8a4",
       "page": "#f7f6f3",
       "surface": "#ffffff",
-      "text": "#193685"
+      "text": "#3a4051"
     },
     "custom": [],
     "sectionWidth": "85",
     "sections": {
       "home-about": {
-        "mode": "color",
+        "mode": "image",
         "overlay": 0,
         "image": "mw0nqqhc-abstract-glass-window-roof-architecture-exterior.jpg",
-        "color": "role:accentSoft"
-      },
-      "about-team": {
-        "hidden": true
-      },
-      "about-advantages": {
-        "hidden": true
-      },
-      "about-value": {
-        "hidden": true
-      },
-      "about-map": {
-        "hidden": true
+        "imageFx": {
+          "ov": {
+            "type": "matt",
+            "color": "#1760de",
+            "opacity": 70
+          },
+          "mask": {
+            "shape": "leaf",
+            "fit": "cover"
+          }
+        }
       }
     },
     "sectionWidthTablet": "68",
@@ -456,99 +455,12 @@
         "name": "Neutral",
         "hex": "#3a4051"
       }
-    ],
-    "fonts": {
-      "h1": {
-        "family": "Cairo",
-        "color": "brand:1"
-      },
-      "h2": {
-        "family": "Cairo"
-      }
-    }
+    ]
   },
   "newsCategories": [
-    "Tanders",
-    "Market Prices",
-    "Events",
-    "Private Purchasing"
-  ],
-  "menu": {
-    "items": [
-      {
-        "id": "home",
-        "en": "Home",
-        "ar": "الرئيسية",
-        "link": "index.html",
-        "icon": "ph-house",
-        "header": false,
-        "bar": true
-      },
-      {
-        "id": "services",
-        "en": "Services",
-        "ar": "خدمات",
-        "link": "index.html#services",
-        "icon": "ph-seal-check",
-        "header": true,
-        "bar": true
-      },
-      {
-        "id": "news",
-        "en": "News",
-        "ar": "الأخبار",
-        "link": "index.html#news",
-        "icon": "ph-newspaper",
-        "header": true,
-        "bar": true
-      },
-      {
-        "id": "hot",
-        "en": "HOT News",
-        "ar": "أخبار HOT",
-        "link": "index.html#jurisdictions",
-        "icon": "ph-fire",
-        "header": true,
-        "bar": true
-      },
-      {
-        "id": "about",
-        "en": "About",
-        "ar": "من نحن",
-        "link": "about.html",
-        "icon": "ph-info",
-        "header": true,
-        "bar": false
-      },
-      {
-        "id": "files",
-        "en": "My files",
-        "ar": "ملفاتي",
-        "link": "my-stuff.html",
-        "icon": "ph-folder-user",
-        "header": false,
-        "bar": true
-      },
-      {
-        "id": "tenders",
-        "en": "Tenders",
-        "ar": "المناقصات",
-        "link": "tenders.html",
-        "icon": "ph-gavel",
-        "header": false,
-        "bar": true,
-        "hidden": false
-      },
-      {
-        "id": "contact",
-        "en": "Contact",
-        "ar": "اتصل بنا",
-        "link": "about.html#contact",
-        "icon": "ph-envelope-simple",
-        "header": true,
-        "bar": false,
-        "hidden": false
-      }
-    ]
-  }
+    "مناقصات",
+    "عملات",
+    "معارض",
+    "مناقصات خاصة"
+  ]
 }

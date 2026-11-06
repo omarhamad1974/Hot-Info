@@ -216,3 +216,36 @@ html[dir=rtl] #mena-map,html[dir=rtl] #map-wrap svg{direction:ltr}
 
 /* a section hidden from the admin page (Sections tab) */
 [data-off]{display:none!important}
+
+/* ---------- Picture carousel (hero) options from admin > Sections: full width, taller ---------- */
+[data-sec=home-carousel][data-full]{width:100%!important;max-width:none!important;padding-left:0!important;padding-right:0!important;padding-top:0!important}
+[data-sec=home-carousel][data-full] #carousel{border-radius:0!important;box-shadow:none!important}
+[data-sec=home-carousel][data-hh=screen] #carousel{height:calc(100vh - 4.5rem)!important;height:calc(100dvh - 4.5rem)!important}
+[data-sec=home-carousel][data-hh=custom] #carousel{height:var(--hh-m,15rem)!important}
+@media(min-width:768px){[data-sec=home-carousel][data-hh=custom] #carousel{height:var(--hh-t,var(--hh-m,20rem))!important}}
+@media(min-width:1024px){[data-sec=home-carousel][data-hh=custom] #carousel{height:var(--hh-d,var(--hh-t,var(--hh-m,27rem)))!important}}
+/* bottom bar width on tablet and desktop (admin > Sections > Bottom bar width); standard = 48rem */
+@media(min-width:768px){#khip-bar .kin{max-width:var(--bar-wt,48rem)}}
+@media(min-width:1024px){#khip-bar .kin{max-width:var(--bar-wd,var(--bar-wt,48rem))}}
+/* a header logo uploaded separately is shown as it is (no blending with the header colour) */
+.brand-logo[data-hlogo],html[data-hdr] header .brand-logo{mix-blend-mode:normal}
+
+/* ---------- Side (hamburger) menu: admin > Menu > Side menu ---------- */
+.k-burger-grp{display:inline-flex;align-items:center;gap:.6rem;min-width:0}
+.k-burger{display:inline-flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;flex:none;border-radius:999px;border:1px solid rgba(120,113,108,.35);background:transparent;color:inherit;cursor:pointer;margin-inline-start:.25rem}
+.k-burger-grp .k-burger{margin-inline-start:0}
+.k-burger:hover{border-color:rgb(var(--c-accent-rgb));color:rgb(var(--c-accent-rgb))}
+html[data-side-only] header nav[aria-label=Main]{display:none!important}
+.k-veil{position:fixed;inset:0;z-index:69;background:rgba(27,36,51,.55);backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}
+.k-veil.open{opacity:1;visibility:visible}
+.k-drawer{position:fixed;top:0;bottom:0;z-index:70;width:min(20rem,86vw);background:#fff;color:rgb(var(--c-ink-rgb));box-shadow:0 0 40px rgba(0,0,0,.25);display:flex;flex-direction:column;visibility:hidden;transition:transform .35s cubic-bezier(.16,1,.3,1),visibility .35s;overflow-y:auto}
+.k-drawer.s-start{inset-inline-start:0;transform:translateX(-105%)}[dir=rtl] .k-drawer.s-start{transform:translateX(105%)}
+.k-drawer.s-end{inset-inline-end:0;transform:translateX(105%)}[dir=rtl] .k-drawer.s-end{transform:translateX(-105%)}
+.k-drawer.open{transform:none!important;visibility:visible}
+.k-dh{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid #e7e5e4;font-weight:500;color:rgb(var(--c-title-rgb))}
+.k-x{width:2.5rem;height:2.5rem;border-radius:999px;border:1px solid #e7e5e4;display:inline-flex;align-items:center;justify-content:center;font-size:1.25rem;background:#fff;cursor:pointer}
+.k-drawer nav{padding:.5rem .75rem 1.5rem;display:flex;flex-direction:column;gap:.15rem}
+.k-drawer nav a{display:flex;align-items:center;gap:.8rem;padding:.8rem .75rem;border-radius:.75rem;font-size:1rem;color:rgb(var(--c-ink-rgb));text-decoration:none}
+.k-drawer nav a i{font-size:1.35rem;color:rgb(var(--c-accent-rgb));width:1.6rem;text-align:center}
+.k-drawer nav a:hover,.k-drawer nav a[aria-current]{background:rgb(var(--c-accent-soft-rgb))}
+@media(prefers-reduced-motion:reduce){.k-drawer,.k-veil{transition:none}}

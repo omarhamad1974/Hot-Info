@@ -19,11 +19,30 @@
 <script src="menu.js"></script>
 <link rel="stylesheet" href="styles.css">
 <style>
-  .d-in{width:100%;border:1px solid #d6d3d1;background:#fff;border-radius:.75rem;padding:.55rem .8rem;font:inherit;font-size:.875rem;color:rgb(var(--c-ink-rgb))}
-  .d-lab{display:block;font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:#78716c;margin-bottom:.25rem}
-  .d-chip{border:1px solid #d6d3d1;background:#fff;color:rgb(var(--c-ink-rgb));border-radius:999px;padding:.4rem 1rem;font-size:.8125rem;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+  /* compact filter bar */
+  .d-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+  .d-f{position:relative;display:flex;align-items:center;min-width:0}.d-grow{flex:3 1 14rem}
+  .d-icn{position:absolute;inset-inline-start:.6rem;color:#a8a29e;font-size:1rem;pointer-events:none}
+  .d-in{width:100%;border:1px solid #d6d3d1;background:#fff;border-radius:.6rem;padding:.38rem .65rem;font:inherit;font-size:.8125rem;line-height:1.35;color:rgb(var(--c-ink-rgb))}
+  .d-f .d-icn+.d-in{padding-inline-start:2rem}.d-sel{flex:1 1 9rem;width:auto;max-width:14rem}
+  .d-chk{display:inline-flex;align-items:center;gap:.4rem;font-size:.8125rem;cursor:pointer;white-space:nowrap}
+  .d-clear{font-size:.75rem;border:1px solid #d6d3d1;border-radius:999px;padding:.25rem .8rem;background:#fff;color:rgb(var(--c-ink-rgb));white-space:nowrap}
+  .d-clear:hover{border-color:rgb(var(--c-ink-rgb))}.d-clear.hidden{display:none}
+  .d-chip{border:1px solid #d6d3d1;background:#fff;color:rgb(var(--c-ink-rgb));border-radius:999px;padding:.2rem .7rem;font-size:.75rem;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
   .d-chip:hover{border-color:rgb(var(--c-ink-rgb))}
   .d-chip[aria-pressed="true"]{background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))}
+  /* phones: search + one "Filters (n)" button; the rest opens on tap and active filters show as removable chips */
+  .d-ftoggle,.d-chips{display:none}
+  .d-chipx{display:inline-flex;align-items:center;gap:.35rem;min-height:2rem;max-width:100%;font-size:.75rem;border:1px solid rgb(var(--c-ink-rgb));background:rgb(var(--c-ink-rgb) / .06);color:rgb(var(--c-ink-rgb));border-radius:999px;padding:.25rem .55rem .25rem .8rem;cursor:pointer}
+  .d-chipx span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:16rem}
+  .d-chipx:hover{background:rgb(var(--c-ink-rgb) / .12)}
+  @media(max-width:639px){
+    .d-ftoggle{display:inline-flex;align-items:center;gap:.35rem;flex:0 0 auto;min-height:2.1rem;font-size:.8125rem;border:1px solid #d6d3d1;border-radius:.6rem;padding:.3rem .75rem;background:#fff;color:rgb(var(--c-ink-rgb));cursor:pointer}
+    .d-ftoggle.on,.d-ftoggle[aria-expanded="true"]{background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))}
+    .d-grow{flex:1 1 0}.d-sel{flex:1 1 100%;max-width:none}
+    .d-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}.d-chips:empty{display:none}
+    #filters:not(.f-open) .d-sel,#filters:not(.f-open) .d-chk,#filters:not(.f-open) #d-types{display:none}
+  }
   .d-grid{display:grid;gap:1.1rem;grid-template-columns:repeat(auto-fill,minmax(16.5rem,1fr))}
   .d-card{display:flex;flex-direction:column;background:#fff;border:1px solid rgba(231,229,228,.9);border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05);overflow:hidden;transition:box-shadow .25s,transform .25s}
   .d-card:hover{box-shadow:0 10px 28px rgba(0,0,0,.09);transform:translateY(-2px)}
@@ -57,14 +76,19 @@
   <p class="text-base md:text-lg max-w-xl" data-i18n="dir_sub">Companies, institutions and freelancers. Search, filter and contact them directly on WhatsApp.</p>
   <a href="submit-directory.html" class="d-more mt-5 inline-flex items-center gap-2"><i class="ph-light ph-plus-circle"></i><span data-i18n="dir_submit">Add your business</span></a></div>
 
-  <form id="filters" class="hidden mt-8 card !transform-none p-4 sm:p-5" autocomplete="off" onsubmit="return false" aria-label="Filter the directory">
-    <div id="d-types" class="flex flex-wrap gap-2 mb-4" role="group" aria-label="Type"></div>
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-      <label class="lg:col-span-3"><span class="d-lab" data-i18n="dir_search">Search</span><input id="f-q" type="search" class="d-in" dir="auto" data-i18n-attr="placeholder:dir_search_ph" placeholder="Name, city or phone"></label>
-      <label class="lg:col-span-2"><span class="d-lab" data-i18n="dir_sector">Sector</span><select id="f-sector" class="d-in"></select></label>
-      <label class="flex items-end gap-2 pb-2 text-sm cursor-pointer"><input id="f-offer" type="checkbox" class="w-4 h-4 accent-[#c9a227]"><span data-i18n="dir_offers_only">Special offers only</span></label>
+  <form id="filters" class="hidden mt-6 card !transform-none p-3" autocomplete="off" onsubmit="return false" aria-label="Filter the directory">
+    <div class="d-bar">
+      <div class="d-f d-grow"><i class="ph-light ph-magnifying-glass d-icn" aria-hidden="true"></i><input id="f-q" type="search" class="d-in" dir="auto" data-i18n-attr="placeholder:dir_search_ph;aria-label:dir_search" aria-label="Search" placeholder="Name, city or phone"></div>
+      <button type="button" id="f-toggle" class="d-ftoggle" aria-expanded="false"><i class="ph-light ph-funnel" aria-hidden="true"></i><span><span data-i18n="dir_filters">Filters</span><span id="f-n"></span></span></button>
+      <select id="f-sector" class="d-in d-sel" data-i18n-attr="aria-label:dir_sector" aria-label="Sector"></select>
+      <label class="d-chk"><input id="f-offer" type="checkbox" class="w-4 h-4 accent-[#c9a227]"><span data-i18n="dir_offers_only">Special offers only</span></label>
     </div>
-    <div class="mt-3 flex items-center justify-between gap-3"><span id="f-count" class="text-sm text-stone-500" aria-live="polite"></span><button type="button" id="f-clear" class="hidden text-sm border border-stone-300 hover:border-stone-500 text-ink px-5 py-2 rounded-full transition" data-i18n="dir_clear">Clear filters</button></div>
+    <div id="f-chips" class="d-chips" aria-label="Active filters"></div>
+    <div class="d-bar mt-2">
+      <div id="d-types" class="flex flex-wrap gap-1.5" role="group" aria-label="Type"></div>
+      <span id="f-count" class="text-xs text-stone-500 ms-auto whitespace-nowrap" aria-live="polite"></span>
+      <button type="button" id="f-clear" class="d-clear hidden"><i class="ph-light ph-x"></i> <span data-i18n="dir_clear">Clear filters</span></button>
+    </div>
   </form>
 
   <div id="list" class="mt-6" aria-live="polite"></div>
@@ -166,11 +190,21 @@ function paint(){
   buildFilters();$('f-q').value=F.q;$('f-offer').checked=F.offer;
   paintList();
 }
+// Phones: the filters behind the "Filters (n)" button show as chips you can remove one by one. n counts the filters inside the panel (not the search box).
+function syncChips(){
+  const c=[];
+  if(F.sector){const o=$('f-sector').selectedOptions[0];c.push(['sector',(o&&o.text)||secName(F.sector)])}
+  if(F.type)c.push(['type',typeLabel(F.type,true)]);
+  if(F.offer)c.push(['offer',T('dir_offers_only')]);
+  $('f-chips').innerHTML=c.map(([k,t])=>`<button type="button" class="d-chipx" data-rm="${k}" aria-label="${esc(T('dir_remove'))}: ${esc(t)}"><span>${esc(t)}</span><i class="ph-light ph-x" aria-hidden="true"></i></button>`).join('');
+  $('f-n').textContent=c.length?` (${c.length})`:'';
+  $('f-toggle').classList.toggle('on',c.length>0);
+}
 function paintList(){
   const loc=rtl()?'ar':'en',rows=ALL.filter(match).sort((a,b)=>(offerOn(b)-offerOn(a))||(((rtl()&&a.name_ar)||a.name)).localeCompare(((rtl()&&b.name_ar)||b.name),loc));
   const act=!!(F.q||F.sector||F.type||F.offer);
   $('f-count').textContent=rows.length===1?T('dir_count1'):T('dir_count',{x:rows.length});
-  $('f-clear').classList.toggle('hidden',!act);
+  $('f-clear').classList.toggle('hidden',!act);syncChips();
   document.querySelectorAll('#d-types .d-chip').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.type===F.type)));
   if(!rows.length){$('list').innerHTML=`<div class="card !transform-none p-10 text-center max-w-xl"><i class="ph-light ph-magnifying-glass text-5xl text-stone-400"></i><p class="mt-3 text-stone-600">${esc(T('dir_none'))}</p></div>`;return}
   $('list').innerHTML=`<div class="d-grid">${rows.slice(0,SHOW).map(card).join('')}</div>`+(rows.length>SHOW?`<div class="text-center mt-6"><button id="d-more" class="d-more">${esc(T('dir_more'))}</button></div>`:'');
@@ -183,6 +217,10 @@ $('f-q').addEventListener('input',e=>{F.q=e.target.value.trim();SHOW=STEP;clearT
 $('f-sector').addEventListener('change',e=>{F.sector=e.target.value;SHOW=STEP;paintList()});
 $('f-offer').addEventListener('change',e=>{F.offer=e.target.checked;SHOW=STEP;paintList()});
 $('d-types').addEventListener('click',e=>{const b=e.target.closest('[data-type]');if(!b)return;F.type=b.dataset.type;SHOW=STEP;paintList()});
+$('f-toggle').addEventListener('click',()=>{const o=$('filters').classList.toggle('f-open');$('f-toggle').setAttribute('aria-expanded',String(o))});
+$('f-chips').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const k=b.dataset.rm;
+  if(k==='sector'){F.sector='';$('f-sector').value=''}else if(k==='type')F.type='';else if(k==='offer'){F.offer=false;$('f-offer').checked=false}
+  SHOW=STEP;paintList()});
 $('f-clear').addEventListener('click',()=>{F={q:'',sector:'',type:'',offer:false};SHOW=STEP;$('f-q').value='';$('f-sector').value='';$('f-offer').checked=false;paintList()});
 if(window.KMENU)KMENU.onChange(()=>{if(state==='ok')paint();else if(K)K.dom()}); // the language may be settled after the menu data arrives
 document.title=T('dir_title')+' | KHIP';
