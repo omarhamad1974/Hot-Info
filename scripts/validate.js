@@ -173,7 +173,7 @@ for(const [k,v] of Object.entries(d.social||{}))if(v&&!/^https:\/\//.test(v))err
 }
 // Payments (phases P1 to P3): files exist, the page texts exist in English AND Arabic, admin and database pieces are in place.
 {
-  for(const q of ['subscribe.html','supabase-step18-payments.sql','supabase-step19-signup-and-orders.sql','PAYMENTS-PLAN.md'])if(!fs.existsSync(q))errs.push(`payments: ${q} is missing`);
+  for(const q of ['subscribe.html','supabase-step18-payments.sql','supabase-step19-signup-and-orders.sql','supabase-step20-payment-links.sql','PAYMENTS-PLAN.md'])if(!fs.existsSync(q))errs.push(`payments: ${q} is missing`);
   if(fs.existsSync('supabase-step18-payments.sql')){
     const q=fs.readFileSync('supabase-step18-payments.sql','utf8');
     for(const f of ['request_subscription','cancel_subscription_request','approve_subscription_request','reject_subscription_request'])if(!q.includes(f))errs.push(`supabase-step18-payments.sql: function ${f} is missing`);
