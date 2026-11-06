@@ -423,6 +423,36 @@
             "fit": "cover"
           }
         }
+      },
+      "trademarks-contact": {
+        "hidden": true
+      },
+      "trademarks-details": {
+        "hidden": true
+      },
+      "trademarks-intro": {
+        "hidden": true
+      },
+      "patents-contact": {
+        "hidden": true
+      },
+      "patents-details": {
+        "hidden": true
+      },
+      "patents-intro": {
+        "hidden": true
+      },
+      "about-advantages": {
+        "hidden": true
+      },
+      "about-quote": {
+        "hidden": true
+      },
+      "about-value": {
+        "hidden": true
+      },
+      "about-map": {
+        "hidden": true
       }
     },
     "sectionWidthTablet": "68",
