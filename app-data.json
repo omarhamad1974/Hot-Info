@@ -5,31 +5,31 @@
   "carousel": [
     {
       "id": "1",
-      "title": "Using Legal Skills with Technical Knowledge",
-      "subtitle": "Discover legal and IP services.",
+      "title": "HOT Info Carousel 1",
+      "subtitle": "Hot Info Carousel 1 subtitle",
       "tag": "Featured",
       "image": "mvvcn74s-84337.jpg"
     },
     {
       "id": "5",
-      "title": "Using Legal Skills with Technical Knowledge (copy)",
-      "subtitle": "Discover legal and IP services.",
+      "title": "Hot Info Carousel 2",
+      "subtitle": "Hot Info Carousel 2 subtitle",
       "tag": "Featured",
-      "image": "mvvcnuma-84331.jpg"
+      "image": "mw4x67at-music-and-entertainment-abstract.jpg"
     },
     {
       "id": "2",
-      "title": "Protecting Innovation",
-      "subtitle": "Discover legal and IP services.",
+      "title": "Hot informatio carousel 3",
+      "subtitle": "Hot informatio carousel 3 subtitle",
       "tag": "Featured",
-      "image": "./assets/slider2.jpg"
+      "image": "mw4x81lp-pexels-edward-jenner-4253272.jpg"
     },
     {
       "id": "3",
-      "title": "Making a difference ",
+      "title": "HOT Info Carousel 4",
       "subtitle": "To people lives and people business ",
       "tag": "",
-      "image": "mvm9bed7-65080.jpg"
+      "image": "mw4x96ey-twilight-cloud.jpg"
     }
   ],
   "jurisdictions": [
