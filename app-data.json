@@ -1,7 +1,7 @@
 {
   "languages": "ar",
-  "about": "",
-  "aboutMainText": "هوت انفرمبشن \nالأفضل منذ 20 عاما .. نحن شركة ممتازة و مميزه \nهوت انفرمبشن \nالأفضل منذ 20 عاما .. نحن شركة ممتازة و مميزه \n",
+  "about": "Great company ",
+  "aboutMainText": "Hot information wa established in 2000\n",
   "carousel": [
     {
       "id": "1",
@@ -386,11 +386,11 @@
   },
   "brand": {
     "image": "mw0s6nc9-85113.png",
-    "tagline": "معلومات للبيزنس"
+    "tagline": "Business Information"
   },
   "chatPrompts": [
-    "اشترك مع هوت انفرمبشن",
-    "ارسل لنا استفسارك هنا"
+    "Subscribe now",
+    "Send us a message here"
   ],
   "theme": {
     "colors": {
@@ -441,9 +441,10 @@
     ]
   },
   "newsCategories": [
-    "مناقصات",
-    "عملات",
-    "معارض",
-    "مناقصات خاصة"
+    "Tenders",
+    "Private tenders",
+    "Purchase Requests",
+    "Events",
+    "General"
   ]
 }
