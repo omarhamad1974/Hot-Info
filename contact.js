@@ -30,12 +30,12 @@
     document.querySelectorAll('[data-follow]').forEach(a=>{if(ok(so.linkedin)){a.href=so.linkedin;a.hidden=false}else a.hidden=true});
     if(!ct)return;                                   // no contact block yet: keep the text written in the page
     const phones=(Array.isArray(ct.phones)?ct.phones:[]).filter(p=>p&&String(p.number||'').trim());
-    const tile=(href,icon,label,i18n,val)=>`<a href="${esc(href)}" class="ct-tile"><span class="ct-ico"><i class="ph-light ${icon}"></i></span><span><span class="block text-xs uppercase tracking-widest text-stone-500"${i18n?` data-i18n="${i18n}"`:''}>${esc(label)}</span><span class="block text-base text-ink">${esc(val)}</span></span></a>`;
+    const tile=(href,icon,label,i18n,val)=>`<a href="${esc(href)}" class="ct-tile"><span class="ct-ico"><i class="ph-light ${icon}"></i></span><span><span class="block text-xs uppercase tracking-widest text-stone-600"${i18n?` data-i18n="${i18n}"`:''}>${esc(label)}</span><span class="block text-base text-ink">${esc(val)}</span></span></a>`;
     document.querySelectorAll('[data-contact-tiles]').forEach(box=>{
       const adr=String((c.addressAr&&window.KLang&&KLang.rtl?c.addressAr:ct.address)||'').trim();
       box.innerHTML=phones.map(p=>tile('tel:'+tel(p.number),'ph-phone',p.label||T('phone','Phone'),p.label?'':'phone',p.number)).join('')
         +(String(ct.email||'').trim()?tile('mailto:'+ct.email.trim(),'ph-envelope-simple',T('email','Email'),'email',ct.email.trim()):'')
-        +(adr?`<div class="ct-tile"><span class="ct-ico"><i class="ph-light ph-map-pin"></i></span><span><span class="block text-xs uppercase tracking-widest text-stone-500" data-i18n="address">${esc(T('address','Address'))}</span><span class="block text-base text-ink">${esc(adr)}</span></span></div>`:'');
+        +(adr?`<div class="ct-tile"><span class="ct-ico"><i class="ph-light ph-map-pin"></i></span><span><span class="block text-xs uppercase tracking-widest text-stone-600" data-i18n="address">${esc(T('address','Address'))}</span><span class="block text-base text-ink">${esc(adr)}</span></span></div>`:'');
     });
     document.querySelectorAll('[data-contact-email]').forEach(a=>{
       const e=String(ct.email||'').trim();if(!e){a.hidden=true;return}

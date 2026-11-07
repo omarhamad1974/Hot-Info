@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tenders | KHIP Intellectual Properties</title>
+<script src="lang.js"></script>
+<title>Tenders | HOT INFORMATION</title>
 <meta name="robots" content="noindex"><meta name="description" content="Tenders in the sectors you subscribe to.">
 <meta name="theme-color" content="#1d4ed8">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,79 +20,79 @@
 <link rel="stylesheet" href="styles.css">
 <style>
   /* Tenders published in the last 7 days: sand background and a gold edge */
-  .t-card{background:#fff;border:1px solid rgba(231,229,228,.9);border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .t-card{background:#fff;border:1px solid rgba(214,211,209,.95);border-radius:1rem;box-shadow:0 1px 2px rgba(0,0,0,.05)}
   .t-card.fresh{background:rgb(var(--c-sand-rgb) / .3);border-color:rgb(var(--c-gold-rgb) / .55);border-inline-start:4px solid rgb(var(--c-gold-rgb))}
-  .t-card.past .t-when{color:#78716c}
+  .t-card.past .t-when{color:#57534e}
   .t-sub{white-space:pre-line;line-height:1.9}
-  .t-fact dt{font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:#78716c}
+  .t-fact dt{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:#57534e}
   .t-fact dd{margin:.125rem 0 0;font-weight:400;color:rgb(var(--c-ink-rgb))}
   /* compact filter bar: one line on desktop, wraps on phones */
   .t-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
   .t-f{position:relative;display:flex;align-items:center;min-width:0;flex:1 1 9rem}
   .t-grow{flex:3 1 14rem}.t-w{flex:2 1 10rem}.t-d{flex:0 1 9.5rem;gap:.35rem}.t-in.t-s{flex:0 0 auto;width:auto}
-  .t-ic{position:absolute;inset-inline-start:.6rem;color:#a8a29e;font-size:1rem;pointer-events:none}
+  .t-ic{position:absolute;inset-inline-start:.6rem;color:#78716c;font-size:1rem;pointer-events:none}
   .t-f .t-ic+.t-in{padding-inline-start:2rem}
-  .t-in{width:100%;border:1px solid #d6d3d1;background:#fff;border-radius:.6rem;padding:.38rem .65rem;font:inherit;font-size:.8125rem;line-height:1.35;color:rgb(var(--c-ink-rgb))}
-  .t-lab{font-size:.6875rem;color:#78716c;white-space:nowrap}
-  .t-clear{font-size:.75rem;border:1px solid #d6d3d1;border-radius:999px;padding:.25rem .8rem;background:#fff;color:rgb(var(--c-ink-rgb));white-space:nowrap}
+  .t-in{width:100%;border:1px solid #8a847e;background:#fff;border-radius:.6rem;padding:.38rem .65rem;font:inherit;font-size:.8125rem;line-height:1.35;color:rgb(var(--c-ink-rgb))}
+  .t-lab{font-size:.75rem;color:#57534e;white-space:nowrap}
+  .t-clear{font-size:.75rem;border:1px solid #8a847e;border-radius:999px;padding:.25rem .8rem;background:#fff;color:rgb(var(--c-ink-rgb));white-space:nowrap}
   .t-clear:hover{border-color:rgb(var(--c-ink-rgb))}.t-clear.hidden,.t-f.hidden{display:none}
   @media(max-width:639px){.t-d{flex:1 1 40%}.t-in.t-s{flex:1 1 100%}}
   /* phones: search + one "Filters (n)" button; the rest opens on tap and active filters show as removable chips */
   .t-ftoggle,.t-chips{display:none}
-  .t-chipx{display:inline-flex;align-items:center;gap:.35rem;min-height:2rem;max-width:100%;font-size:.75rem;border:1px solid rgb(var(--c-ink-rgb));background:rgb(var(--c-ink-rgb) / .06);color:rgb(var(--c-ink-rgb));border-radius:999px;padding:.25rem .55rem .25rem .8rem;cursor:pointer}
+  .t-chipx{display:inline-flex;align-items:center;gap:.35rem;min-height:2rem;max-width:100%;font-size:.75rem;border:1px solid rgb(var(--c-ink-rgb));background:rgb(var(--c-ink-rgb) / .06);color:rgb(var(--c-ink-rgb));border-radius:999px;padding-block:.25rem;padding-inline:.8rem .55rem;cursor:pointer}
   .t-chipx span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:16rem}
   .t-chipx:hover{background:rgb(var(--c-ink-rgb) / .12)}
   @media(max-width:639px){
-    .t-ftoggle{display:inline-flex;align-items:center;gap:.35rem;flex:0 0 auto;min-height:2.1rem;font-size:.8125rem;border:1px solid #d6d3d1;border-radius:.6rem;padding:.3rem .75rem;background:#fff;color:rgb(var(--c-ink-rgb));cursor:pointer}
+    .t-ftoggle{display:inline-flex;align-items:center;gap:.35rem;flex:0 0 auto;min-height:2.1rem;font-size:.8125rem;border:1px solid #8a847e;border-radius:.6rem;padding:.3rem .75rem;background:#fff;color:rgb(var(--c-ink-rgb));cursor:pointer}
     .t-ftoggle.on,.t-ftoggle[aria-expanded="true"]{background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))}
     .t-grow{flex:1 1 0}.t-w{flex:1 1 100%}
     .t-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}.t-chips:empty{display:none}
     #filters:not(.f-open) .t-w,#filters:not(.f-open) #t-bar2>:not(#f-count):not(#f-clear){display:none}
   }
-  .t-pill{display:inline-block;font-size:.6875rem;border-radius:999px;padding:.15rem .6rem}
+  .t-pill{display:inline-block;font-size:.75rem;border-radius:999px;padding:.15rem .6rem}
   .t-more{border:1px solid rgb(var(--c-ink-rgb));border-radius:999px;padding:.7rem 2rem;font-size:.875rem;background:#fff;color:rgb(var(--c-ink-rgb));cursor:pointer;transition:background .2s,color .2s}
   .t-more:hover:not(:disabled){background:rgb(var(--c-ink-rgb));color:#fff}.t-more:disabled{opacity:.6;cursor:wait}
   #notice{animation:tn .5s cubic-bezier(.16,1,.3,1)}@keyframes tn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
   @media(prefers-reduced-motion:reduce){#notice{animation:none}}
 </style>
 </head>
-<body class="font-sans font-light antialiased">
+<body class="font-sans font-normal antialiased">
 <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
   <div class="wrap py-3 flex items-center justify-between">
-    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="KHIP" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink">Intellectual Properties</span></a>
-    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
-      <a href="index.html" class="hover:text-brand-600 transition">Home</a><a href="patents.html" class="hover:text-brand-600 transition">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition">Translation</a><a href="about.html" class="hover:text-brand-600 transition">About</a>
-    <a href="my-stuff.html" class="hover:text-brand-600 transition">My files</a><a href="tenders.html" class="text-brand-700 font-normal transition" aria-current="page">Tenders</a><a href="directory.html" class="hover:text-brand-600 transition" data-i18n="nav_directory">Directory</a></nav>
-    <span data-social class="flex gap-2"><a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a></span>
+    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
+    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main" data-i18n-attr="aria-label:nav_main">
+      <a href="index.html" class="hover:text-brand-600 transition" data-i18n="bar_home">Home</a><a href="patents.html" class="hover:text-brand-600 transition" data-svc-page="patents.html">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition" data-svc-page="trademarks.html">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition" data-svc-page="translation.html">Translation</a><a href="about.html" class="hover:text-brand-600 transition" data-i18n="bar_about">About</a><a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a><a href="subscribe.html" class="hover:text-brand-600 transition" data-i18n="pay_nav">Subscribe</a><a href="tenders.html" class="text-brand-700 font-normal transition" aria-current="page" data-i18n="bar_tenders">Tenders</a><a href="directory.html" class="hover:text-brand-600 transition" data-i18n="nav_directory">Directory</a></nav>
+    <div class="flex items-center gap-2"><div id="lang-switch"></div><span data-social class="flex gap-2"><a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a></span></div>
   </div>
 </header>
 <main>
 <section class="band"><div class="wrap">
-  <div class="fu"><h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-medium text-title leading-[1.05]">Tenders</h1><span class="rule mt-5"></span>
-  <p id="who" class="text-base md:text-lg max-w-xl">Tenders in the sectors you subscribe to, newest first.</p></div>
+  <div class="fu"><h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-medium text-title leading-[1.05]" data-i18n="bar_tenders">Tenders</h1><span class="rule mt-5"></span>
+  <p id="who" class="text-base md:text-lg max-w-xl" data-i18n="tdr_sub">Tenders in the sectors you subscribe to, newest first.</p></div>
 
-  <div id="notice" class="hidden mt-6 card !transform-none p-4 sm:p-5 flex items-center gap-4 border-l-4" style="border-left-color:rgb(var(--c-gold-rgb));background:rgb(var(--c-sand-rgb) / .3)" role="status"></div>
+  <div id="notice" class="hidden mt-6 card !transform-none p-4 sm:p-5 flex items-center gap-4 border-s-4" style="border-inline-start-color:rgb(var(--c-gold-rgb));background:rgb(var(--c-sand-rgb) / .3)" role="status"></div>
 
-  <form id="filters" class="hidden mt-6 card !transform-none p-3" autocomplete="off" aria-label="Filter tenders">
+  <form id="filters" class="hidden mt-6 card !transform-none p-3" autocomplete="off" aria-label="Filter tenders" data-i18n-attr="aria-label:tdr_filter_aria">
     <div class="t-bar">
-      <div class="t-f t-grow"><i class="ph-light ph-magnifying-glass t-ic" aria-hidden="true"></i><input id="f-q" type="search" class="t-in" placeholder="Search entity or subject" aria-label="Search" dir="auto"></div>
-      <button type="button" id="f-toggle" class="t-ftoggle" aria-expanded="false"><i class="ph-light ph-funnel" aria-hidden="true"></i><span>Filters<span id="f-n"></span></span></button>
-      <div class="t-f t-w"><i class="ph-light ph-buildings t-ic" aria-hidden="true"></i><input id="f-entity" list="entities" class="t-in" placeholder="Publishing entity" aria-label="Publishing entity" dir="auto"><datalist id="entities"></datalist></div>
-      <div class="t-f t-w"><i class="ph-light ph-stack t-ic" aria-hidden="true"></i><select id="f-sector" class="t-in" aria-label="Sector"><option value="">All my sectors</option></select></div>
+      <div class="t-f t-grow"><i class="ph-light ph-magnifying-glass t-ic" aria-hidden="true"></i><input id="f-q" type="search" class="t-in" placeholder="Search entity or subject" aria-label="Search" data-i18n-attr="placeholder:tdr_search_ph;aria-label:tdr_search" dir="auto"></div>
+      <button type="button" id="f-toggle" class="t-ftoggle" aria-expanded="false"><i class="ph-light ph-funnel" aria-hidden="true"></i><span><span data-i18n="tdr_filters">Filters</span><span id="f-n"></span></span></button>
+      <div class="t-f t-w"><i class="ph-light ph-buildings t-ic" aria-hidden="true"></i><input id="f-entity" list="entities" class="t-in" placeholder="Publishing entity" aria-label="Publishing entity" data-i18n-attr="placeholder:tdr_entity;aria-label:tdr_entity" dir="auto"><datalist id="entities"></datalist></div>
+      <div class="t-f t-w"><i class="ph-light ph-stack t-ic" aria-hidden="true"></i><select id="f-sector" class="t-in" aria-label="Sector" data-i18n-attr="aria-label:tdr_sector"><option value="" data-i18n="tdr_all_sectors">All my sectors</option></select></div>
     </div>
-    <div id="f-chips" class="t-chips" aria-label="Active filters"></div>
+    <div id="f-chips" class="t-chips" aria-label="Active filters" data-i18n-attr="aria-label:tdr_active"></div>
     <div id="t-bar2" class="t-bar mt-2">
-      <select id="f-by" class="t-in t-s" aria-label="Filter dates by"><option value="publish">Published</option><option value="session">Session</option></select>
-      <label class="t-f t-d"><span class="t-lab">From</span><input id="f-from" type="date" class="t-in"></label>
-      <label class="t-f t-d"><span class="t-lab">To</span><input id="f-to" type="date" class="t-in"></label>
-      <span id="f-count" class="text-xs text-stone-500 ms-auto whitespace-nowrap" aria-live="polite"></span>
-      <button type="button" id="f-clear" class="t-clear hidden"><i class="ph-light ph-x"></i> Clear</button>
+      <select id="f-by" class="t-in t-s" aria-label="Filter dates by" data-i18n-attr="aria-label:tdr_by"><option value="publish" data-i18n="tdr_published">Published</option><option value="session" data-i18n="tdr_session">Session</option></select>
+      <label class="t-f t-d"><span class="t-lab" data-i18n="tdr_from">From</span><input id="f-from" type="date" class="t-in"></label>
+      <label class="t-f t-d"><span class="t-lab" data-i18n="tdr_to">To</span><input id="f-to" type="date" class="t-in"></label>
+      <span id="f-count" class="text-xs text-stone-600 ms-auto whitespace-nowrap" aria-live="polite"></span>
+      <button type="button" id="f-clear" class="t-clear hidden"><i class="ph-light ph-x"></i> <span data-i18n="tdr_clear">Clear</span></button>
     </div>
   </form>
 
   <div id="list" class="mt-6" aria-live="polite"></div>
 </div></section>
 </main>
+<script src="banner.js"></script>
 <script src="footer.js"></script>
 <script src="auth.js"></script>
 <script>
@@ -99,12 +100,17 @@ const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.targ
 document.querySelectorAll('.fu').forEach(e=>io.observe(e));
 </script>
 <script>
+const K=window.KLang,T=(k,v)=>K?K.t(k,v):k,rtl=()=>!!(K&&K.rtl);
+const LOC=()=>rtl()?'ar-EG-u-nu-latn':'en-GB';
+let langP=null;
+// Settles the language (app-data.json holds the admin's choice), then translates the static text
+const langInit=()=>langP||(langP=(async()=>{if(!K)return;try{await K.data('./app-data.json')}catch(_){}K.dom();K.fill();document.title=T('tdr_title_tag')})());
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const day=d=>d?new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}):'';
+const day=d=>d?new Date(d+'T00:00:00Z').toLocaleDateString(LOC(),{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}):'';
 const cairoToday=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
 const daysAgo=d=>Math.round((Date.parse(cairoToday())-Date.parse(d))/864e5);
-const ago=d=>{const n=daysAgo(d);return n<=0?'today':n===1?'yesterday':n+' days ago'};
+const ago=d=>{const n=daysAgo(d);return n<=0?T('ago_today'):n===1?T('ago_yday'):T('ago_days',{x:n})};
 const money=r=>{const raw=r.booklet_price_raw,n=r.booklet_price;if(typeof raw==='string'&&raw.trim())return raw.trim();return n==null?'':Number(n).toLocaleString('en-US',{maximumFractionDigits:2})};
 const PAGE=30,RECENT_PAGE=100;
 let sb=null,sectorName={},since=null,token=0;
@@ -118,8 +124,8 @@ function syncFilterUI(){
   const f=readF(),c=[];
   if(f.entity)c.push(['entity',f.entity]);
   if(f.sector){const o=$('f-sector').selectedOptions[0];c.push(['sector',sectorName[f.sector]||(o&&o.text)||f.sector])}
-  if(f.from||f.to)c.push(['dates',(f.by==='session'?'Session':'Published')+': '+(f.from?day(f.from):'…')+' – '+(f.to?day(f.to):'…')]);
-  $('f-chips').innerHTML=c.map(([k,t])=>`<button type="button" class="t-chipx" data-rm="${k}" aria-label="Remove filter: ${esc(t)}"><span>${esc(t)}</span><i class="ph-light ph-x" aria-hidden="true"></i></button>`).join('');
+  if(f.from||f.to)c.push(['dates',(f.by==='session'?T('tdr_session'):T('tdr_published'))+': '+(f.from?day(f.from):'…')+' – '+(f.to?day(f.to):'…')]);
+  $('f-chips').innerHTML=c.map(([k,t])=>`<button type="button" class="t-chipx" data-rm="${k}" aria-label="${esc(T('tdr_rm',{x:t}))}"><span>${esc(t)}</span><i class="ph-light ph-x" aria-hidden="true"></i></button>`).join('');
   $('f-n').textContent=c.length?` (${c.length})`:'';
   $('f-toggle').classList.toggle('on',c.length>0);
 }
@@ -131,7 +137,7 @@ async function fetchTenders(scope,f,offset,limit){
 
 function note(icon,t,sub,btn){
   $('filters').classList.add('hidden');$('notice').classList.add('hidden');
-  $('list').innerHTML=`<div class="card !transform-none p-10 text-center max-w-xl"><i class="ph-light ${icon} text-5xl text-stone-400"></i><p class="mt-3 font-display text-2xl font-semibold text-title">${t}</p>${sub?`<p class="mt-1 text-sm text-stone-500">${sub}</p>`:''}${btn?'<button id="go-login" class="auth-btn mt-5" style="margin:1.25rem auto 0"><i class="ph-light ph-user"></i><span style="display:inline">Login</span></button>':''}</div>`;
+  $('list').innerHTML=`<div class="card !transform-none p-10 text-center max-w-xl"><i class="ph-light ${icon} text-5xl text-stone-600"></i><p class="mt-3 font-display text-2xl font-semibold text-title">${t}</p>${sub?`<p class="mt-1 text-sm text-stone-600">${sub}</p>`:''}${btn?`<button id="go-login" class="auth-btn mt-5" style="margin:1.25rem auto 0"><i class="ph-light ph-user"></i><span style="display:inline">${T('tdr_login')}</span></button>`:''}</div>`;
   if(btn)$('go-login').onclick=()=>KHIPAuth.open();
 }
 const skeleton=()=>{$('list').innerHTML='<div class="grid gap-4">'+'<div class="t-card p-6 animate-pulse h-40"><div class="h-5 w-1/2 rounded bg-stone-200"></div><div class="h-4 w-5/6 rounded bg-stone-100 mt-4"></div><div class="h-4 w-2/3 rounded bg-stone-100 mt-3"></div></div>'.repeat(3)+'</div>'};
@@ -142,19 +148,19 @@ function card(r,fresh){
   const passed=r.session_date&&r.session_date<cairoToday();
   const link=/^https?:\/\//i.test(r.link||'')?r.link:'';
   const chips=(r.sector_ids||[]).map(id=>`<span class="t-pill bg-brand-50 text-brand-700">${esc(sectorName[id]||id)}</span>`).join(' ');
-  const fact=(k,v,ar)=>v?`<div><dt>${k}</dt><dd${ar?' dir="rtl" lang="ar" class="text-right sm:text-left"':''}>${v}</dd></div>`:'';
+  const fact=(k,v,ar)=>v?`<div><dt>${k}</dt><dd${ar?' dir="rtl" lang="ar" class="text-right sm:text-left rtl:sm:text-right"':''}>${v}</dd></div>`:'';
   return `<article class="t-card ${fresh?'fresh':''} ${passed?'past':''} p-5 sm:p-6">
     <div class="flex flex-wrap items-center gap-2 mb-3">
-      ${fresh?'<span class="t-pill bg-ink text-white">Last 7 days</span>':''}${isNew?'<span class="t-pill bg-brand-600 text-white">New</span>':''}
-      <span class="t-when text-xs text-stone-500">Published ${day(r.publish_date)}${r.publish_date?' · '+ago(r.publish_date):''}${r.source_paper?' · '+esc(r.source_paper)+(r.page?', p. '+esc(r.page):''):''}</span>
-      <span class="ml-auto flex flex-wrap gap-1.5">${chips}</span></div>
+      ${fresh?`<span class="t-pill bg-ink text-white">${T('tdr_last7')}</span>`:''}${isNew?`<span class="t-pill bg-brand-600 text-white">${T('tdr_new')}</span>`:''}
+      <span class="t-when text-xs text-stone-600">${esc(T('tdr_pub_on',{x:day(r.publish_date)}))}${r.publish_date?' · '+ago(r.publish_date):''}${r.source_paper?' · '+esc(r.source_paper)+(r.page?', '+esc(T('tdr_pg',{x:r.page})):''):''}</span>
+      <span class="ms-auto flex flex-wrap gap-1.5">${chips}</span></div>
     <h3 dir="rtl" lang="ar" class="font-display text-2xl font-semibold text-title leading-snug text-right">${esc(r.entity||'—')}</h3>
     <p dir="rtl" lang="ar" class="t-sub mt-2 text-[15px] text-ink text-right">${esc(r.subject||'—')}</p>
     <dl class="t-fact mt-4 pt-4 border-t border-stone-200/80 grid gap-x-6 gap-y-3 grid-cols-2 md:grid-cols-4">
-      ${fact('Session',sess?esc(sess)+(passed?' <span class="t-pill bg-stone-200 text-stone-700">passed</span>':''):'')}
-      ${fact('Booklet price',esc(money(r)),true)}
-      ${fact('Bid bond',esc(r.bid_bond||''),true)}
-      <div class="flex items-end justify-end gap-2 col-span-2 md:col-span-1">${r.has_image?`<button data-view="${esc(r.id)}" class="text-sm border border-stone-300 hover:border-stone-500 bg-white text-ink px-4 py-2 rounded-full transition whitespace-nowrap"><i class="ph-light ph-eye"></i> View</button>`:''}${link?`<a href="${esc(link)}" target="_blank" rel="noopener noreferrer" class="text-sm bg-ink hover:bg-stone-800 text-white px-4 py-2 rounded-full transition whitespace-nowrap"><i class="ph-light ph-arrow-square-out"></i> Source</a>`:''}</div>
+      ${fact(T('tdr_f_session'),sess?esc(sess)+(passed?` <span class="t-pill bg-stone-200 text-stone-700">${T('tdr_passed')}</span>`:''):'')}
+      ${fact(T('tdr_f_price'),esc(money(r)),true)}
+      ${fact(T('tdr_f_bond'),esc(r.bid_bond||''),true)}
+      <div class="flex items-end justify-end gap-2 col-span-2 md:col-span-1">${r.has_image?`<button data-view="${esc(r.id)}" class="text-sm border border-stone-300 hover:border-stone-500 bg-white text-ink px-4 py-2 rounded-full transition whitespace-nowrap"><i class="ph-light ph-eye"></i> ${T('tdr_view')}</button>`:''}${link?`<a href="${esc(link)}" target="_blank" rel="noopener noreferrer" class="text-sm bg-ink hover:bg-stone-800 text-white px-4 py-2 rounded-full transition whitespace-nowrap"><i class="ph-light ph-arrow-square-out"></i> ${T('tdr_source')}</a>`:''}</div>
     </dl></article>`;
 }
 
@@ -163,18 +169,18 @@ function paint(){
   $('f-clear').classList.toggle('hidden',!filtering);syncFilterUI();
   const total=rc.total+(ol.open?ol.total:0);
   let h='';
-  h+=`<h2 class="text-xs uppercase tracking-wider text-stone-500 mb-3">Published in the last 7 days <span class="normal-case tracking-normal">(${rc.total})</span></h2>`;
+  h+=`<h2 class="text-xs uppercase tracking-wider text-stone-600 mb-3">${T('tdr_h_recent')} <span class="normal-case tracking-normal">(${rc.total})</span></h2>`;
   if(rc.rows.length)h+=`<div class="grid gap-4">${rc.rows.map(r=>card(r,true)).join('')}</div>`;
-  else h+=`<p class="text-sm text-stone-500 bg-white/70 border border-stone-200 rounded-xl px-4 py-3">${filtering?'No tenders from the last 7 days match your filters.':'No tenders were published in the last 7 days.'}</p>`;
-  if(rc.rows.length<rc.total)h+=`<div class="text-center mt-5"><button class="t-more" data-more="recent">Show more recent tenders (${rc.total-rc.rows.length} left)</button></div>`;
-  if(!ol.open)h+=`<div class="text-center mt-8"><button class="t-more" data-more="older"><i class="ph-light ph-clock-counter-clockwise"></i> More tenders</button><p class="text-xs text-stone-500 mt-2">Shows tenders published more than 7 days ago</p></div>`;
+  else h+=`<p class="text-sm text-stone-600 bg-white/70 border border-stone-200 rounded-xl px-4 py-3">${T(filtering?'tdr_none_recent_f':'tdr_none_recent')}</p>`;
+  if(rc.rows.length<rc.total)h+=`<div class="text-center mt-5"><button class="t-more" data-more="recent">${T('tdr_more_recent',{x:rc.total-rc.rows.length})}</button></div>`;
+  if(!ol.open)h+=`<div class="text-center mt-8"><button class="t-more" data-more="older"><i class="ph-light ph-clock-counter-clockwise"></i> ${T('tdr_more_older')}</button><p class="text-xs text-stone-600 mt-2">${T('tdr_older_hint')}</p></div>`;
   else{
-    h+=`<h2 class="text-xs uppercase tracking-wider text-stone-500 mt-10 mb-3">Earlier tenders <span class="normal-case tracking-normal">(${ol.total})</span></h2>`;
-    h+=ol.rows.length?`<div class="grid gap-4">${ol.rows.map(r=>card(r,false)).join('')}</div>`:`<p class="text-sm text-stone-500 bg-white/70 border border-stone-200 rounded-xl px-4 py-3">${filtering?'No earlier tenders match your filters.':'There are no earlier tenders yet.'}</p>`;
-    if(ol.rows.length<ol.total)h+=`<div class="text-center mt-6"><button class="t-more" data-more="older">More tenders (${ol.total-ol.rows.length} left)</button></div>`;
+    h+=`<h2 class="text-xs uppercase tracking-wider text-stone-600 mt-10 mb-3">${T('tdr_h_older')} <span class="normal-case tracking-normal">(${ol.total})</span></h2>`;
+    h+=ol.rows.length?`<div class="grid gap-4">${ol.rows.map(r=>card(r,false)).join('')}</div>`:`<p class="text-sm text-stone-600 bg-white/70 border border-stone-200 rounded-xl px-4 py-3">${T(filtering?'tdr_none_older_f':'tdr_none_older')}</p>`;
+    if(ol.rows.length<ol.total)h+=`<div class="text-center mt-6"><button class="t-more" data-more="older">${T('tdr_more_left',{x:ol.total-ol.rows.length})}</button></div>`;
   }
   $('list').innerHTML=h;
-  $('f-count').textContent=ol.open||!rc.total&&!rc.rows.length?`${total} tender${total===1?'':'s'}`:`${rc.total} recent tender${rc.total===1?'':'s'}`;
+  $('f-count').textContent=ol.open||!rc.total&&!rc.rows.length?T('tdr_count',{x:total}):T('tdr_rcount',{x:rc.total});
 }
 
 async function load(){
@@ -185,46 +191,47 @@ async function load(){
     // Nothing new in the last 7 days but the person is searching: go straight to older tenders
     if(!rc.total&&active(f)){const ol=await fetchTenders('older',f,0,PAGE);if(my!==token)return;R.older={rows:ol.rows,total:ol.total,open:true}}
     paint();
-  }catch(e){if(my===token)note('ph-warning-circle','We could not load the tenders',/my_tenders|function/i.test(e.message||'')?'The tenders page is not set up yet. Please try again later.':'Please refresh the page and try again.')}
+  }catch(e){if(my===token)note('ph-warning-circle',T('tdr_load_err'),/my_tenders|function/i.test(e.message||'')?T('tdr_not_setup'):T('tdr_refresh'))}
 }
 async function more(which,btn){
-  const f=readF(),my=token;btn.disabled=true;const t=btn.innerHTML;btn.textContent='Loading...';
+  const f=readF(),my=token;btn.disabled=true;const t=btn.innerHTML;btn.textContent=T('tdr_loading');
   try{
     const part=R[which],d=await fetchTenders(which,f,which==='older'&&!part.open?0:part.rows.length,which==='recent'?RECENT_PAGE:PAGE);if(my!==token)return;
     part.rows=part.rows.concat(d.rows);part.total=d.total;if(which==='older')part.open=true;paint();
-  }catch(e){btn.disabled=false;btn.innerHTML=t;alert('Sorry, more tenders could not be loaded.')}
+  }catch(e){btn.disabled=false;btn.innerHTML=t;alert(T('tdr_more_fail'))}
 }
 
 async function view(id,btn){
-  const w=window.open('','_blank');if(!w)return alert('Please allow pop-ups for this site to view the tender, or try again.');
-  w.document.write('<p style="font-family:sans-serif;padding:2rem">Opening the tender...</p>');btn.disabled=true;
+  const w=window.open('','_blank');if(!w)return alert(T('tdr_popup'));
+  w.document.write('<p style="font-family:sans-serif;padding:2rem">'+esc(T('tdr_opening'))+'</p>');btn.disabled=true;
   try{
     // The database hands out the file path only for tenders the person may read; the storage policy checks it again.
     const {data:p,error}=await sb.rpc('my_tender_image',{p_tender:id});if(error||!p)throw error||new Error('none');
     const {data,error:e2}=await sb.storage.from('tender-images').createSignedUrl(p,300);if(e2)throw e2;
     w.location.href=data.signedUrl;
-  }catch(e){w.close();alert('Sorry, this tender could not be opened.')}
+  }catch(e){w.close();alert(T('tdr_open_fail'))}
   btn.disabled=false;
 }
 
 async function setup(){
   const A=KHIPAuth;
-  if(!A.client())return note('ph-plug','Sign-in is not set up yet','Please try again later.');
-  if(!A.user()){$('who').textContent='Sign in to see the tenders in your sectors.';return note('ph-lock-simple','Please sign in','Tenders are private to subscribers.',true)}
+  await langInit();
+  if(!A.client())return note('ph-plug',T('tdr_signin_na'),T('tdr_later'));
+  if(!A.user()){$('who').textContent=T('tdr_signin_txt');return note('ph-lock-simple',T('tdr_please'),T('tdr_private'),true)}
   sb=A.client();skeleton();
   const [fl,nt]=await Promise.all([sb.rpc('my_tender_filters'),sb.rpc('tender_notice')]);
-  if(fl.error)return note('ph-warning-circle','The tenders page is not set up yet','Please try again later.');
-  const sectors=fl.data.sectors||[];sectorName=Object.fromEntries(sectors.map(s=>[s.id,s.name]));
-  if(!sectors.length)return note('ph-stack','No active subscriptions yet','Once you are subscribed to a sector, its tenders appear here. Get in touch with us to subscribe.');
-  $('who').textContent=sectors.length===1?`Tenders in ${sectors[0].name}, newest first.`:`Tenders in your ${sectors.length} sectors, newest first.`;
-  $('f-sector').innerHTML='<option value="">All my sectors</option>'+sectors.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
+  if(fl.error)return note('ph-warning-circle',T('tdr_not_setup_t'),T('tdr_later'));
+  const sectors=fl.data.sectors||[];sectors.forEach(s=>{if(rtl()&&s.name_ar)s.name=s.name_ar});sectorName=Object.fromEntries(sectors.map(s=>[s.id,s.name]));
+  if(!sectors.length)return note('ph-stack',T('tdr_no_sub'),T('tdr_no_sub_sub'));
+  $('who').textContent=sectors.length===1?T('tdr_who1',{x:sectors[0].name}):T('tdr_whon',{x:sectors.length});
+  $('f-sector').innerHTML=`<option value="">${esc(T('tdr_all_sectors'))}</option>`+sectors.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('');
   $('f-sector').parentElement.classList.toggle('hidden',sectors.length<2);
   $('entities').innerHTML=(fl.data.entities||[]).map(e=>`<option value="${esc(e)}">`).join('');
   $('filters').classList.remove('hidden');
   // The notice: shown here too, then marked as seen so the next visit counts from now
   const n=nt.data||{};since=n.since||null;
   if(n.count>0){$('notice').classList.remove('hidden');$('notice').classList.add('flex');
-    $('notice').innerHTML=`<span class="w-12 h-12 rounded-full bg-white/80 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ph-bell-ringing text-2xl"></i></span><p class="text-ink"><b class="font-medium">${n.count} new tender${n.count===1?'':'s'}</b> in your sectors since your last visit${n.since?` (${new Date(n.since).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})})`:''}. They are marked <span class="t-pill bg-brand-600 text-white">New</span> below.</p>`}
+    $('notice').innerHTML=`<span class="w-12 h-12 rounded-full bg-white/80 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ph-bell-ringing text-2xl"></i></span><p class="text-ink"><b class="font-medium">${esc(T('tdr_nt_count',{n:n.count}))}</b>${esc(T('tdr_nt_rest',{d:n.since?` (${new Date(n.since).toLocaleDateString(LOC(),{day:'numeric',month:'short',year:'numeric'})})`:''}))}<span class="t-pill bg-brand-600 text-white">${T('tdr_new')}</span>${esc(T('tdr_nt_end'))}</p>`}
   else{$('notice').classList.add('hidden');$('notice').classList.remove('flex')}
   sb.rpc('tender_mark_seen').then(()=>{window.KHIPTenderNotice&&KHIPTenderNotice.clear()});
   load();

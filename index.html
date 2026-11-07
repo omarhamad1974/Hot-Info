@@ -7,10 +7,13 @@
 <meta name="description" content="KHIP (Khaled Hamada Intellectual Property): patents, trademarks and translation across the Middle East.">
 <meta name="theme-color" content="#1d4ed8">
 <script src="lang.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script>/* returning visitors: start fetching the first carousel picture before the page scripts run */
+try{var d=JSON.parse(localStorage.getItem('khip-data-v3'+(KLang.rtl?'-ar':''))),u=d&&d.carousel&&d.carousel[0]&&d.carousel[0].image;
+if(u&&!/^data:/.test(u)){u=/^(https?:\/\/|\.\/|\/)/.test(u)?u:'./assets/'+u;var l=document.createElement('link');l.rel='preload';l.as='image';l.href=u;l.setAttribute('fetchpriority','high');document.head.appendChild(l)}}catch(e){}</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net"><link rel="preconnect" href="https://cdnjs.cloudflare.com"><link rel="preconnect" href="https://cdn.tailwindcss.com"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/7.2.3/css/flag-icons.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/7.2.3/css/flag-icons.min.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/7.2.3/css/flag-icons.min.css"></noscript>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="tailwind-config.js"></script>
 <script src="theme.js"></script>
@@ -20,12 +23,12 @@
 <script src="menu.js"></script>
 <link rel="stylesheet" href="styles.css">
 </head>
-<body class="font-sans font-light antialiased">
+<body class="font-sans font-normal antialiased">
 <div id="app-top"></div>
 <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
   <div class="wrap py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3"><span class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="KHIP" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></span></div>
-    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
+    <div class="flex items-center gap-3"><span class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></span></div>
+    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main" data-i18n-attr="aria-label:nav_main">
       <a href="#about" class="hover:text-brand-600 transition" data-i18n="nav_about">About</a><a href="#jurisdictions" class="hover:text-brand-600 transition" data-i18n="nav_jur">HOT News</a><a href="#services" class="hover:text-brand-600 transition" data-i18n="nav_services">IP Services</a><a href="#news" class="hover:text-brand-600 transition" data-i18n="nav_news">News</a>
     <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a><a href="directory.html" class="hover:text-brand-600 transition" data-i18n="nav_directory">Directory</a></nav>
     <div class="flex items-center gap-2"><div id="lang-switch"></div><div class="flex gap-2" data-social></div></div>
@@ -44,9 +47,10 @@
   </div></section>
 
   <section id="jurisdictions" data-sec="home-jurisdictions" class="band bg-surface hidden"><div class="wrap">
-    <div><h2 class="h2" data-i18n="jur_title">HOT News</h2><span class="rule"></span></div>
-    <div id="jur-chips" class="relative flex gap-2.5 overflow-x-auto no-scrollbar pb-3"></div>
-    <div id="jur-card" class="mt-2 rounded-3xl bg-stone-50 border border-stone-200 p-6 md:p-9"></div>
+    <div class="flex items-start justify-between gap-3"><div><h2 class="h2" data-i18n="jur_title">HOT News</h2><span class="rule"></span></div>
+      <button id="jur-pp" type="button" data-act="jurpp" aria-pressed="false" class="mt-1 flex-shrink-0 w-10 h-10 rounded-full border border-stone-300 bg-white hover:bg-stone-100 flex items-center justify-center transition touch-manipulation hidden"><i class="ph-light ph-pause text-lg" aria-hidden="true"></i></button></div>
+    <div id="jur-chips" role="tablist" class="relative flex gap-2.5 overflow-x-auto no-scrollbar pb-3"></div>
+    <div id="jur-card" role="tabpanel" aria-live="off" class="mt-2 rounded-3xl bg-stone-50 border border-stone-200 p-6 md:p-9"></div>
   </div></section>
 
   <section id="services" data-sec="home-services" class="band hidden"><div class="wrap">
@@ -60,6 +64,12 @@
     <div><h2 class="h2" data-i18n="news_title">Latest news</h2><span class="rule"></span></div>
     <div id="news-list" class="slider"></div>
     <div id="news-dots" class="md:hidden flex justify-center gap-2 mt-5"></div>
+  </div></section>
+
+  <section id="offers" data-sec="home-offers" class="band of-sec hidden"><div class="wrap">
+    <div class="of-head"><div><h2 class="h2" data-i18n="offers_title">Limited offers</h2><p class="of-sub" data-i18n="offers_sub">Exclusive deals from our partner entities</p><span class="rule"></span></div>
+    <a href="directory.html?offers=1" class="of-all"><span data-i18n="offers_all">All offers</span> <i class="ph-light ph-arrow-right flip" aria-hidden="true"></i></a></div>
+    <div id="offers-list" class="slider of-slider"></div>
   </div></section>
 
   <section id="testimonials" data-sec="home-testimonials" class="band bg-surface hidden"><div class="wrap">
@@ -84,7 +94,7 @@
 const SHOW_PRODUCTS=false; // products / search reports hidden for now
 const DATA_URL="./app-data.json", CACHE="khip-data-v3";
 const CODES={egypt:'eg',uae:'ae','united arab emirates':'ae','saudi arabia':'sa',jordan:'jo',kuwait:'kw',qatar:'qa',bahrain:'bh',oman:'om',morocco:'ma',tunisia:'tn',algeria:'dz',libya:'ly',lebanon:'lb',iraq:'iq',syria:'sy',yemen:'ye',sudan:'sd',palestine:'ps',turkey:'tr'};
-const FALLBACK_IMG="https://placehold.co/600x400/e7e5e4/78716c?text=KHIP";
+const FALLBACK_IMG="https://placehold.co/600x400/e7e5e4/78716c?text=HOT+INFORMATION";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Images: a bare file name such as "logo.jpg" is looked up in ./assets/
@@ -95,7 +105,7 @@ const icon=x=>/^ph-/.test(x.icon||'')?esc(x.icon.replace(/^ph-light\s*/,'')):(IC
 const show=(id,on)=>$(id).classList.toggle('hidden',!on);
 const imgErr='onerror="this.onerror=null;this.src=FALLBACK_IMG"';
 // A picture with its optional colour overlay and SVG mask (set in the admin, see theme.js > KFX). With no effect it is a plain <img>.
-const fxImg=(x,cls,lazy)=>KFX.img({fx:x.imageFx,T:D.theme,src:img(x.image),attrs:`${lazy?'loading="lazy" ':''}${imgErr} alt=""`,cls});
+const fxImg=(x,cls,lazy,extra)=>KFX.img({fx:x.imageFx,T:D.theme,src:img(x.image),attrs:`${lazy?'loading="lazy" ':''}decoding="async" ${extra||''} ${imgErr} alt=""`,cls});
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let D={},hot=[],hotLoaded=false,slide=0,timer=null,lastFocus=null;
 
@@ -117,10 +127,11 @@ function render(){
   const s=D.social||{};
   carousel(D.carousel||[]);
   hotInit();
+  offersInit();
   list('services',D.services,(x,i)=>`<div class="fu" style="--d:${(i%3)*.12}s"><div class="card h-full p-5 md:p-7 flex md:flex-col gap-4 md:gap-5 items-start"><div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ${icon(x)} text-2xl md:text-3xl"></i></div><div class="flex flex-col flex-1"><h3 class="font-display text-2xl font-semibold text-title">${esc(x.title)}</h3><p class="text-sm leading-relaxed mt-1.5 line-clamp-5 md:line-clamp-3">${KRich.plain(x.description)}</p><button data-act="service" data-i="${i}" class="mt-4 self-start text-sm border border-ink/30 hover:bg-ink hover:text-white px-6 py-1.5 rounded-full transition">${KLang.t('more')}</button></div></div></div>`);
-  list('news',D.news,x=>`<button data-act="news" data-id="${esc(x.id)}" class="ncard card w-[17rem] sm:w-80 text-start overflow-hidden">${fxImg(x,'w-full h-40 object-cover',1)}<div class="p-5"><span class="cat-tag">${esc(cat(x))}</span>${x.date?`<span class="text-xs text-stone-500 ms-2">${esc(x.date)}</span>`:''}<h3 class="font-display text-xl font-semibold text-title leading-snug line-clamp-2 mt-1.5">${esc(x.title)}</h3><p class="text-sm mt-2 line-clamp-3">${KRich.plain(x.excerpt)}</p></div></button>`);
+  list('news',D.news,x=>`<button data-act="news" data-id="${esc(x.id)}" class="ncard card w-[17rem] sm:w-80 text-start overflow-hidden">${fxImg(x,'w-full h-40 object-cover',1)}<div class="p-5"><span class="cat-tag">${esc(cat(x))}</span>${x.date?`<span class="text-xs text-stone-600 ms-2">${esc(x.date)}</span>`:''}<h3 class="font-display text-xl font-semibold text-title leading-snug line-clamp-2 mt-1.5">${esc(x.title)}</h3><p class="text-sm mt-2 line-clamp-3">${KRich.plain(x.excerpt)}</p></div></button>`);
   news();
-  list('testimonials',D.testimonials,(x,i)=>`<div class="tcard${i?'':' on'} text-center flex flex-col items-center justify-center"><p class="font-display text-lg md:text-xl lg:text-2xl leading-snug text-ink">${esc(x.text)}</p><h4 class="mt-5 font-medium text-title">${esc(x.name)}</h4><span class="text-sm text-stone-500">${esc(x.role)}</span></div>`);
+  list('testimonials',D.testimonials,(x,i)=>`<div class="tcard${i?'':' on'} text-center flex flex-col items-center justify-center"><p class="font-display text-lg md:text-xl lg:text-2xl leading-snug text-ink">${esc(x.text)}</p><h4 class="mt-5 font-medium text-title">${esc(x.name)}</h4><span class="text-sm text-stone-600">${esc(x.role)}</span></div>`);
   auto($('news-list'));
   testi();observeFu();
   const h=location.hash.slice(1);
@@ -186,7 +197,7 @@ function setN(i){
 function carousel(slides){
   clearInterval(timer);slide=0;const c=$('carousel');
   c.parentElement.classList.toggle('hidden',!slides.length);
-  c.innerHTML=slides.map((s,i)=>`<div class="slide absolute inset-0 ${i?'':'on'}">${fxImg(s,'w-full h-full object-cover opacity-80')}<div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent p-6 md:p-12 flex flex-col justify-end text-white"><h2 class="font-display text-3xl md:text-5xl font-medium leading-tight max-w-2xl">${esc(s.title)}</h2><p class="text-sm md:text-base text-stone-200 mt-2 max-w-xl">${esc(s.subtitle)}</p></div></div>`).join('');
+  c.innerHTML=slides.map((s,i)=>`<div class="slide absolute inset-0 ${i?'':'on'}">${i?fxImg(s,'w-full h-full object-cover opacity-80',1):fxImg(s,'w-full h-full object-cover opacity-80',0,'fetchpriority="high"')}<div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/50 to-ink/10 p-6 md:p-12 flex flex-col justify-end text-white"><h2 class="font-display text-3xl md:text-5xl font-medium leading-tight max-w-2xl [text-shadow:0_1px_4px_rgba(0,0,0,.45)]">${esc(s.title)}</h2><p class="text-sm md:text-base text-stone-100 mt-2 max-w-xl [text-shadow:0_1px_3px_rgba(0,0,0,.5)]">${esc(s.subtitle)}</p></div></div>`).join('');
   if(slides.length>1){
     const go=()=>{clearInterval(timer);if(!REDUCED)timer=setInterval(()=>setSlide((slide+1)%slides.length),10000)};go();
     c.onmouseenter=()=>clearInterval(timer);c.onmouseleave=go;
@@ -205,11 +216,11 @@ const hotName=x=>KLang.rtl&&x.name_ar?x.name_ar:x.name;
 const hotWords=(s,n=50)=>{const w=String(s||'').trim().split(/\s+/);return w.length>n?w.slice(0,n).join(' ')+'\u2026':w.join(' ')};
 const hotDate=d=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(d||''));if(!m)return String(d||'');try{return new Date(Date.UTC(+m[1],+m[2]-1,+m[3])).toLocaleDateString(KLang.rtl?'ar-EG':'en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})}catch{return m[0]}};
 function hotView(t,full){
-  const row=(ic,l,v)=>v?`<div class="flex items-start gap-2 text-sm"><i class="ph-light ${ic} text-lg text-brand-600 flex-shrink-0 mt-0.5"></i><div class="min-w-0"><p class="text-xs text-stone-500">${esc(KLang.t(l))}</p><p dir="auto" class="font-semibold">${esc(v)}</p></div></div>`:'';
+  const row=(ic,l,v)=>v?`<div class="flex items-start gap-2 text-sm"><i class="ph-light ${ic} text-lg text-brand-600 flex-shrink-0 mt-0.5"></i><div class="min-w-0"><p class="text-xs text-stone-600">${esc(KLang.t(l))}</p><p dir="auto" class="font-semibold">${esc(v)}</p></div></div>`:'';
   return `<h3 id="m-title" dir="auto" class="font-display text-2xl md:text-3xl font-semibold text-title pe-10 leading-tight">${esc(t.entity||KLang.t('hot_entity'))}</h3>`
     +`<div class="grid sm:grid-cols-2 gap-3">${row('ph-calendar-blank','hot_pub',t.publish_date?hotDate(t.publish_date):'')}${row('ph-map-pin','hot_gov',t.governorate)}${row('ph-gavel','hot_session',t.session_date?hotDate(t.session_date):'')}</div>`
-    +`<p dir="auto" class="leading-relaxed whitespace-pre-line">${esc(t.subject||'')}</p>${full?'':'<p class="text-xs text-stone-400">\u2026</p>'}`
-    +`<p class="text-xs text-stone-500">${esc(KLang.t('hot_sub_only'))}</p><a href="tenders.html" class="inline-flex items-center gap-2 bg-ink hover:bg-stone-800 text-white text-sm px-6 py-2.5 rounded-full transition self-start"><i class="ph-light ph-gavel"></i>${esc(KLang.t('hot_cta'))}</a>`;
+    +`<p dir="auto" class="leading-relaxed whitespace-pre-line">${esc(t.subject||'')}</p>${full?'':'<p class="text-xs text-stone-600">\u2026</p>'}`
+    +`<p class="text-xs text-stone-600">${esc(KLang.t('hot_sub_only'))}</p><a href="tenders.html" class="inline-flex items-center gap-2 bg-ink hover:bg-stone-800 text-white text-sm px-6 py-2.5 rounded-full transition self-start"><i class="ph-light ph-gavel"></i>${esc(KLang.t('hot_cta'))}</a>`;
 }
 async function openTender(id){
   const t=hot.flatMap(x=>x.tenders||[]).find(x=>String(x.id)===String(id));if(!t)return;
@@ -222,45 +233,130 @@ async function openTender(id){
   }catch(e){console.warn('Tender detail not loaded',e);$('m-body').innerHTML=hotView(t,true)}
 }
 
+// ---- Limited offers: approved directory entries that have a running offer (offer_title, optional end date). Shown above the testimonials.
+let offers=[],offersLoaded=false,cfgP=null;
+const cairoDay=()=>new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
+const offerOn=e=>!!(e&&e.offer_title)&&(!e.offer_ends||e.offer_ends>=cairoDay());
+const loadCfg=()=>window.KHIP_SUPABASE?Promise.resolve():(cfgP||(cfgP=new Promise((ok,no)=>{const e=document.createElement('script');e.src='supabase-config.js';e.onload=ok;e.onerror=no;document.head.appendChild(e)})));
+async function offersInit(){
+  if(offersLoaded){offersPaint();return}
+  offersLoaded=true;
+  try{const c=JSON.parse(sessionStorage.getItem('khip-offers-v1'));if(Array.isArray(c)){offers=c;offersPaint()}}catch{}
+  try{
+    await loadCfg();
+    const C=window.KHIP_SUPABASE;if(!C||/YOUR-/.test(C.url||''))return;
+    const q='select=id,name,name_ar,entry_type,city,offer_title,offer_text,offer_ends,image_path&status=eq.approved&offer_title=not.is.null&order=offer_ends.asc.nullslast&limit=60';
+    const r=await fetch(C.url+'/rest/v1/directory_entries?'+q,{headers:{apikey:C.anonKey,Authorization:'Bearer '+C.anonKey}});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    offers=await r.json();try{sessionStorage.setItem('khip-offers-v1',JSON.stringify(offers))}catch{}
+  }catch(e){console.warn('Offers not loaded',e)}
+  offersPaint();
+}
+function offersPaint(){
+  const T=KLang.t,loc=KLang.rtl?'ar-EG-u-nu-latn':'en-GB',C=window.KHIP_SUPABASE||{},today=cairoDay();
+  const list=offers.filter(offerOn).sort((a,b)=>(a.offer_ends||'9999-12-31').localeCompare(b.offer_ends||'9999-12-31')).slice(0,12);
+  show('offers',list.length);
+  const ICO={company:'ph-buildings',institution:'ph-bank',freelancer:'ph-user'};
+  $('offers-list').innerHTML=list.map((e,i)=>{
+    const left=e.offer_ends?Math.round((Date.parse(e.offer_ends)-Date.parse(today))/864e5):null;
+    const when=left==null?T('offers_open'):left<=0?T('offers_ends_today'):left===1?T('offers_1day'):left<=14?T('offers_days',{x:left}):T('offers_until',{x:new Date(e.offer_ends+'T00:00:00Z').toLocaleDateString(loc,{day:'numeric',month:'short',timeZone:'UTC'})});
+    const name=(KLang.rtl&&e.name_ar)||e.name,ico=ICO[e.entry_type]||'ph-buildings';
+    const pic=e.image_path&&C.url?C.url+'/storage/v1/object/public/directory-images/'+String(e.image_path).split('/').map(encodeURIComponent).join('/'):'';
+    return `<div class="fu" style="--d:${(i%3)*.1}s"><a href="directory-entry.html?id=${encodeURIComponent(e.id)}" class="of-card">`
+      +`<span class="of-img${pic?' has-img':''}">${pic?`<img src="${esc(pic)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:`<i class="ph-light ${ico}" aria-hidden="true"></i>`}<span class="of-badge" aria-hidden="true"><i class="ph-light ph-tag"></i></span><span class="of-when${left!=null&&left<=3?' hot':''}"><i class="ph-light ph-clock" aria-hidden="true"></i> ${esc(when)}</span></span>`
+      +`<span class="of-body"><span class="of-ent" dir="auto"><i class="ph-light ${ico}" aria-hidden="true"></i><span class="truncate">${esc(name)}${e.city?' \u00b7 '+esc(e.city):''}</span></span>`
+      +`<span class="of-t font-display" dir="auto">${esc(e.offer_title)}</span>${e.offer_text?`<span class="of-d" dir="auto">${esc(e.offer_text)}</span>`:''}`
+      +`<span class="of-cta">${esc(T('offers_cta'))} <i class="ph-light ph-arrow-right flip" aria-hidden="true"></i></span></span></a></div>`;
+  }).join('');
+  observeFu();
+}
+
 async function hotInit(){
   if(hotLoaded){hotPaint();return}
   hotLoaded=true;
-  try{const c=JSON.parse(sessionStorage.getItem('khip-hot-v2'));if(Array.isArray(c)){hot=c;hotPaint()}}catch{}
+  try{const c=JSON.parse(sessionStorage.getItem('khip-hot-v2')||localStorage.getItem('khip-hot-v2'));if(Array.isArray(c)){hot=c;hotPaint()}}catch{}   // saved copy: this visit, or the last visit (works offline)
+  if(!hot.length)hotSkeleton();
   try{
     if(!window.KHIP_SUPABASE)await new Promise((ok,no)=>{const e=document.createElement('script');e.src='supabase-config.js';e.onload=ok;e.onerror=no;document.head.appendChild(e)});
     const C=window.KHIP_SUPABASE;if(!C||/YOUR-/.test(C.url||''))return;
     const per=Math.min(12,Math.max(1,parseInt((D.hot||{}).perSector)||6));
     const r=await fetch(C.url+'/rest/v1/rpc/hot_news',{method:'POST',headers:{apikey:C.anonKey,Authorization:'Bearer '+C.anonKey,'Content-Type':'application/json'},body:JSON.stringify({p_per:per})});
     if(!r.ok)throw new Error('HTTP '+r.status);
-    hot=await r.json();try{sessionStorage.setItem('khip-hot-v2',JSON.stringify(hot))}catch{}
+    hot=await r.json();try{const j=JSON.stringify(hot);sessionStorage.setItem('khip-hot-v2',j);localStorage.setItem('khip-hot-v2',j)}catch{}
   }catch(e){console.warn('HOT News not loaded',e)}
   hotPaint();
 }
-function hotPaint(){show('jurisdictions',hot.length);chips();pick(Math.min(jc,Math.max(0,hot.length-1)))}
+function hotPaint(){show('jurisdictions',hot.length);chips();$('jur-pp').classList.toggle('hidden',hot.length<2);hotPPLabel();pick(Math.min(jc,Math.max(0,hot.length-1)));hotFit()}
+// Reserve the height of the tallest sector so the page below never jumps when the sector changes
+function hotFit(){
+  const c=$('jur-card');if(!c||!hot.length||c.offsetWidth<1)return;
+  c.style.minHeight='';
+  const m=c.cloneNode(false);m.removeAttribute('id');m.style.cssText='position:absolute;visibility:hidden;pointer-events:none;inset-inline:0;top:0;opacity:1;transform:none;min-height:0;width:'+c.offsetWidth+'px';
+  c.parentElement.style.position='relative';c.parentElement.appendChild(m);
+  let h=0;hot.forEach(j=>{m.innerHTML=hotCard(j);h=Math.max(h,m.offsetHeight)});m.remove();
+  c.style.minHeight=Math.ceil(h)+'px';
+}
+let hotRz;addEventListener('resize',()=>{clearTimeout(hotRz);hotRz=setTimeout(hotFit,200)});
+// While the sectors load for the first time, show a placeholder instead of nothing
+function hotSkeleton(){
+  show('jurisdictions',true);
+  $('jur-chips').innerHTML=[0,1,2,3].map(()=>'<span class="h-10 w-28 rounded-full bg-stone-200 animate-pulse flex-shrink-0"></span>').join('');
+  $('jur-card').innerHTML='<div class="animate-pulse space-y-3" aria-hidden="true"><div class="h-8 w-1/3 rounded bg-stone-200"></div><div class="h-4 w-full rounded bg-stone-200"></div><div class="h-4 w-5/6 rounded bg-stone-200"></div><div class="h-4 w-2/3 rounded bg-stone-200"></div></div>';
+  $('jur-card').style.minHeight='14rem';
+}
 function chips(){
   window.jm=hot.map((x,i)=>i);
-  $('jur-chips').innerHTML=hot.map((x,i)=>`<button data-act="jur" data-i="${i}" id="chip-${i}" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm flex-shrink-0 bg-white border border-stone-300 transition"><i class="ph-light ph-fire text-base"></i>${esc(hotName(x))}<span class="text-xs opacity-70">${x.count}</span></button>`).join('');
+  $('jur-chips').innerHTML=hot.map((x,i)=>`<button role="tab" aria-selected="false" tabindex="-1" data-act="jur" data-i="${i}" id="chip-${i}" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm flex-shrink-0 bg-white border border-stone-300 transition"><i class="ph-light ph-fire text-base"></i>${esc(hotName(x))}<span class="text-xs opacity-70">${x.count}</span></button>`).join('');
 }
+function hotCard(j){return `<div class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ph-fire text-2xl"></i></span><div class="min-w-0"><h3 class="font-display text-[1.4rem] leading-tight font-semibold text-title">${esc(hotName(j))}</h3><p class="text-xs text-stone-600">${esc(j.count===1?KLang.t('hot_n1'):KLang.t('hot_n',{x:j.count}))}</p></div></div>`
+      +`<ul class="mt-4 divide-y divide-stone-200">${j.tenders.map(t=>`<li class="py-3"><p dir="auto" class="text-sm md:text-base leading-relaxed text-ink">${esc(hotWords(t.subject))}</p><div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-600">${t.entity?`<span dir="auto" class="flex items-center gap-1.5 min-w-0"><i class="ph-light ph-buildings flex-shrink-0"></i><span class="min-w-0">${esc(t.entity)}</span></span>`:''}${t.publish_date?`<span class="flex items-center gap-1.5"><i class="ph-light ph-calendar-blank flex-shrink-0"></i>${esc(hotDate(t.publish_date))}</span>`:''}<button data-act="tender" data-id="${esc(t.id)}" class="ms-auto inline-flex items-center gap-1 text-brand-600 hover:underline font-semibold">${esc(KLang.t('hot_more'))}<i class="ph-light ${KLang.rtl?'ph-arrow-left':'ph-arrow-right'}"></i></button></div></li>`).join('')}</ul>`
+      +`<div class="mt-5 flex flex-wrap items-center gap-3"><a href="tenders.html" class="inline-flex items-center gap-2 bg-ink hover:bg-stone-800 text-white text-sm px-6 py-2.5 rounded-full transition"><i class="ph-light ph-gavel"></i>${esc(KLang.t('hot_cta'))}</a><span class="text-xs text-stone-600">${esc(KLang.t('hot_note'))}</span></div>`;}
 let jc=0;
 function pick(i){
   const j=hot[i];if(!j){$('jur-card').innerHTML='';return}
   jc=i;
-  document.querySelectorAll('[id^=chip-]').forEach(b=>{const on=b.id==='chip-'+i;b.classList.toggle('bg-ink',on);b.classList.toggle('text-white',on);b.classList.toggle('border-ink',on);b.classList.toggle('bg-white',!on)});
+  document.querySelectorAll('[id^=chip-]').forEach(b=>{const on=b.id==='chip-'+i;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;b.classList.toggle('bg-ink',on);b.classList.toggle('text-white',on);b.classList.toggle('border-ink',on);b.classList.toggle('bg-white',!on)});
   const ch=$('chip-'+i),box=$('jur-chips');
-  if(ch){if(KLang.rtl)ch.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});else box.scrollTo({left:ch.offsetLeft-(box.clientWidth-ch.offsetWidth)/2,behavior:'smooth'})}
+  // centre the active chip inside its own row only; never scrollIntoView (it drags the whole page to this section). Rect maths works for LTR and RTL.
+  if(ch&&box){const a=ch.getBoundingClientRect(),b=box.getBoundingClientRect();box.scrollTo({left:box.scrollLeft+(a.left+a.width/2)-(b.left+b.width/2),behavior:REDUCED?'auto':'smooth'})}
   const c=$('jur-card');c.style.transition='opacity .3s ease,transform .3s ease';c.style.opacity=0;c.style.transform='translateX('+(-24*(KLang.rtl?-1:1))+'px)';
   setTimeout(()=>{
-    c.innerHTML=`<div class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ph-fire text-2xl"></i></span><div class="min-w-0"><h3 class="font-display text-[1.4rem] leading-tight font-semibold text-title">${esc(hotName(j))}</h3><p class="text-xs text-stone-500">${esc(j.count===1?KLang.t('hot_n1'):KLang.t('hot_n',{x:j.count}))}</p></div></div>`
-      +`<ul class="mt-4 divide-y divide-stone-200">${j.tenders.map(t=>`<li class="py-3"><p dir="auto" class="text-sm md:text-base leading-relaxed text-ink">${esc(hotWords(t.subject))}</p><div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500">${t.entity?`<span dir="auto" class="flex items-center gap-1.5 min-w-0"><i class="ph-light ph-buildings flex-shrink-0"></i><span class="min-w-0">${esc(t.entity)}</span></span>`:''}${t.publish_date?`<span class="flex items-center gap-1.5"><i class="ph-light ph-calendar-blank flex-shrink-0"></i>${esc(hotDate(t.publish_date))}</span>`:''}<button data-act="tender" data-id="${esc(t.id)}" class="ms-auto inline-flex items-center gap-1 text-brand-600 hover:underline font-semibold">${esc(KLang.t('hot_more'))}<i class="ph-light ${KLang.rtl?'ph-arrow-left':'ph-arrow-right'}"></i></button></div></li>`).join('')}</ul>`
-      +`<div class="mt-5 flex flex-wrap items-center gap-3"><a href="tenders.html" class="inline-flex items-center gap-2 bg-ink hover:bg-stone-800 text-white text-sm px-6 py-2.5 rounded-full transition"><i class="ph-light ph-gavel"></i>${esc(KLang.t('hot_cta'))}</a><span class="text-xs text-stone-500">${esc(KLang.t('hot_note'))}</span></div>`;
+    c.innerHTML=hotCard(j);
     c.style.transition='none';c.style.transform='translateX('+(24*(KLang.rtl?-1:1))+'px)';void c.offsetWidth;
     c.style.minHeight=Math.max(parseFloat(c.style.minHeight)||0,c.scrollHeight)+'px';c.style.transition='opacity .6s ease,transform .7s cubic-bezier(.16,1,.3,1)';c.style.opacity=1;c.style.transform='none';
   },300);
 }
-// The sectors advance by themselves every 15 seconds
+function hotToggle(){
+  const sec=$('jurisdictions'),b=$('jur-pp');sec._off=!sec._off;
+  b.setAttribute('aria-pressed',sec._off);b.firstElementChild.className='ph-light '+(sec._off?'ph-play':'ph-pause')+' text-lg';hotPPLabel();
+}
+function hotPPLabel(){const b=$('jur-pp'),off=$('jurisdictions')._off;b.setAttribute('aria-label',KLang.t(off?'hot_play':'hot_pause'));b.title=KLang.t(off?'hot_play':'hot_pause')}
+hotPPLabel();
+// The sectors advance by themselves every 15 seconds, but never while the visitor is using them
+(function(){
+  const sec=$('jurisdictions'),chips=$('jur-chips'),card=$('jur-card');
+  watch(sec);
+  const manual=()=>{sec._manual=Date.now()+30000};
+  window.hotManual=manual;
+  // arrow keys move between the sector tabs (right/left swap in Arabic)
+  chips.addEventListener('keydown',e=>{
+    const k=e.key,n=hot.length;if(!n)return;
+    let to=null;const fwd=KLang.rtl?'ArrowLeft':'ArrowRight',back=KLang.rtl?'ArrowRight':'ArrowLeft';
+    if(k===fwd)to=(jc+1)%n;else if(k===back)to=(jc-1+n)%n;else if(k==='Home')to=0;else if(k==='End')to=n-1;
+    if(to===null)return;e.preventDefault();manual();pick(to);const b=$('chip-'+to);b&&b.focus({preventScroll:true});
+  });
+  // swipe the card sideways to change sector
+  let x0=null,y0=null;
+  card.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
+  card.addEventListener('touchend',e=>{
+    if(x0===null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
+    if(Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.5||hot.length<2)return;
+    manual();pick((jc+((dx<0)!==KLang.rtl?1:-1)+hot.length)%hot.length);
+  },{passive:true});
+})();
 setInterval(()=>{
   const sec=$('jurisdictions'),m=window.jm||[];
-  if(REDUCED||paused(sec)||m.length<2||!$('modal').classList.contains('pointer-events-none'))return;
+  if(REDUCED||sec._off||Date.now()<(sec._manual||0)||paused(sec)||m.length<2||!$('modal').classList.contains('pointer-events-none'))return;
   pick(m[(m.indexOf(jc)+1)%m.length]);
 },15000);
 
@@ -278,7 +374,7 @@ function closeModal(){
 function openNews(id){
   const a=(D.news||[]).find(n=>String(n.id)===String(id));if(!a)return;
   history.replaceState(null,'','#news-'+a.id);
-  openModal(`<h3 id="m-title" class="font-display text-3xl font-semibold text-title pe-10 leading-tight">${esc(a.title)}</h3><div><span class="cat-tag">${esc(cat(a))}</span>${a.date?`<span class="text-xs text-stone-500 ms-2">${esc(a.date)}</span>`:''}</div>${fxImg(a,'w-full h-52 md:h-72 rounded-2xl object-cover')}<div class="leading-relaxed">${KRich.rich(a.text||a.excerpt)}</div><button data-act="share" data-id="${esc(a.id)}" class="text-sm bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-full transition"><i class="ph-light ph-link"></i> ${KLang.t('copy_link')}</button>${related(a)}`);
+  openModal(`<h3 id="m-title" class="font-display text-3xl font-semibold text-title pe-10 leading-tight">${esc(a.title)}</h3><div><span class="cat-tag">${esc(cat(a))}</span>${a.date?`<span class="text-xs text-stone-600 ms-2">${esc(a.date)}</span>`:''}</div>${fxImg(a,'w-full h-52 md:h-72 rounded-2xl object-cover')}<div class="leading-relaxed">${KRich.rich(a.text||a.excerpt)}</div><button data-act="share" data-id="${esc(a.id)}" class="text-sm bg-stone-100 hover:bg-stone-200 px-4 py-2 rounded-full transition"><i class="ph-light ph-link"></i> ${KLang.t('copy_link')}</button>${related(a)}`);
   relStart();
 }
 // Related news: same category, shown under the article, slides by itself every 5 seconds
@@ -286,7 +382,7 @@ const cat=x=>String(x.category||'').trim()||KLang.t('general');
 function related(a){
   const r=(D.news||[]).filter(n=>String(n.id)!==String(a.id)&&cat(n)===cat(a));
   if(!r.length)return '';
-  return `<div id="rel" class="border-t border-stone-200 pt-5"><h4 class="font-display text-2xl font-semibold text-title mb-3">${KLang.t('related')}</h4><div id="rel-track" class="rel-track">${r.map(n=>`<button data-act="news" data-id="${esc(n.id)}" class="rel-card card text-start overflow-hidden">${fxImg(n,'w-full h-28 object-cover',1)}<div class="p-3"><h5 class="font-display text-lg font-semibold text-title leading-snug line-clamp-2">${esc(n.title)}</h5>${n.date?`<span class="text-xs text-stone-500">${esc(n.date)}</span>`:''}</div></button>`).join('')}</div></div>`;
+  return `<div id="rel" class="border-t border-stone-200 pt-5"><h4 class="font-display text-2xl font-semibold text-title mb-3">${KLang.t('related')}</h4><div id="rel-track" class="rel-track">${r.map(n=>`<button data-act="news" data-id="${esc(n.id)}" class="rel-card card text-start overflow-hidden">${fxImg(n,'w-full h-28 object-cover',1)}<div class="p-3"><h5 class="font-display text-lg font-semibold text-title leading-snug line-clamp-2">${esc(n.title)}</h5>${n.date?`<span class="text-xs text-stone-600">${esc(n.date)}</span>`:''}</div></button>`).join('')}</div></div>`;
 }
 let relT=0,relHold=false;
 function relStart(){
@@ -310,7 +406,7 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('[data-act]');if(!t)return;
   const {act,i,id,q}=t.dataset;
   if(act==='close'){if(e.target===t||t.tagName==='BUTTON')closeModal()}
-  else if(act==='jur')pick(+i);else if(act==='news')openNews(id);else if(act==='tender')openTender(id);
+  else if(act==='jur'){pick(+i);window.hotManual&&window.hotManual()}else if(act==='jurpp')hotToggle();else if(act==='news')openNews(id);else if(act==='tender')openTender(id);
   else if(act==='service')openService(+i);else if(act==='tslide')setT(+i);else if(act==='nslide')setN(+i);else if(act==='inquire')KHIP.wa(KLang.t('wa_service',{x:q}));
   else if(act==='retry')load();
   else if(act==='share'){const u=location.origin+location.pathname+'#news-'+id;(navigator.share?navigator.share({url:u}):navigator.clipboard.writeText(u)).then(()=>t.textContent=KLang.t('link_copied')).catch(()=>{})}

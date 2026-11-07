@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="lang.js"></script>
-<title>Subscribe | KHIP Intellectual Properties</title>
+<title>Subscribe | HOT INFORMATION</title>
 <meta name="robots" content="noindex"><meta name="description" content="Subscribe to KHIP sectors or renew your subscription.">
 <meta name="theme-color" content="#1d4ed8">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,30 +20,49 @@
 <link rel="stylesheet" href="styles.css">
 <style>
   .p-opt{display:block;cursor:pointer;background:#fff;border:2px solid #e7e5e4;border-radius:1rem;padding:1rem 1.1rem;transition:border-color .2s,background .2s}
-  .p-opt:hover{border-color:#a8a29e}
+  .p-opt:hover{border-color:#78716c}
   .p-opt.on{border-color:rgb(var(--c-accent-rgb));background:rgb(var(--c-accent-soft-rgb,239 246 255) / .5)}
   .p-opt.off{opacity:.55;cursor:not-allowed}
   .p-opt input{position:absolute;opacity:0;pointer-events:none}
-  .p-in{width:100%;border:1px solid #d6d3d1;background:#fff;border-radius:.75rem;padding:.6rem .85rem;font:inherit;font-size:16px;color:rgb(var(--c-ink-rgb))}
-  .p-lab{display:block;font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:#78716c;margin-bottom:.3rem}
-  .p-pill{display:inline-block;font-size:.6875rem;border-radius:999px;padding:.15rem .65rem}
+  .p-in{width:100%;border:1px solid #8a847e;background:#fff;border-radius:.75rem;padding:.6rem .85rem;font:inherit;font-size:16px;color:rgb(var(--c-ink-rgb))}
+  .p-lab{display:block;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:#57534e;margin-bottom:.3rem}
+  .p-pill{display:inline-block;font-size:.75rem;border-radius:999px;padding:.15rem .65rem}
   .p-h{font-family:inherit}
   .p-sec{background:#fff;border:2px solid #e7e5e4;border-radius:1rem;padding:1rem 1.1rem;transition:border-color .2s,background .2s}
   .p-sec.on{border-color:rgb(var(--c-accent-rgb));background:rgb(var(--c-accent-soft-rgb,239 246 255) / .5)}
-  .p-chip{border:1.5px solid #d6d3d1;background:#fff;border-radius:.85rem;padding:.55rem .8rem;text-align:start;min-width:6.5rem;flex:1 1 6.5rem;cursor:pointer;transition:border-color .15s,background .15s;font:inherit;color:rgb(var(--c-ink-rgb))}
-  .p-chip:hover:not(:disabled){border-color:#78716c}
+  .p-chip{border:1.5px solid #8a847e;background:#fff;border-radius:.85rem;padding:.55rem .8rem;text-align:start;min-width:6.5rem;flex:1 1 6.5rem;cursor:pointer;transition:border-color .15s,background .15s;font:inherit;color:rgb(var(--c-ink-rgb))}
+  .p-chip:hover:not(:disabled){border-color:#57534e}
   .p-chip.on{border-color:rgb(var(--c-accent-rgb));background:rgb(var(--c-accent-rgb));color:#fff}
   .p-chip.on span{color:#fff!important}
   .p-chip:disabled{opacity:.5;cursor:not-allowed}
   .p-bar{position:sticky;bottom:.75rem;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:.75rem;background:rgb(var(--c-ink-rgb));color:#fff;border-radius:1rem;padding:.7rem 1rem;box-shadow:0 8px 24px rgba(0,0,0,.2)}
   .p-bar a{color:#fff;text-decoration:underline;text-underline-offset:3px;font-size:.875rem}
+  /* step trail: used for the 3-step progress (Choose, Pay, Upload receipt) and for the status timeline of each request */
+  .p-stp{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;list-style:none;margin:0;padding:0}
+  .p-stp>li{position:relative;text-align:center;padding:0 .2rem}
+  .p-stp>li::before{content:"";position:absolute;top:1rem;inset-inline-start:-50%;width:100%;height:2px;background:#d6d3d1}
+  .p-stp>li:first-child::before{display:none}
+  .p-stp>li.done::before,.p-stp>li.cur::before,.p-stp>li.bad::before{background:rgb(var(--c-accent-rgb))}
+  .p-stp>li.na::before{background:repeating-linear-gradient(90deg,#d6d3d1 0 4px,transparent 4px 8px)}
+  .p-dot{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:999px;border:2px solid #d6d3d1;background:#fff;color:#57534e;font-size:.85rem;font-weight:500}
+  .p-stp .done .p-dot{background:rgb(var(--c-accent-rgb));border-color:rgb(var(--c-accent-rgb));color:#fff}
+  .p-stp .cur .p-dot{border-color:rgb(var(--c-accent-rgb));color:rgb(var(--c-accent-rgb));box-shadow:0 0 0 4px rgb(var(--c-accent-rgb) / .15)}
+  .p-stp .bad .p-dot{background:#dc2626;border-color:#dc2626;color:#fff}
+  .p-stp .na .p-dot{border-style:dashed;background:#fafaf9}
+  .p-stp .na .p-stl{color:#78716c}
+  .p-stp .cur .p-stl{font-weight:500}
+  .p-stbtn{display:block;width:100%;background:none;border:0;font:inherit;color:inherit;cursor:pointer;padding:.15rem 0}
+  .p-stbtn:disabled{cursor:default}
+  .p-stl{display:block;font-size:.75rem;line-height:1.25;margin-top:.4rem;color:rgb(var(--c-ink-rgb))}
+  .p-sts{display:block;font-size:.75rem;line-height:1.25;color:#57534e;margin-top:.1rem}
+  .p-sec.flash{box-shadow:0 0 0 4px rgb(var(--c-accent-rgb) / .25)}
 </style>
 </head>
-<body class="font-sans font-light antialiased">
+<body class="font-sans font-normal antialiased">
 <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
   <div class="wrap py-3 flex items-center justify-between">
-    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="KHIP" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">KHIP</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
-    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
+    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
+    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main" data-i18n-attr="aria-label:nav_main">
       <a href="index.html" class="hover:text-brand-600 transition" data-i18n="bar_home">Home</a><a href="patents.html" class="hover:text-brand-600 transition" data-svc-page="patents.html">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition" data-svc-page="trademarks.html">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition" data-svc-page="translation.html">Translation</a><a href="about.html" class="hover:text-brand-600 transition" data-i18n="bar_about">About</a>
     <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a><a href="subscribe.html" class="text-brand-700 font-normal transition" aria-current="page" data-i18n="pay_nav">Subscribe</a><a href="directory.html" class="hover:text-brand-600 transition" data-i18n="nav_directory">Directory</a></nav>
     <div class="flex items-center gap-2"><div id="lang-switch"></div><span data-social class="flex gap-2"><a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a></span></div>
@@ -56,15 +75,16 @@
   <div id="msg" class="hidden mt-6 card !transform-none p-4 text-sm" role="status" aria-live="polite"></div>
   <div id="state" class="mt-8" aria-live="polite"></div>
   <form id="form" class="hidden mt-8 grid gap-8 max-w-3xl" autocomplete="off" novalidate>
-    <section aria-labelledby="h1"><h2 id="h1" class="font-display text-2xl font-semibold text-title mb-1" data-i18n="pay_step1">1. Choose your sectors and packages</h2><p class="text-sm text-stone-500 mb-3" data-i18n="pay_sec_hint">Tap a package under each sector you want. Tap it again to remove it.</p>
+    <nav id="s-steps" aria-label="Subscription steps"></nav>
+    <section aria-labelledby="h1"><h2 id="h1" class="font-display text-2xl font-semibold text-title mb-1" data-i18n="pay_step1">1. Choose your sectors and packages</h2><p class="text-sm text-stone-600 mb-3" data-i18n="pay_sec_hint">Tap a package under each sector you want. Tap it again to remove it.</p>
       <div id="s-sec" class="grid gap-3"></div><div id="s-bar" class="mt-3"></div></section>
-    <section aria-labelledby="h2"><h2 id="h2" class="font-display text-2xl font-semibold text-title mb-3" data-i18n="pay_step2">2. Check your order</h2><div id="s-sum" class="card !transform-none p-5" aria-live="polite"></div></section>
+    <section aria-labelledby="h2"><h2 id="h2" class="font-display text-2xl font-semibold text-title mb-3" data-i18n="pay_step2">Check your order</h2><div id="s-sum" class="card !transform-none p-5" aria-live="polite"></div></section>
     <div id="s-paid" class="hidden grid gap-8">
-      <section aria-labelledby="h3"><h2 id="h3" class="font-display text-2xl font-semibold text-title mb-1" data-i18n="pay_step3">3. Choose how to pay</h2><p class="text-sm text-stone-500 mb-3" data-i18n="pay_paid_hint">Pay the exact amount in your own app (outside this website). Copy the details below, then come back and upload the receipt.</p>
+      <section aria-labelledby="h3"><h2 id="h3" class="font-display text-2xl font-semibold text-title mb-1" data-i18n="pay_step3">2. Choose how to pay</h2><p class="text-sm text-stone-600 mb-3" data-i18n="pay_paid_hint">Pay the exact amount in your own app (outside this website). Copy the details below, then come back and upload the receipt.</p>
         <div id="s-meth" class="grid gap-3 sm:grid-cols-2"></div><div id="s-mdet" class="mt-4"></div></section>
-      <section aria-labelledby="h4"><h2 id="h4" class="font-display text-2xl font-semibold text-title mb-3" data-i18n="pay_step4">4. Upload your receipt</h2>
+      <section aria-labelledby="h4"><h2 id="h4" class="font-display text-2xl font-semibold text-title mb-3" data-i18n="pay_step4">3. Upload your receipt</h2>
         <label class="block"><span class="p-lab" data-i18n="pay_receipt">Receipt or QR screenshot</span><input id="f-file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" class="p-in"></label>
-        <p class="text-xs text-stone-500 mt-1" data-i18n="pay_receipt_hint">JPG, PNG, WebP or PDF, up to 5 MB.</p><div id="f-prev" class="mt-2"></div></section>
+        <p class="text-xs text-stone-600 mt-1" data-i18n="pay_receipt_hint">JPG, PNG, WebP or PDF, up to 5 MB.</p><div id="f-prev" class="mt-2"></div></section>
     </div>
     <label class="block"><span class="p-lab" data-i18n="pay_note">Note (optional)</span><input id="f-note" maxlength="500" dir="auto" class="p-in"></label>
     <div><button id="b-send" type="submit" class="auth-btn !h-12 !px-8" style="background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))"><i class="ph-light ph-paper-plane-tilt"></i><span id="b-send-t" data-i18n="pay_send">Send request</span></button></div>
@@ -72,6 +92,7 @@
   <div id="mine" class="hidden mt-14 max-w-3xl"><h2 class="font-display text-3xl font-semibold text-title mb-4" data-i18n="pay_my">My requests</h2><div id="mine-l" class="grid gap-3"></div></div>
 </div></section>
 </main>
+<script src="banner.js"></script>
 <script src="footer.js"></script>
 <script src="auth.js"></script>
 <script>
@@ -85,7 +106,8 @@ const K=window.KLang,T=(k,v)=>K?K.t(k,v):k,rtl=()=>!!(K&&K.rtl);
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const PRB='payment-receipts',PAB='payment-assets',MAXB=5*1024*1024;
-const S={pkgs:[],meths:[],secs:[],until:{},reqs:[],pick:{},method:'',busy:false,ok:false};   // pick = { sectorId: packageCode }
+const S={pkgs:[],meths:[],secs:[],until:{},reqs:[],pick:{},method:'',busy:false,ok:false,typ:null};
+let RENEW=new URLSearchParams(location.search).get('sector'),RENEWED=null;   // ?sector=ID comes from the Renew button in My files   // pick = { sectorId: packageCode }
 const nm=(o,k)=>(rtl()&&o[k+'_ar'])||o[k]||'';
 const cur=c=>!c||c==='EGP'?T('pay_egp'):c;
 const money=(n,c)=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2})+' '+cur(c);
@@ -114,7 +136,7 @@ function flash(t,ok=true){const m=$('msg');m.textContent=t;m.className='mt-6 car
 function note(icon,t,sub,btn,btn2){
   $('form').classList.add('hidden');$('mine').classList.add('hidden');
   const bt=(id,ic,l,dark)=>`<button id="${id}" class="auth-btn" style="margin:0;${dark?'background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))':''}"><i class="ph-light ${ic}"></i><span style="display:inline">${esc(l)}</span></button>`;
-  $('state').innerHTML=`<div class="card !transform-none p-10 text-center max-w-xl"><i class="ph-light ${icon} text-5xl text-stone-400"></i><p class="mt-3 font-display text-2xl font-semibold text-title">${esc(t)}</p>${sub?`<p class="mt-1 text-sm text-stone-500">${esc(sub)}</p>`:''}${btn?`<div class="mt-5 flex flex-wrap justify-center gap-3">${bt('n-btn','ph-user',btn)}${btn2?bt('n-btn2','ph-user-plus',btn2,1):''}</div>`:''}</div>`;
+  $('state').innerHTML=`<div class="card !transform-none p-10 text-center max-w-xl"><i class="ph-light ${icon} text-5xl text-stone-600"></i><p class="mt-3 font-display text-2xl font-semibold text-title">${esc(t)}</p>${sub?`<p class="mt-1 text-sm text-stone-600">${esc(sub)}</p>`:''}${btn?`<div class="mt-5 flex flex-wrap justify-center gap-3">${bt('n-btn','ph-user',btn)}${btn2?bt('n-btn2','ph-user-plus',btn2,1):''}</div>`:''}</div>`;
   const b=$('n-btn');if(b)b.onclick=()=>KHIPAuth.open('login');
   const c=$('n-btn2');if(c)c.onclick=()=>KHIPAuth.open('signup');
 }
@@ -142,24 +164,24 @@ function paintSecs(){
       return `<button type="button" class="p-chip ${on?'on':''}" data-sec="${esc(sc.id)}" data-pkg="${esc(p.code)}" aria-pressed="${on}" ${b?'disabled':''}>
         <span class="block font-medium leading-tight">${esc(nm(p,'name'))}</span>
         <span class="block text-xs ${free?'text-emerald-700':'text-stone-600'}">${free?esc(T('pay_free')):esc(money(p.price,p.currency))}</span>
-        ${b?`<span class="block text-[11px] text-amber-700">${esc(b)}</span>`:''}</button>`}).join('');
+        ${b?`<span class="block text-xs text-amber-700">${esc(b)}</span>`:''}</button>`}).join('');
     const d=sel?dates(sc.id,sel):null;
-    return `<div class="p-sec ${sel?'on':''}"><div class="flex items-start justify-between gap-3"><div><p class="font-medium text-ink">${esc(sc.name)}</p>
+    return `<div id="sec-${esc(sc.id)}" class="p-sec ${sel?'on':''}"><div class="flex items-start justify-between gap-3"><div><p class="font-medium text-ink">${esc(sc.name)}</p>
       ${act?`<p class="text-xs text-emerald-700 mt-0.5">${esc(T('pay_active_until',{x:day(u)}))}</p>`:''}</div>
-      <i class="ph-light ${sel?'ph-check-circle text-brand-600':'ph-circle text-stone-300'} text-2xl"></i></div>
+      <i class="ph-light ${sel?'ph-check-circle text-brand-600':'ph-circle text-stone-600'} text-2xl"></i></div>
       <div class="mt-3 flex flex-wrap gap-2">${chips}</div>
-      ${d?`<div class="mt-3 rounded-xl bg-white border border-stone-200 px-3 py-2 text-sm"><p class="flex flex-wrap items-center gap-x-2"><i class="ph-light ph-calendar-check text-lg text-brand-600"></i><b>${esc(T('pay_starts',{x:day(d.st)}))}</b><span class="text-stone-400">&rarr;</span><b>${esc(T('pay_ends',{x:day(d.en)}))}</b></p>
-        ${d.renew?`<p class="text-xs text-stone-500 mt-1">${esc(T('pay_renews',{x:day(d.until)}))}</p>`:''}</div>`:''}</div>`}).join('');
+      ${d?`<div class="mt-3 rounded-xl bg-white border border-stone-200 px-3 py-2 text-sm"><p class="flex flex-wrap items-center gap-x-2"><i class="ph-light ph-calendar-check text-lg text-brand-600"></i><b>${esc(T('pay_starts',{x:day(d.st)}))}</b><span class="text-stone-600">&rarr;</span><b>${esc(T('pay_ends',{x:day(d.en)}))}</b></p>
+        ${d.renew?`<p class="text-xs text-stone-600 mt-1">${esc(T('pay_renews',{x:day(d.until)}))}</p>`:''}</div>`:''}</div>`}).join('');
 }
 function paintSum(){
   const L=lines(),tot=total(),paid=tot>0,c=curOf();
-  $('s-bar').innerHTML=L.length?`<div class="p-bar"><span class="text-sm">${esc(T('pay_sel_n',{x:L.length}))} &middot; <b class="text-lg">${paid?esc(money(tot,c)):esc(T('pay_free'))}</b></span><a href="#h2">${esc(T('pay_step2').replace(/^\S+\s*/,''))}</a></div>`:'';
-  $('s-sum').innerHTML=!L.length?`<p class="text-sm text-stone-500">${esc(T('pay_empty_order'))}</p>`
+  $('s-bar').innerHTML=L.length?`<div class="p-bar"><span class="text-sm">${esc(T('pay_sel_n',{x:L.length}))} &middot; <b class="text-lg">${paid?esc(money(tot,c)):esc(T('pay_free'))}</b></span><a href="#h2">${esc(T('pay_step2'))}</a></div>`:'';
+  $('s-sum').innerHTML=!L.length?`<p class="text-sm text-stone-600">${esc(T('pay_empty_order'))}</p>`
     :`<div class="grid gap-3">${L.map(l=>`<div class="flex items-start justify-between gap-3 border-b border-stone-100 pb-3"><div class="min-w-0"><p class="font-medium text-ink break-words">${esc(l.s.name)}</p>
-        <p class="text-sm text-stone-600">${esc(nm(l.p,'name'))}</p><p class="text-xs text-stone-500 mt-0.5">${esc(day(l.d.st))} &rarr; ${esc(day(l.d.en))}</p></div>
+        <p class="text-sm text-stone-600">${esc(nm(l.p,'name'))}</p><p class="text-xs text-stone-600 mt-0.5">${esc(day(l.d.st))} &rarr; ${esc(day(l.d.en))}</p></div>
         <p class="text-ink whitespace-nowrap">${l.price>0?esc(money(l.price,l.p.currency)):`<span class="text-emerald-700">${esc(T('pay_free'))}</span>`}</p></div>`).join('')}</div>
       <div class="flex flex-wrap items-end justify-between gap-3 mt-4"><div><p class="p-lab !mb-0">${esc(T('pay_total'))}</p><p class="font-display text-4xl font-semibold text-title">${paid?esc(money(tot,c)):esc(T('pay_free'))}</p></div></div>
-      <p class="text-xs text-stone-500 mt-3">${esc(T('pay_date_note'))}</p>
+      <p class="text-xs text-stone-600 mt-3">${esc(T('pay_date_note'))}</p>
       ${!paid?`<p class="text-sm text-stone-600 mt-2">${esc(T('pay_free_note'))}</p>`:''}`;
   $('s-paid').classList.toggle('hidden',!paid);if(paid)paintMeths();
   $('b-send-t').textContent=paid?T('pay_send_paid'):T('pay_send');
@@ -174,21 +196,61 @@ function paintMeths(){
     <dl class="grid gap-3 text-sm"><div><dt class="p-lab !mb-0">${esc(T('pay_pay_exact'))}</dt><dd class="flex items-center gap-2 flex-wrap"><span class="font-display text-3xl font-semibold text-title">${esc(money(tot,c))}</span>${copyBtn(String(tot),T('pay_copy_amount'))}</dd></div>
       ${m.account_name?`<div><dt class="p-lab !mb-0">${esc(T('pay_account_name'))}</dt><dd class="flex items-center gap-2 flex-wrap"><span class="text-ink break-words" dir="auto">${esc(m.account_name)}</span>${copyBtn(m.account_name,T('pay_copy'))}</dd></div>`:''}
       ${m.account_number?`<div><dt class="p-lab !mb-0">${esc(T('pay_account_no'))}</dt><dd class="flex items-center gap-2 flex-wrap"><span class="text-ink text-lg break-all" dir="ltr">${esc(m.account_number)}</span>${copyBtn(m.account_number,T('pay_copy'))}</dd></div>`:''}
-      ${/^https?:\/\//i.test(m.pay_url||'')?`<div><a href="${esc(m.pay_url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-ink text-white rounded-full px-5 py-2.5 text-sm"><i class="ph-light ph-arrow-square-out"></i>${esc(T('pay_open_page'))}</a><p class="text-xs text-stone-500 mt-1">${esc(T('pay_open_hint'))}</p></div>`:''}
+      ${/^https?:\/\//i.test(m.pay_url||'')?`<div><a href="${esc(m.pay_url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 bg-ink text-white rounded-full px-5 py-2.5 text-sm"><i class="ph-light ph-arrow-square-out"></i>${esc(T('pay_open_page'))}</a><p class="text-xs text-stone-600 mt-1">${esc(T('pay_open_hint'))}</p></div>`:''}
       ${nm(m,'instructions')?`<div class="whitespace-pre-line text-stone-700 leading-7" dir="auto">${esc(nm(m,'instructions'))}</div>`:''}</dl>
-    ${m.qr_path?`<figure class="text-center"><img src="${esc(qr(m.qr_path))}" alt="${esc(T('pay_scan'))}" class="w-40 h-40 object-contain rounded-xl border border-stone-200 bg-white mx-auto"><figcaption class="text-xs text-stone-500 mt-1">${esc(T('pay_scan'))}</figcaption></figure>`:''}</div>`;
+    ${m.qr_path?`<figure class="text-center"><img src="${esc(qr(m.qr_path))}" alt="${esc(T('pay_scan'))}" class="w-40 h-40 object-contain rounded-xl border border-stone-200 bg-white mx-auto"><figcaption class="text-xs text-stone-600 mt-1">${esc(T('pay_scan'))}</figcaption></figure>`:''}</div>`;
 }
 const STAT={pending:['bg-amber-100 text-amber-800','pay_pending'],approved:['bg-emerald-100 text-emerald-800','pay_approved'],rejected:['bg-red-100 text-red-800','pay_rejected'],cancelled:['bg-stone-200 text-stone-700','pay_cancelled']};
 function paintMine(){
   $('mine').classList.toggle('hidden',false);
-  $('mine-l').innerHTML=!S.reqs.length?`<p class="text-sm text-stone-500">${esc(T('pay_none_req'))}</p>`:S.reqs.map(r=>{const [c,k]=STAT[r.status]||STAT.pending;
-    const ls=reqLines(r).map(l=>{const p=pkgOf(l.pkg)||{name:l.pkg};return `<li class="flex justify-between gap-3"><span class="min-w-0 break-words">${esc(secName(l.sid))} <span class="text-stone-400">&middot;</span> ${esc(nm(p,'name'))}</span>${l.price!=null?`<span class="whitespace-nowrap text-stone-500">${Number(l.price)>0?esc(money(l.price,r.currency)):esc(T('pay_free'))}</span>`:''}</li>`}).join('');
+  $('mine-l').innerHTML=!S.reqs.length?`<p class="text-sm text-stone-600">${esc(T('pay_none_req'))}</p>`:S.reqs.map(r=>{const [c,k]=STAT[r.status]||STAT.pending;
+    const ls=reqLines(r).map(l=>{const p=pkgOf(l.pkg)||{name:l.pkg};return `<li class="flex justify-between gap-3"><span class="min-w-0 break-words">${esc(secName(l.sid))} <span class="text-stone-600">&middot;</span> ${esc(nm(p,'name'))}</span>${l.price!=null?`<span class="whitespace-nowrap text-stone-600">${Number(l.price)>0?esc(money(l.price,r.currency)):esc(T('pay_free'))}</span>`:''}</li>`}).join('');
     return `<div class="card !transform-none p-4"><div class="flex flex-wrap items-center justify-between gap-2"><p class="font-medium text-ink">${esc(T('pay_ref',{x:r.ref}))}</p><span class="p-pill ${c}">${esc(T(k))}</span></div>
-      <ul class="text-sm text-stone-700 mt-2 grid gap-1">${ls}</ul>
-      <p class="text-xs text-stone-500 mt-2">${Number(r.amount)>0?`<b>${esc(T('pay_total'))}: ${esc(money(r.amount,r.currency))}</b> &middot; `:''}${esc(T('pay_sent_on',{x:day(r.created_at)}))}</p>
+      ${timeline(r)}
+      <ul class="text-sm text-stone-700 mt-3 grid gap-1">${ls}</ul>
+      <p class="text-xs text-stone-600 mt-2">${Number(r.amount)>0?`<b>${esc(T('pay_total'))}: ${esc(money(r.amount,r.currency))}</b> &middot; `:''}${esc(T('pay_sent_on',{x:day(r.created_at)}))}</p>
       ${r.admin_note?`<p class="text-sm mt-2 rounded-lg ${r.status==='rejected'?'bg-red-50 text-red-900':'bg-stone-50 text-stone-700'} p-2 break-words"><b>${esc(T('pay_reason'))}:</b> ${esc(r.admin_note)}</p>`:''}
       ${r.status==='pending'?`<button data-cancel="${esc(r.id)}" class="mt-3 text-sm border border-stone-300 hover:border-stone-500 rounded-full px-4 py-1.5">${esc(T('pay_cancel'))}</button>`:''}
       ${r.status==='approved'?`<a href="my-stuff.html" class="mt-3 inline-block text-sm text-brand-700 underline underline-offset-4">${esc(T('pay_open_files'))}</a>`:''}</div>`}).join('');
+}
+// ---- 3-step progress: Choose, Pay, Upload receipt. A free order needs neither payment nor a receipt.
+function paintSteps(){
+  const L=lines(),has=L.length>0,paid=total()>0,hasF=!!($('f-file')&&$('f-file').files[0]);
+  const st=[
+    {k:'choose',l:T('pay_stp_choose'),s:has?'done':'todo'},
+    {k:'pay',l:T('pay_stp_pay'),s:!has?'todo':!paid?'na':(methOf(S.method)?'done':'todo')},
+    {k:'upload',l:T('pay_stp_upload'),s:!has?'todo':!paid?'na':(hasF?'done':'todo')}];
+  const first=st.findIndex(x=>x.s==='todo');
+  $('s-steps').innerHTML=`<ol class="p-stp card !transform-none py-4 px-2">${st.map((x,i)=>{
+    const cls=x.s==='done'?'done':x.s==='na'?'na':i===first?'cur':'';
+    const dot=x.s==='done'?'<i class="ph-light ph-check" aria-hidden="true"></i>':String(i+1);
+    const on=x.s!=='na'&&(i===0||has&&paid);
+    return `<li class="${cls}" ${i===first?'aria-current="step"':''}><button type="button" class="p-stbtn" data-step="${x.k}" ${on?'':'disabled'} aria-label="${esc(T('pay_stp_aria',{x:i+1}))}: ${esc(x.l)}"><span class="p-dot">${dot}</span><span class="p-stl">${esc(x.l)}</span>${x.s==='na'?`<span class="p-sts">${esc(T('pay_stp_free'))}</span>`:''}</button></li>`}).join('')}</ol>`;
+}
+// ---- how long approval usually takes (median of recent approvals, from the database), as words
+function human(h){h=Number(h);if(!(h>0))return '';
+  if(h<1.5)return T('pay_tt_h1');
+  if(h<24){const n=Math.round(h);return n<=1?T('pay_tt_h1'):n===2?T('pay_tt_h2'):T(n<=10?'pay_tt_hf':'pay_tt_hm',{x:n})}
+  const d=Math.max(1,Math.round(h/24));return d===1?T('pay_tt_d1'):d===2?T('pay_tt_d2'):T(d<=10?'pay_tt_df':'pay_tt_dm',{x:d})}
+// ---- status timeline of one request: sent, under review, decision
+function timeline(r){
+  const typ=S.typ?human(S.typ):'',chk='<i class="ph-light ph-check" aria-hidden="true"></i>';
+  const li=(c,dot,l,sub)=>`<li class="${c}"><span class="p-dot">${dot}</span><span class="p-stl">${esc(l)}</span>${sub?`<span class="p-sts">${esc(sub)}</span>`:''}</li>`;
+  const sent=li('done',chk,T('pay_tl_sent'),day(r.created_at)),when=r.reviewed_at?day(r.reviewed_at):'';
+  let a,b;
+  if(r.status==='approved'){a=li('done',chk,T('pay_tl_review'),'');b=li('done',chk,T('pay_tl_approved'),when)}
+  else if(r.status==='rejected'){a=li('done',chk,T('pay_tl_review'),'');b=li('bad','<i class="ph-light ph-x" aria-hidden="true"></i>',T('pay_tl_rejected'),when)}
+  else if(r.status==='cancelled'){a=li('na','2',T('pay_tl_review'),'');b=li('na','<i class="ph-light ph-x" aria-hidden="true"></i>',T('pay_tl_cancelled'),when)}
+  else{a=li('cur','<i class="ph-light ph-hourglass-medium" aria-hidden="true"></i>',T('pay_tl_review'),typ?T('pay_tl_typ',{x:typ}):'');b=li('','3',T('pay_tl_decide'),'')}
+  return `<ol class="p-stp mt-4 mb-1" aria-label="${esc(T('pay_ref',{x:r.ref}))}">${sent}${a}${b}</ol>`;
+}
+// ---- Renew button in My files opens this page with ?sector=ID: pick the package used last time (if it can still be picked) and scroll to the sector
+function applyRenew(){
+  if(!RENEW||!S.ok)return;const sid=RENEW;RENEW=null;
+  const sc=S.secs.find(x=>x.id===sid);if(!sc)return;
+  const last=S.reqs.find(r=>r.status==='approved'&&reqLines(r).some(l=>l.sid===sid)),ln=last&&reqLines(last).find(l=>l.sid===sid),p=ln&&pkgOf(ln.pkg);
+  if(p&&Number(p.price)>0&&!blocked(sid,p.code))S.pick[sid]=p.code;
+  RENEWED=sc;
 }
 function paintAll(){
   if(K)K.dom();
@@ -196,7 +258,8 @@ function paintAll(){
   Object.keys(S.pick).forEach(k=>{if(!pkgOf(S.pick[k])||blocked(k,S.pick[k]))delete S.pick[k]});
   $('state').innerHTML='';$('form').classList.remove('hidden');
   if(!S.pkgs.length){$('form').classList.add('hidden');$('state').innerHTML=`<p class="text-stone-600">${esc(T('pay_no_pkgs'))}</p>`}
-  paintSecs();paintSum();paintMine();
+  paintSecs();paintSum();paintMine();paintSteps();
+  if(RENEWED){const sc=RENEWED;RENEWED=null;flash(T('pay_renew_for',{x:sc.name}));setTimeout(()=>{const e=$('sec-'+sc.id);if(e){e.classList.add('flash');e.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>e.classList.remove('flash'),2500)}},200)}
 }
 const readUntil=pr=>{S.until={};(pr.data||[]).forEach(p=>{if(!S.until[p.sector_id]||p.end_date>S.until[p.sector_id])S.until[p.sector_id]=p.end_date})};
 async function load(){
@@ -206,15 +269,16 @@ async function load(){
   if(!sb)return note('ph-plug',T('pay_err_load'));
   if(!u){const C=A.config();return note('ph-lock-simple',T('pay_signin'),T('pay_signin_sub'),T('pay_login'),C&&C.allowSignUp?T('pay_create'):'')}
   $('state').innerHTML='<div class="card !transform-none p-6 animate-pulse h-40 max-w-3xl"></div>';
-  const [pk,me,sc,pr,rq]=await Promise.all([
+  const [pk,me,sc,pr,rq,ty]=await Promise.all([
     sb.from('payment_packages').select('*').eq('active',true).order('sort_order'),
     sb.from('payment_methods').select('*').eq('active',true).order('sort_order'),
-    sb.from('sectors').select('id,name').order('name'),
+    sb.from('sectors').select('id,name,name_ar').order('name').then(r=>r.error?sb.from('sectors').select('id,name').order('name'):r),
     sb.from('subscription_periods').select('sector_id,end_date'),
-    sb.from('subscription_requests').select('*').order('created_at',{ascending:false}).limit(50)]);
+    sb.from('subscription_requests').select('*').order('created_at',{ascending:false}).limit(50),
+    sb.rpc('typical_approval_hours')]);   // optional: needs supabase-step21-approval-time.sql; without it no estimate is shown
   if(pk.error||sc.error)return note('ph-warning-circle',T('pay_err_load'));
-  S.pkgs=pk.data||[];S.meths=me.error?[]:(me.data||[]);S.secs=sc.data||[];S.reqs=rq.error?[]:(rq.data||[]);
-  readUntil(pr);S.ok=true;paintAll();
+  S.pkgs=pk.data||[];S.meths=me.error?[]:(me.data||[]);S.secs=(sc.data||[]).map(x=>({...x,name:rtl()&&x.name_ar?x.name_ar:x.name}));S.reqs=rq.error?[]:(rq.data||[]);
+  readUntil(pr);S.typ=ty&&!ty.error&&Number(ty.data)>0?Number(ty.data):null;S.ok=true;applyRenew();paintAll();
 }
 async function reloadReqs(){
   const sb=KHIPAuth.client(),[rq,pr]=await Promise.all([sb.from('subscription_requests').select('*').order('created_at',{ascending:false}).limit(50),sb.from('subscription_periods').select('sector_id,end_date')]);
@@ -257,7 +321,7 @@ async function send(){
     if(r.error){if(path){try{await sb.storage.from(PRB).remove([path])}catch(_){}}throw r.error}
     S.pick={};S.method='';$('f-file').value='';$('f-note').value='';paintPrev();
     await reloadReqs();paintAll();
-    $('state').innerHTML=`<div class="card !transform-none p-6 max-w-3xl border-emerald-200 bg-emerald-50"><p class="flex items-center gap-2 font-display text-2xl font-semibold text-emerald-900"><i class="ph-light ph-hourglass-medium"></i>${esc(T('pay_wait_title'))}</p><p class="text-sm text-emerald-900 mt-1">${esc(T('pay_sent'))}</p><p class="text-sm text-emerald-900 mt-1">${esc(T('pay_wait_sub'))}</p></div>`;
+    $('state').innerHTML=`<div class="card !transform-none p-6 max-w-3xl border-emerald-200 bg-emerald-50"><p class="flex items-center gap-2 font-display text-2xl font-semibold text-emerald-900"><i class="ph-light ph-hourglass-medium"></i>${esc(T('pay_wait_title'))}</p><p class="text-sm text-emerald-900 mt-1">${esc(T('pay_sent'))}</p><p class="text-sm text-emerald-900 mt-1">${esc(T('pay_wait_sub'))}</p>${S.typ?`<p class="text-sm text-emerald-900 mt-1">${esc(T('pay_tl_typ',{x:human(S.typ)}))}</p>`:''}</div>`;
     $('state').scrollIntoView({behavior:'smooth',block:'start'});
   }catch(e){flash(e.message||String(e),false)}
   finally{S.busy=false;$('b-send').disabled=false;paintSum()}
@@ -266,15 +330,17 @@ $('s-sec').addEventListener('click',e=>{
   const b=e.target.closest('[data-sec]');if(!b||b.disabled)return;
   const sid=b.dataset.sec,code=b.dataset.pkg;
   if(S.pick[sid]===code)delete S.pick[sid];else S.pick[sid]=code;   // tap again = remove
-  paintSecs();paintSum();
+  paintSecs();paintSum();paintSteps();
 });
 $('form').addEventListener('change',e=>{
   const t=e.target;
-  if(t.name==='meth'){S.method=t.value;paintMeths()}
-  else if(t.id==='f-file')paintPrev();
+  if(t.name==='meth'){S.method=t.value;paintMeths();paintSteps()}
+  else if(t.id==='f-file'){paintPrev();paintSteps()}
 });
 $('form').addEventListener('submit',e=>{e.preventDefault();send()});
 document.addEventListener('click',async e=>{
+  const sp=e.target.closest('[data-step]');
+  if(sp&&!sp.disabled){const t=$({choose:'h1',pay:'h3',upload:'h4'}[sp.dataset.step]);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});return}
   const c=e.target.closest('[data-copy]');
   if(c){try{await navigator.clipboard.writeText(c.dataset.copy);const o=c.innerHTML;c.textContent=T('pay_copied');setTimeout(()=>{c.innerHTML=o},1500)}catch(_){}return}
   const x=e.target.closest('[data-cancel]');

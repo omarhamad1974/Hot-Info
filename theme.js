@@ -42,6 +42,7 @@
     ['home-jurisdictions','Home page: HOT News'],
     ['home-services','Home page: IP Services'],
     ['home-news','Home page: Latest news'],
+    ['home-offers','Home page: Limited offers'],
     ['home-testimonials','Home page: Client endorsements'],
     ['about-intro','About page: About KHIP'],
     ['about-map','About page: Our Regional Coverage'],

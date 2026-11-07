@@ -5,31 +5,31 @@
   "carousel": [
     {
       "id": "1",
-      "title": "HOT Info Carousel 1",
-      "subtitle": "Hot Info Carousel 1 subtitle",
+      "title": "Using Legal Skills with Technical Knowledge",
+      "subtitle": "Discover legal and IP services.",
       "tag": "Featured",
       "image": "mvvcn74s-84337.jpg"
     },
     {
       "id": "5",
-      "title": "Hot Info Carousel 2",
-      "subtitle": "Hot Info Carousel 2 subtitle",
+      "title": "Using Legal Skills with Technical Knowledge (copy)",
+      "subtitle": "Discover legal and IP services.",
       "tag": "Featured",
-      "image": "mw4x67at-music-and-entertainment-abstract.jpg"
+      "image": "mvvcnuma-84331.jpg"
     },
     {
       "id": "2",
-      "title": "Hot informatio carousel 3",
-      "subtitle": "Hot informatio carousel 3 subtitle",
+      "title": "Protecting Innovation",
+      "subtitle": "Discover legal and IP services.",
       "tag": "Featured",
-      "image": "mw4x81lp-pexels-edward-jenner-4253272.jpg"
+      "image": "./assets/slider2.jpg"
     },
     {
       "id": "3",
-      "title": "HOT Info Carousel 4",
+      "title": "Making a difference ",
       "subtitle": "To people lives and people business ",
       "tag": "",
-      "image": "mw4x96ey-twilight-cloud.jpg"
+      "image": "mvm9bed7-65080.jpg"
     }
   ],
   "jurisdictions": [
@@ -124,22 +124,21 @@
   ],
   "news": [
     {
-      "id": "2",
-      "title": "Hot Information launches a new service",
-      "date": "2026-10-24",
-      "image": "mw4x2cic-music-and-entertainment-abstract.jpg",
-      "excerpt": "Hot Information launches a new serviceHot Information launches a new service",
-      "text": "Hot Information launches a new serviceHot Information launches a new serviceHot Information launches a new serviceHot Information launches a new serviceHot Information launches a new serviceHot Information launches a new service",
+      "id": "1",
+      "title": "KHIP attends the event bla bla bla",
+      "image": "./assets/slider1.jpg",
+      "excerpt": "KHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt",
+      "text": "KHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt\n\nKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt\n\nKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt\n\nKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egyptKHIP attends the event in brussels representing egypt as one of the premier servics proverder sin egypt",
       "category": "General"
     },
     {
-      "id": "3",
-      "title": "Hot information visits the event (bla bla)",
-      "date": "2026-11-06",
-      "category": "معارض",
-      "image": "",
-      "excerpt": "Hot information visits the event (bla bla)Hot information visits the event (bla bla)",
-      "text": "Hot information visits the event (bla bla)Hot information visits the event (bla bla)Hot information visits the event (bla bla)Hot information visits the event (bla bla)Hot information visits the event (bla bla)Hot information visits the event (bla bla)Hot information visits the event (bla bla)"
+      "id": "2",
+      "title": "IP future in the middle east ",
+      "date": "2026-10-24",
+      "image": "slider1.jpg",
+      "excerpt": "What will be the future of IP in the region and middle east ",
+      "text": "What will be the future of IP in the region and middle east What will be the future of IP in the region and middle east What will be the future of IP in the region and middle east ",
+      "category": "General"
     }
   ],
   "services": [
@@ -360,9 +359,9 @@
     }
   ],
   "social": {
-    "linkedin": "",
+    "linkedin": "https://www.linkedin.com/company/hotinformationonline/",
     "youtube": "",
-    "facebook": "",
+    "facebook": "https://web.facebook.com/HOTinformation.eg",
     "instagram": "",
     "x": "",
     "tiktok": "",
@@ -409,35 +408,21 @@
     "custom": [],
     "sectionWidth": "85",
     "sections": {
-      "trademarks-contact": {
-        "hidden": true
-      },
-      "trademarks-details": {
-        "hidden": true
-      },
-      "trademarks-intro": {
-        "hidden": true
-      },
-      "patents-contact": {
-        "hidden": true
-      },
-      "patents-details": {
-        "hidden": true
-      },
-      "patents-intro": {
-        "hidden": true
-      },
-      "about-advantages": {
-        "hidden": true
-      },
-      "about-quote": {
-        "hidden": true
-      },
-      "about-value": {
-        "hidden": true
-      },
-      "about-map": {
-        "hidden": true
+      "home-about": {
+        "mode": "image",
+        "overlay": 0,
+        "image": "mw0nqqhc-abstract-glass-window-roof-architecture-exterior.jpg",
+        "imageFx": {
+          "ov": {
+            "type": "matt",
+            "color": "#1760de",
+            "opacity": 70
+          },
+          "mask": {
+            "shape": "leaf",
+            "fit": "cover"
+          }
+        }
       }
     },
     "sectionWidthTablet": "68",

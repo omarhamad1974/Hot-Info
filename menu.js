@@ -84,3 +84,9 @@
     }).catch(()=>{});
   });
 })();
+
+/* Offline support (Phase 17d): registers sw.js. Needs https (Cloudflare gives that) or localhost; otherwise it does nothing. */
+(function(){
+  if(!('serviceWorker' in navigator)||!(location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1'))return;
+  addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(e=>console.warn('Offline mode not available',e))});
+})();
