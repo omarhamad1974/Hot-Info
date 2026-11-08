@@ -296,5 +296,83 @@
     "Purchase Requests",
     "Events",
     "General"
-  ]
+  ],
+  "menu": {
+    "items": [
+      {
+        "id": "home",
+        "en": "Home",
+        "ar": "الرئيسية",
+        "link": "index.html",
+        "icon": "ph-house",
+        "header": true,
+        "bar": true
+      },
+      {
+        "id": "services",
+        "en": "Services",
+        "ar": "الخدمات",
+        "link": "index.html#services",
+        "icon": "ph-seal-check",
+        "header": true,
+        "bar": true
+      },
+      {
+        "id": "news",
+        "en": "News",
+        "ar": "الأخبار",
+        "link": "index.html#news",
+        "icon": "ph-newspaper",
+        "header": true,
+        "bar": true
+      },
+      {
+        "id": "hot",
+        "en": "HOT News",
+        "ar": "أخبار HOT",
+        "link": "index.html#jurisdictions",
+        "icon": "ph-fire",
+        "header": true,
+        "bar": true
+      },
+      {
+        "id": "about",
+        "en": "About",
+        "ar": "من نحن",
+        "link": "about.html",
+        "icon": "ph-info",
+        "header": true,
+        "bar": true
+      },
+      {
+        "id": "files",
+        "en": "My files",
+        "ar": "ملفاتي",
+        "link": "my-stuff.html",
+        "icon": "ph-folder-user",
+        "header": true,
+        "bar": true
+      },
+      {
+        "id": "tenders",
+        "en": "Tenders",
+        "ar": "المناقصات",
+        "link": "tenders.html",
+        "icon": "ph-gavel",
+        "header": false,
+        "bar": false,
+        "hidden": true
+      },
+      {
+        "id": "contact",
+        "en": "Contact",
+        "ar": "اتصل بنا",
+        "link": "about.html#contact",
+        "icon": "ph-envelope-simple",
+        "header": false,
+        "bar": false,
+        "hidden": true
+      }
+    ]
+  }
 }
