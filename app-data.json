@@ -1,5 +1,5 @@
 {
-  "languages": "both",
+  "languages": "ar",
   "about": "Great company ",
   "aboutMainText": "Hot information wa established in 2000\n",
   "carousel": [
@@ -260,7 +260,9 @@
     "sections": {
       "home-carousel": {
         "mode": "color",
-        "color": "role:ink"
+        "color": "role:ink",
+        "fullWidth": true,
+        "heightMobile": "120"
       }
     },
     "sectionWidthTablet": "68",
