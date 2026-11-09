@@ -257,7 +257,12 @@
     },
     "custom": [],
     "sectionWidth": "85",
-    "sections": {},
+    "sections": {
+      "home-carousel": {
+        "mode": "color",
+        "color": "role:ink"
+      }
+    },
     "sectionWidthTablet": "68",
     "brand": [
       {
