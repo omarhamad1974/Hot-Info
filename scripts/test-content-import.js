@@ -154,4 +154,22 @@ t('carousel',en2.carousel.length===2&&en2.carousel[0].tag==='Featured'&&en2.caro
  const pi=K.parseContent(it,{});
  t('word items with lines at the top',pi.ok&&pi.items.length===1&&pi.items[0].fields.icon==='bolt'&&pi.items[0].fields.group==='why-us');
  t('word blog still one item per Heading 1',K.parseContent(W.normalize('# A\n\ntext a\n\n# B\n\ntext b',{defaultType:'blog'}),{}).items.length===2);}
+/* ---- Import blogs (Phase 18 B): many blogs in one file, picture as web link, type line optional ---- */
+{const W=require('../word-import.js');
+ const blogs=Array.from({length:10},(_,i)=>`---\ntitle: Blog ${i+1}\nexcerpt: Summary ${i+1}\ncategory: General\ndate: ${String(i+1).padStart(2,'0')}-11-2026\nimage: https://example.com/p/${i+1}.jpg\nlang: en\n---\nBody ${i+1}\n\n## Sub\n- a\n- b`).join('\n===\n');
+ const r=K.parseContent(blogs,{defaultLang:'ar',knownImages:new Set(),defaultType:'blog'});
+ t('10 blogs without a type line: 10 news items, no problems',r.ok&&r.items.length===10&&r.items.every(i=>i.kind==='news')&&!r.issues.some(i=>i.level!=='info'));
+ t('web link picture kept whole and no "not in assets" warning',r.items[0].fields.image==='https://example.com/p/1.jpg'&&!r.issues.some(i=>/not in assets/.test(i.message)));
+ const en={news:[]},ar={};const rep=K.applyContent(r.items,en,ar,{categories:['General']});
+ t('10 complete news added with title, summary, text, category, date, image',en.news.length===10&&rep.every(x=>x.action==='add')&&en.news.every(n=>n.title&&n.excerpt&&n.text&&n.category&&n.date&&n.image));
+ t('importing the same file again updates, never duplicates',(()=>{const r2=K.applyContent(K.parseContent(blogs,{defaultType:'blog'}).items,en,ar,{});return en.news.length===10&&r2.every(x=>x.action==='update')})());
+ t('type line still wins over the default type',K.parseContent('---\ntype: service\ntitle: S\nshort: x\n---\nbody',{defaultType:'blog'}).items[0].kind==='services');
+ t('without a default type a missing type line is still an error',!K.parseContent('---\ntitle: X\n---\nbody',{}).ok);
+ t('note block (instructions inside a template) is ignored silently',(()=>{const x=K.parseContent('---\ntype: note\n---\nHow to use\n===\n---\ntitle: Real\nlang: en\n---\ntext',{defaultType:'blog'});return x.items.length===1&&!x.issues.some(i=>i.level!=='info')})());
+ t('picture wrapped as markdown link / angle brackets gives the plain address',K.parseContent('---\ntitle: A\nimage: [https://x.com/a.jpg](https://x.com/a.jpg)\nlang: en\n---\nt\n===\n---\ntitle: B\nimage: <https://x.com/b.jpg>\nlang: en\n---\nt',{defaultType:'blog'}).items.map(i=>i.fields.image).join()==='https://x.com/a.jpg,https://x.com/b.jpg');
+ t('news with no date gets today',(()=>{const e={news:[]};K.applyContent(K.parseContent('---\ntitle: D\nlang: en\n---\ntext',{defaultType:'blog'}).items,e,{},{});return /^\d{4}-\d\d-\d\d$/.test(e.news[0].date)})());
+ /* Word: a typed web address becomes a link, which must not break the image: line */
+ const wmd='type: note\n\nHow to\n\n===\n\ntitle: One\n\nimage: [https://x.com/1.jpg](https://x.com/1.jpg)\n\nlang: en\n\nFirst text.\n\n## Sub\n\nMore.\n\n===\n\ntitle: Two\n\nlang: en\n\nSecond text.';
+ const wr=K.parseContent(W.normalize(wmd,{defaultType:'blog'}),{defaultType:'blog'});
+ t('word blogs: link-wrapped picture address, note block, two blogs',wr.ok&&wr.items.length===2&&wr.items[0].fields.image==='https://x.com/1.jpg'&&/## Sub/.test(wr.items[0].fields.text));}
 console.log(fail?fail+' FAILED':'ALL PASSED');process.exit(fail?1:0);

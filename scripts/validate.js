@@ -4,7 +4,7 @@ const d=JSON.parse(fs.readFileSync('app-data.json','utf8')),errs=[];
 const need={carousel:['id','title'],jurisdictions:['id','country'],news:['id','title','excerpt'],services:['id','title','description'],products:['id','title'],testimonials:['id','name','text'],employees:['id','name','position']};
 // Same rule as the site: a bare file name lives in ./assets/
 const resolve=u=>/^(https?:|data:)/.test(u)?null:(/^(\.\/|\/)/.test(u)?u.replace(/^\//,'./'):'./assets/'+u);
-// Image effects (colour overlay + SVG mask), saved as "imageFx" next to a photo. See theme.js > KFX.
+// Image effects (colour overlay + SVG mask + shadow), saved as "imageFx" next to a photo. See theme.js > KFX.
 const FXMASKS=new Set(fs.readFileSync('theme.js','utf8').split("const MASKS=[")[1].split("];")[0].match(/\['([\w-]+)','/g).map(x=>x.slice(2,-3)));
 const FXROLES=new Set(['title','ink','gold','accent','accentDark','accentSoft','sand','page','surface','text']);
 const FXDIRS=['to bottom','to top','to right','to left','to bottom right','to bottom left','to top right','to top left','radial'];
@@ -32,6 +32,12 @@ function checkFx(where,fx){
     if(m.fit!==undefined&&!['contain','cover','stretch'].includes(m.fit))errs.push(`${where}.mask.fit: must be contain, cover or stretch`);
     if(m.invert!==undefined&&typeof m.invert!=='boolean')errs.push(`${where}.mask.invert: must be true or false`);
     for(const [k,a,b] of [['size',10,300],['feather',0,100],['rotate',-180,180]])if(m[k]!==undefined&&!(typeof m[k]==='number'&&m[k]>=a&&m[k]<=b))errs.push(`${where}.mask.${k}: must be a number from ${a} to ${b}`);
+  }
+  if(fx.shadow!==undefined){        // shadow (3D look): drop, cast or extrude. Types = SH_DEF in theme.js
+    const w=fx.shadow||{};
+    if(!['drop','cast','extrude'].includes(w.type))errs.push(`${where}.shadow.type: must be drop, cast or extrude`);
+    if(w.color!==undefined&&!fxColor(w.color))errs.push(`${where}.shadow.color: not a brand, site, own or #rrggbb color`);
+    for(const [k,a,b] of [['opacity',0,100],['angle',0,360],['length',0,100],['blur',0,100]])if(w[k]!==undefined&&!(typeof w[k]==='number'&&w[k]>=a&&w[k]<=b))errs.push(`${where}.shadow.${k}: must be a number from ${a} to ${b}`);
   }
 }
 for(const [k,fields] of Object.entries(need)){
@@ -132,6 +138,7 @@ if(d.contact!==undefined){
 if(d.theme&&d.theme.sections){
   for(const [k,s] of Object.entries(d.theme.sections)){
     checkFx(`theme.sections.${k}.imageFx`,s.imageFx);
+    if(s.maskBg!==undefined&&s.maskBg!==''&&!fxColor(s.maskBg))errs.push(`theme.sections.${k}.maskBg: color not found`);
     if(s.hidden!==undefined&&typeof s.hidden!=='boolean')errs.push(`theme.sections.${k}.hidden: must be true or false`);
     for(const w of ['widthTablet','widthDesktop'])if(s[w]!==undefined&&s[w]!==''&&!(parseFloat(s[w])>=40&&parseFloat(s[w])<=100))errs.push(`theme.sections.${k}.${w}: must be between 40 and 100`);
   }
@@ -232,7 +239,7 @@ for(const [k,v] of Object.entries(d.social||{}))if(v&&!/^https:\/\//.test(v))err
 }
 // File import (phases I1 to I4): modules, templates and the admin hooks exist.
 {
-  for(const q of ['content-import.js','word-import.js','admin-import.js','content-templates/IMPORT-GUIDE.md','content-templates/word-template.docx'])if(!fs.existsSync(q))errs.push(`import: ${q} is missing`);
+  for(const q of ['content-import.js','word-import.js','admin-import.js','content-templates/IMPORT-GUIDE.md','content-templates/word-template.docx','content-templates/blogs.md','content-templates/word-template-blogs.docx'])if(!fs.existsSync(q))errs.push(`import: ${q} is missing`);
   if(fs.existsSync('admin.html')){const h=fs.readFileSync('admin.html','utf8');for(const f of ['content-import.js','word-import.js','admin-import.js'])if(!h.includes(`src="${f}"`))errs.push(`admin.html: ${f} is not loaded`)}
 }
 if(errs.length){console.error(errs.join('\n'));process.exit(1)}
