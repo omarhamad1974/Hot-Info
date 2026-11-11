@@ -411,16 +411,20 @@
       "home-about": {
         "mode": "image",
         "overlay": 0,
-        "image": "mw0nqqhc-abstract-glass-window-roof-architecture-exterior.jpg",
+        "image": "mwcrx2wa-3d-modern-lighting-lamp-design.jpg",
         "imageFx": {
           "ov": {
-            "type": "matt",
+            "type": "gradient",
             "color": "#1760de",
-            "opacity": 70
+            "opacity": 100,
+            "color2": "#1760de",
+            "opacity2": 0,
+            "dir": "to top"
           },
           "mask": {
-            "shape": "leaf",
-            "fit": "cover"
+            "shape": "squircle",
+            "fit": "cover",
+            "size": 80
           }
         }
       }
