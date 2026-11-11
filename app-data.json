@@ -506,6 +506,15 @@
       "title": "",
       "subtitle": "",
       "show": "1"
+    },
+    {
+      "id": "5",
+      "page": "patents",
+      "type": "cards",
+      "group": "Featured-products-cards",
+      "title": "New Cards",
+      "subtitle": "this are generated cards",
+      "show": "1"
     }
   ],
   "cards": [
