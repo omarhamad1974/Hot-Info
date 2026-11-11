@@ -1,5 +1,5 @@
 {
-  "languages": "both",
+  "languages": "ar",
   "about": "",
   "aboutMainText": "هوت انفرمبشن \nالأفضل منذ 20 عاما .. نحن شركة ممتازة و مميزه \nهوت انفرمبشن \nالأفضل منذ 20 عاما .. نحن شركة ممتازة و مميزه \n",
   "carousel": [
@@ -359,9 +359,9 @@
     }
   ],
   "social": {
-    "linkedin": "",
+    "linkedin": "https://www.linkedin.com/company/hotinformationonline/",
     "youtube": "",
-    "facebook": "",
+    "facebook": "https://web.facebook.com/HOTinformation.eg",
     "instagram": "",
     "x": "",
     "tiktok": "",
@@ -408,12 +408,21 @@
     "custom": [],
     "sectionWidth": "85",
     "sections": {
-      "home-services": {
-        "widthDesktop": "63"
-      },
-      "home-offers": {
-        "mode": "color",
-        "color": "role:accent"
+      "home-about": {
+        "mode": "image",
+        "overlay": 0,
+        "image": "mw0nqqhc-abstract-glass-window-roof-architecture-exterior.jpg",
+        "imageFx": {
+          "ov": {
+            "type": "matt",
+            "color": "#1760de",
+            "opacity": 70
+          },
+          "mask": {
+            "shape": "leaf",
+            "fit": "cover"
+          }
+        }
       }
     },
     "sectionWidthTablet": "68",
@@ -446,125 +455,12 @@
         "name": "Neutral",
         "hex": "#3a4051"
       }
-    ],
-    "header": {
-      "opacity": "40",
-      "bg": "brand:5"
-    },
-    "motion": {
-      "site": {
-        "type": "fade-up"
-      },
-      "sections": {
-        "home-carousel": {
-          "type": "none",
-          "cardType": "none",
-          "stagger": "0.05"
-        }
-      }
-    }
+    ]
   },
   "newsCategories": [
     "مناقصات",
     "عملات",
     "معارض",
     "مناقصات خاصة"
-  ],
-  "blocks": [
-    {
-      "id": "1",
-      "page": "home",
-      "type": "cards",
-      "group": "Featured-products-cards",
-      "title": "Featured products",
-      "subtitle": "Hottest products",
-      "show": "1"
-    },
-    {
-      "id": "2",
-      "page": "about",
-      "type": "faq",
-      "group": "Featured-products-cards",
-      "title": "",
-      "subtitle": "",
-      "show": "1"
-    },
-    {
-      "id": "3",
-      "page": "about",
-      "type": "cards",
-      "group": "new-group1",
-      "title": "New-Group-of-Cards",
-      "subtitle": "This is a new group of cards",
-      "show": "1"
-    },
-    {
-      "id": "4",
-      "page": "home",
-      "type": "faq",
-      "group": "new-group1",
-      "title": "",
-      "subtitle": "",
-      "show": "1"
-    },
-    {
-      "id": "5",
-      "page": "patents",
-      "type": "cards",
-      "group": "Featured-products-cards",
-      "title": "New Cards",
-      "subtitle": "this are generated cards",
-      "show": "1"
-    }
-  ],
-  "cards": [
-    {
-      "id": "1",
-      "group": "Featured-products-cards",
-      "title": "Card 1",
-      "description": "dasdfasdad",
-      "icon": "",
-      "image": "mwc6ekre-logo_04.png",
-      "badge": "",
-      "price": "",
-      "link": "",
-      "ctaText": "",
-      "ctaLink": ""
-    },
-    {
-      "id": "2",
-      "group": "Featured-products-cards",
-      "title": "Card 2",
-      "description": "fasasdfasdf",
-      "icon": "",
-      "image": "mwc6fgtp-logo_02.png",
-      "badge": "",
-      "price": "",
-      "link": "about.html",
-      "ctaText": "afasdfasdf",
-      "ctaLink": ""
-    },
-    {
-      "id": "3",
-      "group": "Featured-products-cards",
-      "title": "Card 3",
-      "description": "Card 3 text",
-      "icon": "",
-      "image": "mwc6gv09-logo_01ddd.png",
-      "badge": "",
-      "price": "199",
-      "link": "",
-      "ctaText": "",
-      "ctaLink": ""
-    }
-  ],
-  "faq": [
-    {
-      "id": "1",
-      "group": "Common Questions",
-      "question": "How to subscribe?",
-      "answer": "3 easy ways to subscribe\nInsasta pay\nVodafone cash\nPost office\nBank Transfer (CIB)"
-    }
-  ],
-  "gallery": []
+  ]
 }
