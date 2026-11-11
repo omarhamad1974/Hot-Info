@@ -442,6 +442,11 @@
     "header": {
       "opacity": "40",
       "bg": "brand:5"
+    },
+    "motion": {
+      "site": {
+        "type": "blur-in"
+      }
     }
   },
   "newsCategories": [
