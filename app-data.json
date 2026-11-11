@@ -482,9 +482,9 @@
   "cards": [
     {
       "id": "1",
-      "group": "general",
+      "group": "Featured-products-cards",
       "title": "Card 1",
-      "description": "",
+      "description": "dasdfasdad",
       "icon": "",
       "image": "",
       "badge": "",
