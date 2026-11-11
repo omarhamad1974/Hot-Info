@@ -5,8 +5,8 @@
    Any <img data-brand-logo> gets the logo. Any element with data-brand-tag gets the header text.
    With nothing set, the pages look exactly as before. Loaded on every public page, after theme.js. */
 (function(){
-  const KEY='khip-brand-v1',DEF='assets/khip-logo.jpg';
-  const url=u=>/^(https?:\/\/|\.\/|\/|data:image)/.test(u)?u:'./assets/'+u;
+  const KEY='khip-brand-v1',DEF0='assets/khip-logo.jpg',DEF=(typeof window!=='undefined'&&window.kv||(x=>x))(DEF0);
+  const url=u=>(typeof window!=='undefined'&&window.kv||(x=>x))(/^(https?:\/\/|\.\/|\/|data:image)/.test(u)?u:'./assets/'+u);
   const ready=fn=>document.readyState==='loading'?document.addEventListener('DOMContentLoaded',fn):fn();
   const get=u=>fetch(u,{cache:'no-cache'}).then(r=>r.ok?r.json():Promise.reject());
   function apply(b){
@@ -35,7 +35,7 @@
   // A logo that fails to load falls back to the built-in logo; if that fails too, the header shows the text KHIP.
   document.addEventListener('error',e=>{
     const im=e.target;if(!im||!im.matches||!im.matches('[data-brand-logo]'))return;
-    if(!/khip-logo\.jpg$/.test(im.getAttribute('src')||'')){im.dataset.brandSrc=DEF;im.src=DEF;return}
+    if(!/khip-logo\.jpg(\?.*)?$/.test(im.getAttribute('src')||'')){im.dataset.brandSrc=DEF;im.src=DEF;return}
     im.style.display='none';const n=im.parentNode&&im.parentNode.querySelector('[data-brand-name]');if(n)n.hidden=false;
   },true);
   let cached=null;try{cached=JSON.parse(localStorage.getItem(KEY))}catch{}

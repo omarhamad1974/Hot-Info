@@ -47,3 +47,29 @@ Under the shape buttons (once a shape is chosen) there are three sliders:
 A button resets the three. Works for the built-in shapes and for your uploaded SVGs (an uploaded SVG is read once from assets/ the first time a page needs it, so for a moment it may show without the rotation or feather, then updates itself). "Cut the shape out (invert)" works with all three.
 Saved in the picture's imageFx as mask.size, mask.feather, mask.rotate (only when not the default); `node scripts/validate.js` checks the ranges.
 Files: theme.js, admin.html, scripts/validate.js. No SQL.
+
+## Behind the cut-away parts (shape mask on a section photo)
+Admin > Sections > a section with a Photo background > Style > **Behind the cut-away parts**.
+- **Transparent** (default): the hidden parts of a masked photo show the page behind the section. Before, a section with light text got a dark fill that showed through.
+- Or choose a brand / site / custom color to fill the hidden parts.
+- Only used when the photo has a shape mask. Without a mask a section with light text still gets the dark background as before.
+- With light text on a masked section and a light page behind, choose a dark color here so the text stays readable.
+Saved in `theme.sections.<section>.maskBg` (a color: `#rrggbb`, `brand:N`, `role:name` or `custom:id`). No SQL. Files: theme.js, admin.html, scripts/validate.js.
+
+## Shadow: drop, cast and extruded (Phase 18 P7)
+Open the picture's **Image effects** box > **Shadow (3D look)** > **Type**.
+| Type | What you see |
+|---|---|
+| **Drop shadow** | A soft shadow behind the picture, offset in the light direction. It follows the shape's outline. |
+| **Cast shadow (lies on the floor)** | The shape's silhouette lying on the floor behind the picture: flipped at its foot, leaning away from the light, fading and softening with distance. This is the one that gives the real 3D look. |
+| **Extruded edge (thick slab)** | A solid edge on the side away from the light, like a thick slab. |
+
+Controls: **Shadow color** (brand palette, site color, your own or any color), **Light direction** (0 = right, 90 = down, 180 = left; the cast shadow leans left or right with it), **Length / Thickness / Distance**, **Softness** and **Strength** (drop and cast only; the extruded edge is always solid).
+- It works with every built-in shape, your own SVG shapes, and also with no shape (the shadow then follows the picture's rectangle).
+- It follows the shape's size, rotation, feather and invert settings, because the shadow uses the same mask.
+- All sizes are a share of the picture's width, so it looks the same on a phone and on a desktop.
+- **Room for the shadow**: the shadow falls outside the picture's frame. Where a card or slide crops its picture (news card, carousel), the shadow is cut at the edge. Choose a shape and lower **Shape size** (for example 70-85%) so the shadow has room inside the frame.
+- **Section photo backgrounds**: a shadow needs a shape on the section. The shadow falls on the page behind the section, so keep "Behind the cut-away parts" on **Transparent**.
+- Saved in `imageFx.shadow = {type, color, angle, length, blur, opacity}` (blur and opacity are not saved for the extruded edge). `node scripts/validate.js` checks the type, the color and the ranges. No SQL.
+- Pictures without a shadow are drawn exactly as before.
+- Files: theme.js, admin.html, scripts/validate.js, IMAGE-EFFECTS-STEPS.md, README.md.

@@ -149,8 +149,15 @@
     return { ok: true, value: y + '-' + String(mo).padStart(2, '0') + '-' + String(d).padStart(2, '0') };
   }
 
+  /* a picture is a file name in assets/ or a full web address (https://...). Word and Markdown may wrap the address
+     as [text](address), ![](address) or <address>: only the address is kept. */
+  const IS_URL = /^https?:\/\/\S+$/i;
   function cleanImage(v) {
-    return String(v == null ? '' : v).trim().replace(/^\.?\/?assets\//, '').replace(/^\.\//, '');
+    let s = String(v == null ? '' : v).trim();
+    const m = s.match(/^!?\[[^\]]*\]\(\s*<?([^)\s>]+)>?[^)]*\)$/) || s.match(/^<([^>\s]+)>$/);
+    if (m) s = m[1];
+    if (IS_URL.test(s)) return s;
+    return s.replace(/^\.?\/?assets\//, '').replace(/^\.\//, '');
   }
 
   /* split "brief" text from "Filing details" for a country: a "## Details" style heading starts the details part */
@@ -179,7 +186,8 @@
       if (parsed.error) return add('error', parsed.error);
       const fm = parsed.fm, body = parsed.body;
 
-      const rawType = String(fm.type == null ? '' : fm.type).toLowerCase();
+      const rawType = String(fm.type == null || fm.type === '' ? (opts.defaultType || '') : fm.type).toLowerCase();
+      if (rawType === 'note' || rawType === 'readme') return;   // instructions kept inside a template file: ignored without a message
       if (NOT_USED.indexOf(rawType) >= 0) return add('warning', '"' + rawType + '" is not used by this site, so it was skipped');
       const kind = TYPE_ALIASES[rawType];
       if (!kind) return add('error', 'Unknown type "' + (fm.type == null ? '' : fm.type) + '". Use one of: blog, service, testimonial, team, country, carousel, about, pagetext, faq, items, gallery');
@@ -193,7 +201,7 @@
       const conv = mdToKhip(body, { keepLines: kind === 'about' });          // a first "# Heading" in the body is treated as the title when none is given
       const text0 = conv.body;
       const checkImg = function (img, t) {
-        if (img && known && !known.has(String(img).toLowerCase())) add('warning', '"' + t + '": image "' + img + '" is not in assets yet. Choose the picture on the import screen or upload it in the admin.');
+        if (img && !IS_URL.test(img) && known && !known.has(String(img).toLowerCase())) add('warning', '"' + t + '": image "' + img + '" is not in assets yet. Choose the picture on the import screen or upload it in the admin.');
       };
 
       if (kind === 'pagetext') {
@@ -299,6 +307,8 @@
           if (d.ok) f.date = d.value; else add('warning', '"' + title + '": date "' + fm.date + '" was not understood. Use 2026-11-10 or 10-11-2026.');
         }
         if (fm.image) { f.image = cleanImage(fm.image); checkImg(f.image, title); }
+        if (!fm.image && !upd) add('info', '"' + title + '": no picture (add an "image:" line with a file name or a web address)');
+        if (!fm.date && !upd) add('info', '"' + title + '": no date, today\'s date will be used');
       } else if (kind === 'services') {
         f.details = text0;
         const brief = fm.short || fm.description || fm.excerpt;
@@ -394,6 +404,7 @@
           blank.forEach(function (k) { o[k] = ''; });
           for (const k of Object.keys(it.fields)) o[k] = it.fields[k];
           if (it.kind === 'news' && !o.category) o.category = (opts.categories || []).filter(Boolean)[0] || 'General';
+          if (it.kind === 'news' && !o.date) o.date = today();
           fillRequired(it.kind, o);
           list.push(o);
           report.push({ action: 'add', kind: it.kind, lang: 'en', title: it.title });
@@ -413,6 +424,7 @@
         SECTIONS_BLANK[it.kind].forEach(function (k) { row[k] = ''; });
         for (const k of Object.keys(it.fields)) if (k !== 'pageContent') row[k] = it.fields[k];
         if (it.kind === 'news' && !row.category) row.category = (opts.categories || []).filter(Boolean)[0] || 'General';
+        if (it.kind === 'news' && !row.date) row.date = today();
         fillRequired(it.kind, row);
         list.push(row);
         action = 'add';
@@ -427,6 +439,8 @@
     }
     return report;
   }
+
+  function today() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 
   /* the admin refuses to save an item with an empty required field, so a new item gets a sensible fill */
   function fillRequired(kind, o) {

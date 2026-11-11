@@ -100,7 +100,11 @@
       if (!l) continue; // Word puts a blank line between paragraphs
       const m = l.match(META);
       if (!m) break;
-      meta.push(m[1].toLowerCase() + ': ' + m[2].replace(/^\*+|\*+$/g, '').trim());
+      /* Word turns a typed web address into a link, which arrives as [address](address): keep just the address */
+      let val = m[2].replace(/^\*+|\*+$/g, '').trim();
+      const lk = val.match(/^\[[^\]]*\]\(\s*([^)\s]+)\s*\)$/);
+      if (lk) val = lk[1];
+      meta.push(m[1].toLowerCase() + ': ' + val);
     }
     return { meta: meta, body: lines.slice(i).join('\n').trim() };
   }

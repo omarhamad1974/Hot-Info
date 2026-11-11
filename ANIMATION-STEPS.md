@@ -23,3 +23,5 @@ A section that has its own settings shows a "Custom" badge.
 
 Press **Save to GitHub**. Visitors whose device asks for less motion never see the animations.
 Leaving everything on its default keeps the website exactly as it is today.
+
+Note (Phase 18): per-section animation is now inside each section card in the Sections tab (Animation block); the whole-site animation is in the first card.

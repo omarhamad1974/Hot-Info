@@ -23,7 +23,7 @@
 <body class="font-sans font-normal antialiased">
 <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
   <div class="wrap py-3 flex items-center justify-between">
-    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
+    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg?v=2" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
     <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
       <a href="index.html" class="hover:text-brand-600 transition" data-i18n="bar_home">Home</a><a href="#map" class="hover:text-brand-600 transition" data-i18n="nav_scope">Our Regional Scope</a><a href="#value" class="hover:text-brand-600 transition" data-i18n="nav_value">Value</a><a href="#advantages" class="hover:text-brand-600 transition" data-i18n="nav_adv">Advantages</a><a href="#team" class="hover:text-brand-600 transition" data-i18n="nav_team">Team</a><a href="#contact" class="hover:text-brand-600 transition" data-i18n="nav_contact">Contact</a>
     <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a><a href="directory.html" class="hover:text-brand-600 transition" data-i18n="nav_directory">Directory</a></nav>
@@ -33,7 +33,7 @@
 
 <main>
   <section id="about" data-sec="about-intro" class="band"><div class="wrap grid lg:grid-cols-[1.2fr_1fr] gap-10 lg:gap-14 items-center">
-    <div class="fu"><img data-brand-logo src="assets/khip-logo.jpg" width="800" height="822" alt="Khaled Hamada Intellectual Property" class="about-logo w-24 md:w-28 h-auto mb-5" decoding="async"><h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-medium text-title leading-[1.05]" data-t="about_title">About <span class="khip">KHIP</span></h1><span class="rule mt-5"></span>
+    <div class="fu"><img data-brand-logo src="assets/khip-logo.jpg?v=2" width="800" height="822" alt="Khaled Hamada Intellectual Property" class="about-logo w-24 md:w-28 h-auto mb-5" decoding="async"><h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-medium text-title leading-[1.05]" data-t="about_title">About <span class="khip">KHIP</span></h1><span class="rule mt-5"></span>
       <p data-t="about_p1" class="text-base md:text-lg leading-relaxed max-w-xl">KHIP is an Intellectual Property law firm with fully operational offices and a network of associates and representatives throughout the Middle East. The firm is one of the finest firms practicing intellectual property and the only firm with a truly comprehensive intellectual property practice. Founded in 2004, the firm represents various clients from individual inventors to multinational companies.</p>
       <p data-t="about_p2" class="text-base md:text-lg leading-relaxed max-w-xl mt-4">We serve great innovators, helping to protect countless ideas, nurture discoveries, and bring new concepts to markets. The firm prosecuted and litigated many patents, serving corporations creating the cutting-edge technologies of the day. Khaled Hamada, the firm's founder, was for many years the acknowledged leader of the patent services of the entire country and continues to remain until a time when patents are more important than they had ever been.</p></div>
     <div class="fu grid grid-cols-3 gap-3 text-center" style="--d:.15s">
@@ -133,7 +133,7 @@ let J=[],SV=[],cur="",lastFocus=null,THEME={};
 const CACHE="khip-data-v3",FALLBACK_IMG="https://placehold.co/200x200/e7e5e4/78716c?text=HOT+INFORMATION";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const img=u=>!u?FALLBACK_IMG:esc(/^(https?:\/\/|\.\/|\/|data:image)/.test(u)?u:'./assets/'+u);
+const img=u=>!u?FALLBACK_IMG:esc(kv(/^(https?:\/\/|\.\/|\/|data:image)/.test(u)?u:'./assets/'+u));
 const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.08});
 const observe=()=>document.querySelectorAll('.fu:not(.in)').forEach(e=>io.observe(e));
 
@@ -151,7 +151,7 @@ let tN=0,tI=0,tHold=false,tWait=0;
 const perView=()=>matchMedia('(min-width:768px)').matches?4:1;
 function team(t){
   tN=t.length;tI=0;$('team').classList.toggle('hidden',!tN);
-  $('team-track').innerHTML=t.map(x=>`<div class="tm-item"><div class="card h-full p-4 md:p-5 text-center">${KFX.img({fx:x.imageFx,T:THEME,src:img(x.image),attrs:`loading="lazy" alt="${esc(x.name)}" onerror="this.onerror=null;this.src='https://placehold.co/200x200/e7e5e4/78716c?text=${encodeURIComponent((x.name||'?')[0])}'"`,cls:'w-28 h-28 md:w-full md:h-auto md:max-w-[7.5rem] aspect-square rounded-full object-cover mx-auto mb-4'})}<h3 class="font-display text-xl md:text-lg lg:text-xl font-semibold text-title leading-tight">${esc(x.name)}</h3><p class="text-sm text-stone-600 mt-1">${esc(x.position)}</p></div></div>`).join('');
+  $('team-track').innerHTML=t.map(x=>`<div class="tm-item"><div class="card h-full p-4 md:p-5 text-center">${KFX.img({fx:x.imageFx,T:THEME,src:img(x.image),attrs:`loading="lazy" alt="${esc(x.alt||x.name)}" onerror="this.onerror=null;this.src='https://placehold.co/200x200/e7e5e4/78716c?text=${encodeURIComponent((x.name||'?')[0])}'"`,cls:'w-28 h-28 md:w-full md:h-auto md:max-w-[7.5rem] aspect-square rounded-full object-cover mx-auto mb-4'})}<h3 class="font-display text-xl md:text-lg lg:text-xl font-semibold text-title leading-tight">${esc(x.name)}</h3><p class="text-sm text-stone-600 mt-1">${esc(x.position)}</p></div></div>`).join('');
   teamGo(0);
 }
 function teamGo(i){
@@ -175,7 +175,7 @@ function teamStep(dir){
   let x0=null;
   box.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});
   box.addEventListener('touchend',e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>40)teamStep((dx<0)!==KLang.rtl?1:-1)},{passive:true});
-  setInterval(()=>{if(!REDUCED&&!tHold&&Date.now()>=tWait&&tN>perView())teamStep(1)},10000);
+  setInterval(()=>{if(!REDUCED&&!KPAUSE.on&&!tHold&&Date.now()>=tWait&&tN>perView())teamStep(1)},10000);
   addEventListener('resize',()=>teamGo(tI));
 })();
 async function load(){

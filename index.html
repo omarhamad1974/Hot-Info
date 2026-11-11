@@ -24,7 +24,7 @@
 <div id="app-top"></div>
 <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
   <div class="wrap py-3 flex items-center justify-between">
-    <div class="flex items-center gap-3"><span class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></span></div>
+    <div class="flex items-center gap-3"><span class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg?v=2" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></span></div>
     <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
       <a href="#about" class="hover:text-brand-600 transition" data-i18n="nav_about">About</a><a href="#jurisdictions" class="hover:text-brand-600 transition" data-i18n="nav_jur">HOT News</a><a href="#services" class="hover:text-brand-600 transition" data-i18n="nav_services">IP Services</a><a href="#news" class="hover:text-brand-600 transition" data-i18n="nav_news">News</a>
     <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a><a href="directory.html" class="hover:text-brand-600 transition" data-i18n="nav_directory">Directory</a></nav>
@@ -38,7 +38,7 @@
   <section data-sec="home-carousel" class="wrap pt-5 md:pt-8"><div id="carousel" class="relative h-60 sm:h-80 lg:h-[27rem] rounded-3xl overflow-hidden shadow-xl bg-ink" aria-roledescription="carousel"></div></section>
 
   <section id="about" data-sec="home-about" class="band"><div class="wrap grid md:grid-cols-[minmax(0,9.5rem)_1fr] lg:grid-cols-[minmax(0,11rem)_1fr] gap-8 md:gap-10 lg:gap-14 items-center">
-    <div class="fu flex justify-center"><img data-brand-logo src="assets/khip-logo.jpg" width="800" height="822" alt="Khaled Hamada Intellectual Property" class="about-logo w-56 sm:w-64 md:w-full max-w-[22rem] md:max-w-[9.5rem] lg:max-w-[11rem] h-auto" decoding="async"></div>
+    <div class="fu flex justify-center"><img data-brand-logo src="assets/khip-logo.jpg?v=2" width="800" height="822" alt="Khaled Hamada Intellectual Property" class="about-logo w-56 sm:w-64 md:w-full max-w-[22rem] md:max-w-[9.5rem] lg:max-w-[11rem] h-auto" decoding="async"></div>
     <div class="fu text-center md:text-start" style="--d:.15s"><span class="rule mx-auto md:mx-0 !mt-0"></span><p id="about-text" class="text-base md:text-lg leading-relaxed"></p>
       <a href="about.html" class="mt-8 inline-flex items-center gap-2 text-sm border border-ink/30 hover:bg-ink hover:text-white px-9 py-2.5 rounded-full transition"><span data-i18n="more">More</span> <i class="ph-light ph-arrow-right rtl:-scale-x-100"></i></a></div>
   </div></section>
@@ -96,14 +96,14 @@ const FALLBACK_IMG="https://placehold.co/600x400/e7e5e4/78716c?text=HOT+INFORMAT
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // Images: a bare file name such as "logo.jpg" is looked up in ./assets/
-const img=u=>!u?FALLBACK_IMG:esc(/^(https?:\/\/|\.\/|\/|data:image)/.test(u)?u:'./assets/'+u);
+const img=u=>!u?FALLBACK_IMG:esc(kv(/^(https?:\/\/|\.\/|\/|data:image)/.test(u)?u:'./assets/'+u));
 const flag=j=>{const c=String(j.code||CODES[(j.enCountry||j.country||'').toLowerCase()]||'').toLowerCase();return /^[a-z]{2}$/.test(c)?`<span class="fi fi-${c} rounded-sm shadow-sm" role="img" aria-label="${esc(KLang.t('flag_aria',{x:j.country}))}"></span>`:'<i class="ph-light ph-globe-hemisphere-west text-brand-600"></i>'};
 const ICONS=[[/patent/i,'ph-lightbulb'],[/trade\s?mark/i,'ph-seal-check'],[/transl/i,'ph-translate'],[/design/i,'ph-pencil-ruler'],[/copyright/i,'ph-copyright'],[/search/i,'ph-magnifying-glass']];
 const icon=x=>/^ph-/.test(x.icon||'')?esc(x.icon.replace(/^ph-light\s*/,'')):(ICONS.find(([r])=>r.test(x.title||''))||[0,'ph-seal-check'])[1];
 const show=(id,on)=>$(id).classList.toggle('hidden',!on);
 const imgErr='onerror="this.onerror=null;this.src=FALLBACK_IMG"';
 // A picture with its optional colour overlay and SVG mask (set in the admin, see theme.js > KFX). With no effect it is a plain <img>.
-const fxImg=(x,cls,lazy)=>KFX.img({fx:x.imageFx,T:D.theme,src:img(x.image),attrs:`${lazy?'loading="lazy" ':''}${imgErr} alt=""`,cls});
+const fxImg=(x,cls,lazy)=>KFX.img({fx:x.imageFx,T:D.theme,src:img(x.image),attrs:`${lazy?'loading="lazy" ':''}${imgErr} alt="${esc(x.alt||'')}"`,cls});
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let D={},hot=[],hotLoaded=false,slide=0,timer=null,lastFocus=null;
 
@@ -146,13 +146,13 @@ function watch(el){
   ['mouseenter','focusin','touchstart','pointerdown'].forEach(v=>el.addEventListener(v,hold,{passive:true}));
   ['mouseleave','focusout','touchend','pointerup'].forEach(v=>el.addEventListener(v,e=>{if(e.type==='pointerup'&&e.pointerType==='mouse')return;free()},{passive:true}));
 }
-const paused=el=>el._hold||Date.now()<(el._wait||0);
+const paused=el=>KPAUSE.on||el._hold||Date.now()<(el._wait||0);
 function auto(el,ms=3500){
   if(el._a)return;el._a=1;watch(el);
   setInterval(()=>{
     if(REDUCED||paused(el)||!el.firstElementChild)return;
     const step=(el.firstElementChild.offsetWidth+16)*(KLang.rtl?-1:1);
-    if(Math.abs(el.scrollLeft)+el.clientWidth>=el.scrollWidth-6)el.scrollTo({left:0,behavior:'smooth'});else el.scrollBy({left:step,behavior:'smooth'});
+    if(Math.abs(el.scrollLeft)+el.clientWidth>=el.scrollWidth-6)el.scrollTo({left:0,behavior:(window.kSmooth?kSmooth():'smooth')});else el.scrollBy({left:step,behavior:(window.kSmooth?kSmooth():'smooth')});
   },ms);
 }
 // Testimonials: one at a time in a frame; every 10 seconds the quote fades out, then the next fades in
@@ -197,8 +197,13 @@ function carousel(slides){
   c.parentElement.classList.toggle('hidden',!slides.length);
   c.innerHTML=slides.map((s,i)=>`<div class="slide absolute inset-0 ${i?'':'on'}">${fxImg(s,'w-full h-full object-cover opacity-80')}<div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/50 to-ink/10 p-6 md:p-12 flex flex-col justify-end text-white"><h2 class="font-display text-3xl md:text-5xl font-medium leading-tight max-w-2xl [text-shadow:0_1px_4px_rgba(0,0,0,.45)]">${esc(s.title)}</h2><p class="text-sm md:text-base text-stone-100 mt-2 max-w-xl [text-shadow:0_1px_3px_rgba(0,0,0,.5)]">${esc(s.subtitle)}</p></div></div>`).join('');
   if(slides.length>1){
-    const go=()=>{clearInterval(timer);if(!REDUCED)timer=setInterval(()=>setSlide((slide+1)%slides.length),10000)};go();
+    const go=()=>{clearInterval(timer);if(!REDUCED&&!KPAUSE.on)timer=setInterval(()=>setSlide((slide+1)%slides.length),10000)};go();
     c.onmouseenter=()=>clearInterval(timer);c.onmouseleave=go;
+    if(!REDUCED){   // pause / play for everything that moves by itself on the page (WCAG 2.2.2)
+      c.insertAdjacentHTML('beforeend','<button type="button" id="k-pause"><i class="ph-light"></i></button>');
+      const b=$('k-pause'),sync=()=>{const t=KLang.t(KPAUSE.on?'play_motion':'pause_motion');b.setAttribute('aria-label',t);b.title=t;b.setAttribute('aria-pressed',String(KPAUSE.on));b.firstChild.className='ph-light '+(KPAUSE.on?'ph-play':'ph-pause')};
+      sync();b.onclick=()=>{KPAUSE.set(!KPAUSE.on);sync();KPAUSE.on?clearInterval(timer):go()};
+    }
     let x0=null;c.ontouchstart=e=>{x0=e.touches[0].clientX;clearInterval(timer)};
     c.ontouchend=e=>{if(x0!==null){const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>40)setSlide((slide+((dx<0)!==KLang.rtl?1:-1)+slides.length)%slides.length);x0=null}go()};
   }
@@ -259,7 +264,7 @@ function offersPaint(){
     const left=e.offer_ends?Math.round((Date.parse(e.offer_ends)-Date.parse(today))/864e5):null;
     const when=left==null?T('offers_open'):left<=0?T('offers_ends_today'):left===1?T('offers_1day'):left<=14?T('offers_days',{x:left}):T('offers_until',{x:new Date(e.offer_ends+'T00:00:00Z').toLocaleDateString(loc,{day:'numeric',month:'short',timeZone:'UTC'})});
     const name=(KLang.rtl&&e.name_ar)||e.name,ico=ICO[e.entry_type]||'ph-buildings';
-    const pic=e.image_path&&C.url?C.url+'/storage/v1/object/public/directory-images/'+String(e.image_path).split('/').map(encodeURIComponent).join('/'):'';
+    const pic=e.image_path&&C.url?kv(C.url+'/storage/v1/object/public/directory-images/'+String(e.image_path).split('/').map(encodeURIComponent).join('/')):'';
     return `<div class="fu" style="--d:${(i%3)*.1}s"><a href="directory-entry.html?id=${encodeURIComponent(e.id)}" class="of-card">`
       +`<span class="of-img${pic?' has-img':''}">${pic?`<img src="${esc(pic)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:`<i class="ph-light ${ico}" aria-hidden="true"></i>`}<span class="of-badge" aria-hidden="true"><i class="ph-light ph-tag"></i></span><span class="of-when${left!=null&&left<=3?' hot':''}"><i class="ph-light ph-clock" aria-hidden="true"></i> ${esc(when)}</span></span>`
       +`<span class="of-body"><span class="of-ent" dir="auto"><i class="ph-light ${ico}" aria-hidden="true"></i><span class="truncate">${esc(name)}${e.city?' \u00b7 '+esc(e.city):''}</span></span>`
@@ -294,7 +299,7 @@ function pick(i){
   jc=i;
   document.querySelectorAll('[id^=chip-]').forEach(b=>{const on=b.id==='chip-'+i;b.classList.toggle('bg-ink',on);b.classList.toggle('text-white',on);b.classList.toggle('border-ink',on);b.classList.toggle('bg-white',!on)});
   const ch=$('chip-'+i),box=$('jur-chips');
-  if(ch){if(KLang.rtl)ch.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});else box.scrollTo({left:ch.offsetLeft-(box.clientWidth-ch.offsetWidth)/2,behavior:'smooth'})}
+  if(ch){if(KLang.rtl)ch.scrollIntoView({inline:'center',block:'nearest',behavior:(window.kSmooth?kSmooth():'smooth')});else box.scrollTo({left:ch.offsetLeft-(box.clientWidth-ch.offsetWidth)/2,behavior:(window.kSmooth?kSmooth():'smooth')})}
   const c=$('jur-card');c.style.transition='opacity .3s ease,transform .3s ease';c.style.opacity=0;c.style.transform='translateX('+(-24*(KLang.rtl?-1:1))+'px)';
   setTimeout(()=>{
     c.innerHTML=`<div class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ph-fire text-2xl"></i></span><div class="min-w-0"><h3 class="font-display text-[1.4rem] leading-tight font-semibold text-title">${esc(hotName(j))}</h3><p class="text-xs text-stone-600">${esc(j.count===1?KLang.t('hot_n1'):KLang.t('hot_n',{x:j.count}))}</p></div></div>`
@@ -342,9 +347,9 @@ function relStart(){
   tr.addEventListener('touchstart',()=>relHold=true,{passive:true});tr.addEventListener('touchend',()=>setTimeout(()=>relHold=false,3000),{passive:true});
   relT=setInterval(()=>{
     const t=$('rel-track');if(!t){clearInterval(relT);return}
-    if(REDUCED||relHold||t.scrollWidth<=t.clientWidth+4)return;
+    if(REDUCED||KPAUSE.on||relHold||t.scrollWidth<=t.clientWidth+4)return;
     const c=t.firstElementChild,step=(c.offsetWidth+12)*(KLang.rtl?-1:1);
-    if(Math.abs(t.scrollLeft)+t.clientWidth>=t.scrollWidth-4)t.scrollTo({left:0,behavior:'smooth'});else t.scrollBy({left:step,behavior:'smooth'});
+    if(Math.abs(t.scrollLeft)+t.clientWidth>=t.scrollWidth-4)t.scrollTo({left:0,behavior:(window.kSmooth?kSmooth():'smooth')});else t.scrollBy({left:step,behavior:(window.kSmooth?kSmooth():'smooth')});
   },5000);
 }
 function openService(i){

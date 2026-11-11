@@ -6,3 +6,5 @@ Saved in theme.sections.<section>.overlapMobile / overlapTablet / overlapDesktop
 How it works (theme.js): the section gets a negative bottom margin equal to the overlap, so the next section moves up under or over it; z-index sets who is on top. Hidden sections are skipped when finding "the next section".
 Tip: give the covering section a background (Sections tab) and enough bottom padding so its own text is not hidden by the next one. Blocks inside another section (the *-contact blocks) have no overlap setting.
 No SQL. Files: admin.html, theme.js.
+
+Note (Phase 18): the Sections tab now holds these settings inside each section card, under Style.

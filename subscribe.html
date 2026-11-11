@@ -61,7 +61,7 @@
 <body class="font-sans font-normal antialiased">
 <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
   <div class="wrap py-3 flex items-center justify-between">
-    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
+    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg?v=2" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
     <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
       <a href="index.html" class="hover:text-brand-600 transition" data-i18n="bar_home">Home</a><a href="patents.html" class="hover:text-brand-600 transition" data-svc-page="patents.html">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition" data-svc-page="trademarks.html">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition" data-svc-page="translation.html">Translation</a><a href="about.html" class="hover:text-brand-600 transition" data-i18n="bar_about">About</a>
     <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a><a href="subscribe.html" class="text-brand-700 font-normal transition" aria-current="page" data-i18n="pay_nav">Subscribe</a><a href="directory.html" class="hover:text-brand-600 transition" data-i18n="nav_directory">Directory</a></nav>
@@ -132,7 +132,7 @@ function dates(sid,p){
   const u=S.until[sid],renew=!!(u&&u>=today()),st=renew?addDays(u,1):today();
   return{st,en:addDays(addDur(st,p.duration),-1),renew,until:u}}
 
-function flash(t,ok=true){const m=$('msg');m.textContent=t;m.className='mt-6 card !transform-none p-4 text-sm '+(ok?'text-emerald-900 bg-emerald-50 border-emerald-200':'text-red-900 bg-red-50 border-red-200');m.scrollIntoView({behavior:'smooth',block:'center'})}
+function flash(t,ok=true){const m=$('msg');m.textContent=t;m.className='mt-6 card !transform-none p-4 text-sm '+(ok?'text-emerald-900 bg-emerald-50 border-emerald-200':'text-red-900 bg-red-50 border-red-200');m.scrollIntoView({behavior:(window.kSmooth?kSmooth():'smooth'),block:'center'})}
 function note(icon,t,sub,btn,btn2){
   $('form').classList.add('hidden');$('mine').classList.add('hidden');
   const bt=(id,ic,l,dark)=>`<button id="${id}" class="auth-btn" style="margin:0;${dark?'background:rgb(var(--c-ink-rgb));color:#fff;border-color:rgb(var(--c-ink-rgb))':''}"><i class="ph-light ${ic}"></i><span style="display:inline">${esc(l)}</span></button>`;
@@ -259,7 +259,7 @@ function paintAll(){
   $('state').innerHTML='';$('form').classList.remove('hidden');
   if(!S.pkgs.length){$('form').classList.add('hidden');$('state').innerHTML=`<p class="text-stone-600">${esc(T('pay_no_pkgs'))}</p>`}
   paintSecs();paintSum();paintMine();paintSteps();
-  if(RENEWED){const sc=RENEWED;RENEWED=null;flash(T('pay_renew_for',{x:sc.name}));setTimeout(()=>{const e=$('sec-'+sc.id);if(e){e.classList.add('flash');e.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>e.classList.remove('flash'),2500)}},200)}
+  if(RENEWED){const sc=RENEWED;RENEWED=null;flash(T('pay_renew_for',{x:sc.name}));setTimeout(()=>{const e=$('sec-'+sc.id);if(e){e.classList.add('flash');e.scrollIntoView({behavior:(window.kSmooth?kSmooth():'smooth'),block:'center'});setTimeout(()=>e.classList.remove('flash'),2500)}},200)}
 }
 const readUntil=pr=>{S.until={};(pr.data||[]).forEach(p=>{if(!S.until[p.sector_id]||p.end_date>S.until[p.sector_id])S.until[p.sector_id]=p.end_date})};
 async function load(){
@@ -322,7 +322,7 @@ async function send(){
     S.pick={};S.method='';$('f-file').value='';$('f-note').value='';paintPrev();
     await reloadReqs();paintAll();
     $('state').innerHTML=`<div class="card !transform-none p-6 max-w-3xl border-emerald-200 bg-emerald-50"><p class="flex items-center gap-2 font-display text-2xl font-semibold text-emerald-900"><i class="ph-light ph-hourglass-medium"></i>${esc(T('pay_wait_title'))}</p><p class="text-sm text-emerald-900 mt-1">${esc(T('pay_sent'))}</p><p class="text-sm text-emerald-900 mt-1">${esc(T('pay_wait_sub'))}</p>${S.typ?`<p class="text-sm text-emerald-900 mt-1">${esc(T('pay_tl_typ',{x:human(S.typ)}))}</p>`:''}</div>`;
-    $('state').scrollIntoView({behavior:'smooth',block:'start'});
+    $('state').scrollIntoView({behavior:(window.kSmooth?kSmooth():'smooth'),block:'start'});
   }catch(e){flash(e.message||String(e),false)}
   finally{S.busy=false;$('b-send').disabled=false;paintSum()}
 }
@@ -340,7 +340,7 @@ $('form').addEventListener('change',e=>{
 $('form').addEventListener('submit',e=>{e.preventDefault();send()});
 document.addEventListener('click',async e=>{
   const sp=e.target.closest('[data-step]');
-  if(sp&&!sp.disabled){const t=$({choose:'h1',pay:'h3',upload:'h4'}[sp.dataset.step]);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(sp&&!sp.disabled){const t=$({choose:'h1',pay:'h3',upload:'h4'}[sp.dataset.step]);if(t)t.scrollIntoView({behavior:(window.kSmooth?kSmooth():'smooth'),block:'start'});return}
   const c=e.target.closest('[data-copy]');
   if(c){try{await navigator.clipboard.writeText(c.dataset.copy);const o=c.innerHTML;c.textContent=T('pay_copied');setTimeout(()=>{c.innerHTML=o},1500)}catch(_){}return}
   const x=e.target.closest('[data-cancel]');

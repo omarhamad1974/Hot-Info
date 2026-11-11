@@ -17,6 +17,8 @@
   let wgroup = '';          // group name used for Word files of type faq / items / gallery
   let wtype = 'blog';       // what a Word file without "type:" lines is read as
   let ul = 'en';            // screen language
+  let mode = '';            // '' = general import screen, 'blog' = the News "Import blogs" screen (every item is a news article by default)
+  let dlpics = true;        // blog screen: copy pictures given as web links into the site when the website allows it
   const EXS = ['carousel', 'news', 'services', 'testimonials', 'employees', 'jurisdictions', 'faq', 'cards', 'gallery', 'about', 'pagetext'];
   const exSel = {}; EXS.forEach(k => { exSel[k] = true; });
   let exLang = 'ar', exOpen = false;
@@ -58,6 +60,15 @@
     ex_word_note: ['Open the .doc in Word and save it as .docx before importing it again.', 'افتح ملف .doc في Word واحفظه بصيغة .docx قبل استيراده مرة أخرى.'],
     ex_none: ['Nothing to export for that choice.', 'لا يوجد ما يمكن تصديره لهذا الاختيار.'],
     ex_skip: ['{n} item(s) have no Arabic text yet and were left out.', 'تم استبعاد {n} عنصر ليس له نص عربي بعد.'],
+    b_title: ['Import blogs from a file', 'استيراد مجموعة مقالات من ملف'],
+    b_help: ['One file (.md or .docx) can hold many blogs: each blog becomes one complete news article. Put the picture as a file name or a web link on the "image:" line.', 'يمكن للملف الواحد (.md أو .docx) أن يحتوي عدة مقالات: كل مقال يصبح خبرا كاملا. اكتب الصورة كاسم ملف أو رابط ويب في سطر "image:".'],
+    b_tpl: ['Templates', 'النماذج'],
+    b_dl: ['Save pictures given as web links into the site (if the website allows it; otherwise the link is kept)', 'احفظ الصور المعطاة كروابط داخل الموقع (إن سمح موقعها بذلك، وإلا يبقى الرابط)'],
+    b_apply: ['Add to News', 'أضف إلى الأخبار'],
+    b_col: ['Date', 'التاريخ'], b_cat: ['Category', 'التصنيف'], b_pic: ['Picture', 'الصورة'],
+    b_link: ['web link', 'رابط'], b_file: ['file', 'ملف'], b_none: ['none', 'بلا'],
+    t_dl_got: ['{n} picture(s) saved into the site.', 'تم حفظ {n} صورة داخل الموقع.'],
+    t_dl_link: ['{n} picture(s) kept as web links (the website does not allow copying).', 'بقيت {n} صورة كروابط ويب (موقعها لا يسمح بالنسخ).'],
     switch: ['عربي', 'English']
   };
   const t = (k, o) => { let s = (T[k] || [k, k])[ul === 'ar' ? 1 : 0]; if (o) for (const x in o) s = s.replace('{' + x + '}', o[x]); return s; };
@@ -100,6 +111,8 @@
     [/^pagetext "(.+)": the fixed page text is only translated into Arabic.*$/, m => `نصوص الصفحات «${m[1]}»: النصوص الثابتة تُترجم للعربية فقط، تم تخطي هذا العنصر الإنجليزي`],
     [/^pagetext "(.+)": "(.+)" is not a text of that page, so it was skipped$/, m => `نصوص الصفحات «${m[1]}»: «${m[2]}» ليس من نصوص هذه الصفحة وتم تخطيه`],
     [/^pagetext "(.+)": no "## key" entries with text found$/, m => `نصوص الصفحات «${m[1]}»: لا توجد عناصر "## key" بها نص`],
+    [/^"(.+)": no picture \(add an "image:" line.*$/, m => `«${m[1]}»: بلا صورة (أضف سطر image: باسم ملف أو رابط)`],
+    [/^"(.+)": no date, today's date will be used$/, m => `«${m[1]}»: بلا تاريخ، سيتم استخدام تاريخ اليوم`],
     [/^Too large \(limit 2 MB\)\.$/, () => 'الملف كبير جدا (الحد 2 ميجابايت)'],
     [/^Not a \.md, \.markdown or \.txt file\.$/, () => 'ليس ملف .md أو .markdown أو .txt'],
     [/^Could not convert the Word file: (.*)$/, m => 'تعذر تحويل ملف وورد: ' + m[1]]
@@ -152,7 +165,7 @@
     for (const f of files) {
       if (f.error) { issues.push({ file: f.name, level: 'error', message: f.error }); continue; }
       f.text = f.isWord ? KWord.normalize(f.raw, { defaultType: wtype, group: wgroup.trim() }) : f.text;
-      const r = KImport.parseContent(f.text, { defaultLang: dlang, knownImages: known(), categories: catsOf(), pageKeys: pk });
+      const r = KImport.parseContent(f.text, { defaultLang: dlang, knownImages: known(), categories: catsOf(), pageKeys: pk, defaultType: mode === 'blog' ? 'blog' : '' });
       r.items.forEach(i => { i._file = f.name; items.push(i); });
       r.issues.forEach(i => issues.push({ file: f.name, level: i.level, message: i.message }));
       if (f.note) issues.push({ file: f.name, level: 'info', message: f.note });
@@ -167,7 +180,7 @@
   /* what happens to each chosen picture */
   function picStatus() {
     const used = new Map(); // lowercase image name -> kind of the first item that uses it
-    (result ? result.items : []).forEach(it => { const im = it.fields && it.fields.image; if (im && !used.has(im.toLowerCase())) used.set(im.toLowerCase(), it.kind); });
+    (result ? result.items : []).forEach(it => { const im = it.fields && it.fields.image; if (im && !/^https?:/i.test(im) && !used.has(im.toLowerCase())) used.set(im.toLowerCase(), it.kind); });
     const have = new Set(ASSETS.map(a => a.toLowerCase()));
     return pics.map(p => {
       const k = used.get(p.name.toLowerCase()) || used.get(safeName(p.name).toLowerCase());
@@ -186,11 +199,15 @@
     const body = document.getElementById('imp-body'); if (!body) return;
     const modal = document.getElementById('imp-modal');
     modal.dir = ul === 'ar' ? 'rtl' : 'ltr';
-    document.getElementById('imp-title').textContent = t('title');
+    document.getElementById('imp-title').textContent = t(mode === 'blog' ? 'b_title' : 'title');
     document.getElementById('imp-sw').textContent = t('switch');
     const n = result ? result.items.length : 0;
     const rows = result ? result.items.map((it, i) => {
       const rep = result.report[i] || {};
+      if (mode === 'blog') {
+        const im = (it.fields && it.fields.image) || '', f = it.fields || {};
+        return `<tr class="border-t"><td class="py-1.5 px-1">${badge(rep.action)}</td><td class="px-1 font-bold text-sm break-words" dir="auto">${esc(it.title)}<span class="block text-xs font-normal text-gray-600">${it.lang === 'ar' ? 'عربي' : 'EN'}${f.category ? ' · ' + esc(f.category) : ''}${f.date ? ' · ' + esc(f.date) : ''}</span></td><td class="px-1 text-xs text-gray-600 whitespace-nowrap">${im ? (/^https?:/i.test(im) ? '<i class="fas fa-link"></i> ' + t('b_link') : '<i class="fas fa-image"></i> ' + t('b_file')) : t('b_none')}</td></tr>`;
+      }
       return `<tr class="border-t"><td class="py-1.5 px-1">${badge(rep.action)}</td><td class="px-1 text-xs">${esc(sectionLabel(it.kind))} · ${it.lang === 'ar' ? 'عربي' : 'EN'}</td><td class="px-1 font-bold text-sm break-words" dir="auto">${esc(it.title)}</td><td class="px-1 text-xs text-gray-500 break-all" dir="ltr">${esc(it._file)}</td></tr>`;
     }).join('') : '';
     const iss = result ? result.issues.map(i => `<li class="flex gap-2 text-xs ${lvl[i.level][0]}"><i class="fas ${lvl[i.level][1]} mt-0.5"></i><span><b dir="ltr">${esc(i.file)}</b> ${esc(msg(i.message))}</span></li>`).join('') : '';
@@ -201,11 +218,13 @@
         <label class="block text-xs font-bold">${t('lang_lbl')}<select id="imp-lang" class="${sel}"><option value="ar" ${dlang === 'ar' ? 'selected' : ''}>${t('arabic')}</option><option value="en" ${dlang === 'en' ? 'selected' : ''}>${t('english')}</option></select></label>
         <label class="${lbl}"><i class="fas fa-file-import"></i> ${files.length ? t('more') : t('choose')}<input id="imp-file" type="file" multiple accept="${window.KWord ? '.md,.markdown,.txt,.docx' : '.md,.markdown,.txt'}" class="hidden"></label>
       </div>
-      ${files.some(f => f.isWord) ? `<div class="rounded-xl bg-gray-50 border border-gray-200 p-3 space-y-2">
+      ${files.some(f => f.isWord) && mode !== 'blog' ? `<div class="rounded-xl bg-gray-50 border border-gray-200 p-3 space-y-2">
         <label class="block text-xs font-bold">${t('wtype')}<select id="imp-wtype" class="${sel}">${['blog', 'service', 'country', 'carousel', 'about', 'faq', 'items', 'gallery'].map(o => `<option value="${o}" ${wtype === o ? 'selected' : ''}>${t('w_' + o)}</option>`).join('')}</select></label>
         ${['faq', 'items', 'gallery'].includes(wtype) ? `<label class="block text-xs font-bold">${t('wgroup')}<input id="imp-wgroup" type="text" dir="ltr" value="${esc(wgroup)}" placeholder="${t('wgroup_ph')}" class="${sel}"></label>` : ''}
         <div class="flex flex-wrap gap-2">${files.map((f, i) => f.isWord ? `<button data-impdl="${i}" class="text-xs bg-white border border-gray-300 hover:bg-gray-100 font-bold px-2.5 py-1.5 rounded-lg" title="${t('dl_md')}"><i class="fas fa-download"></i> <span dir="ltr">${esc(f.name.replace(/\.docx$/i, ''))}.md</span></button>` : '').join('')}</div></div>` : ''}
-      <p class="text-xs text-gray-600">${window.KWord ? t('help_word') : t('help_md')} ${t('help_more')} <a href="content-templates/IMPORT-GUIDE.md" target="_blank" rel="noopener" class="text-brand-700 font-bold underline">${t('guide')}</a></p>
+      ${mode === 'blog' ? `<p class="text-xs text-gray-600">${t('b_help')} <a href="content-templates/IMPORT-GUIDE.md" target="_blank" rel="noopener" class="text-brand-700 font-bold underline">${t('guide')}</a> · <a href="content-templates/blogs.md" target="_blank" rel="noopener" class="text-brand-700 font-bold underline">blogs.md</a> · <a href="content-templates/word-template-blogs.docx" class="text-brand-700 font-bold underline">word-template-blogs.docx</a></p>
+      <label class="flex items-start gap-2 text-xs"><input type="checkbox" id="imp-dl" ${dlpics ? 'checked' : ''} class="mt-0.5"> <span>${t('b_dl')}</span></label>`
+      : `<p class="text-xs text-gray-600">${window.KWord ? t('help_word') : t('help_md')} ${t('help_more')} <a href="content-templates/IMPORT-GUIDE.md" target="_blank" rel="noopener" class="text-brand-700 font-bold underline">${t('guide')}</a></p>`}
       <div class="rounded-xl border border-dashed border-gray-300 p-3 space-y-2">
         <div class="flex items-center gap-2 flex-wrap"><label class="${lbl}"><i class="fas fa-image"></i> ${t('pics_btn')}<input id="imp-pics" type="file" multiple accept="image/jpeg,image/png,image/webp" class="hidden"></label><span class="text-xs text-gray-600 flex-1 min-w-[12rem]">${t('pics_none')}</span></div>
         ${ps.length ? `<ul class="space-y-1">${ps.map(x => `<li class="flex items-center gap-2 text-xs"><i class="fas ${x.state === 'unused' ? 'fa-circle-minus text-gray-400' : x.state === 'have' ? 'fa-circle-check text-gray-500' : 'fa-cloud-arrow-up text-emerald-700'}"></i><span dir="ltr" class="font-bold break-all">${esc(x.p.name)}</span><span class="text-gray-600">${t('pic_' + x.state)}</span></li>`).join('')}</ul>` : ''}
@@ -214,17 +233,17 @@
       <div class="rounded-xl border border-gray-200 overflow-hidden"><div class="px-3 py-2 bg-gray-50 text-xs font-bold">${n} ${n === 1 ? t('item') : t('items')} ${t('ready')}${errs ? ` · ${errs} ${t('problems')}` : ''}</div>
       ${n ? `<div class="px-2 overflow-x-auto"><table class="w-full" style="text-align:start">${rows}</table></div>` : `<p class="px-3 py-3 text-xs text-gray-600">${t('nothing')}</p>`}</div>
       ${iss ? `<ul class="space-y-1">${iss}</ul>` : ''}` : ''}
-      <details class="rounded-xl border border-gray-200" ${exOpen ? 'open' : ''} id="imp-ex"><summary class="p-3 cursor-pointer font-bold text-sm">${t('ex_title')}</summary>
+      ${mode === 'blog' ? '' : `<details class="rounded-xl border border-gray-200" ${exOpen ? 'open' : ''} id="imp-ex"><summary class="p-3 cursor-pointer font-bold text-sm">${t('ex_title')}</summary>
         <div class="p-3 pt-1 space-y-2 border-t">
           <p class="text-xs text-gray-600">${t('ex_help')}</p>
           <div class="flex flex-wrap gap-x-4 gap-y-1">${EXS.map(k => `<label class="inline-flex items-center gap-1.5 text-xs"><input type="checkbox" data-exsec="${k}" ${exSel[k] ? 'checked' : ''}> ${sectionLabel(k)}</label>`).join('')}</div>
           <label class="block text-xs font-bold">${t('ex_lang')}<select id="imp-exlang" class="${sel}"><option value="ar" ${exLang === 'ar' ? 'selected' : ''}>${t('arabic')}</option><option value="en" ${exLang === 'en' ? 'selected' : ''}>${t('english')}</option></select></label>
           <div class="flex flex-wrap gap-2"><button data-exgo="md" class="text-xs bg-brand-600 hover:bg-brand-700 text-white font-bold px-3 py-2 rounded-lg"><i class="fas fa-download"></i> ${t('ex_md')}</button><button data-exgo="doc" class="text-xs bg-white border border-gray-300 hover:bg-gray-100 font-bold px-3 py-2 rounded-lg"><i class="fas fa-file-word"></i> ${t('ex_word')}</button></div>
           <p class="text-xs text-gray-600">${t('ex_word_note')}</p>
-        </div></details>
+        </div></details>`}
       <div class="flex gap-2 justify-end pt-1">
         <button id="imp-cancel" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-4 py-2.5 rounded-xl">${t('close')}</button>
-        <button id="imp-apply" ${n ? '' : 'disabled'} class="text-xs bg-brand-600 hover:bg-brand-700 disabled:bg-gray-300 text-white font-bold px-4 py-2.5 rounded-xl">${t('apply')}${n ? ' (' + n + ')' : ''}</button>
+        <button id="imp-apply" ${n ? '' : 'disabled'} class="text-xs bg-brand-600 hover:bg-brand-700 disabled:bg-gray-300 text-white font-bold px-4 py-2.5 rounded-xl">${t(mode === 'blog' ? 'b_apply' : 'apply')}${n ? ' (' + n + ')' : ''}</button>
       </div>`;
   }
 
@@ -249,6 +268,36 @@
     return renamed;
   }
 
+  /* ---------- blog screen: pictures given as web links ---------- */
+  /* Tries to download each linked picture (the browser only allows it when that website permits it), shrink it like a normal
+     news picture and store it in assets/. Returns { got, kept }. A link that cannot be copied is simply kept as a link. */
+  async function copyLinkedPictures() {
+    const done = new Map(); let got = 0, kept = 0, n = 0;
+    for (const it of result.items) {
+      const u = it.fields && it.fields.image;
+      if (it.kind !== 'news' || !u || !/^https?:\/\//i.test(u)) continue;
+      if (!done.has(u)) {
+        let name = '';
+        try {
+          const r = await fetch(u, { mode: 'cors', credentials: 'omit' });
+          if (!r.ok) throw new Error('http ' + r.status);
+          const blob = await r.blob();
+          if (!/^image\/(jpeg|png|webp)$/.test(blob.type)) throw new Error('not a jpg/png/webp picture');
+          let file = new File([blob], 'blog-' + Date.now().toString(36) + '-' + (++n) + (blob.type === 'image/png' ? '.png' : blob.type === 'image/webp' ? '.webp' : '.jpg'), { type: blob.type });
+          file = await fit(file, FIT[1][1], FIT[1][2]);
+          if (file.size > 3e6) throw new Error('over 3 MB');
+          const final = safeName(file.name);
+          await api('assets/' + final, { method: 'PUT', body: { message: 'Upload image via admin import', content: b64(new Uint8Array(await file.arrayBuffer())), branch: S.b } });
+          ASSETS.push(final); const dl = $('assets'); if (dl) dl.innerHTML += `<option value="${esc(final)}">`;
+          name = final; got++;
+        } catch (_) { kept++; }
+        done.set(u, name);
+      }
+      if (done.get(u)) it.fields.image = done.get(u);
+    }
+    return { got, kept };
+  }
+
   /* ---------- export ---------- */
   async function doExport(kind) {
     try {
@@ -270,43 +319,27 @@
     try {
       await ensureAr();
       const renamed = pics.length ? await uploadPictures() : new Map();
+      const lp = mode === 'blog' && dlpics ? await copyLinkedPictures() : { got: 0, kept: 0 };
       result.items.forEach(it => { const im = it.fields && it.fields.image; if (im && renamed.has(im.toLowerCase())) it.fields.image = renamed.get(im.toLowerCase()); });
-      if (lang === 'en') DEN = D;
+      DEN = D; DAR = compact(DA); // unsaved Arabic typing is kept; the import is merged on top of it
       const rep = KImport.applyContent(result.items, DEN, DAR, { categories: catsOf() });
       KIMP.enTouched = KIMP.enTouched || rep.some(r => r.lang === 'en' || r.action === 'add' || (r.lang === 'ar' && r.kind !== 'about' && r.kind !== 'pagetext'));
       KIMP.arTouched = KIMP.arTouched || rep.some(r => r.lang === 'ar');
       KIMP.pending = true;
-      D = lang === 'ar' ? mirror(DEN, DAR) : DEN;
+      D = DEN; DA = mirror(D, DAR);
       const a = rep.filter(r => r.action === 'add').length, u = rep.length - a;
       close(); mark(true); tabs(); view();
-      toast(t('t_done', { a: a, u: u }));
+      toast(t('t_done', { a: a, u: u }) + (lp.got ? ' ' + t('t_dl_got', { n: lp.got }) : '') + (lp.kept ? ' ' + t('t_dl_link', { n: lp.kept }) : ''));
     } catch (e) { toast(e.message || String(e), false); if (btn) btn.disabled = false; }
   }
 
-  /* Saves both language files when an import is pending (the normal Save button calls this) */
-  KIMP.save = async function () {
-    $('save').disabled = true; $('state').textContent = t('saving');
-    try {
-      const en = lang === 'ar' ? DEN : D;
-      if (KIMP.enTouched) {
-        const j = await api(S.p, { method: 'PUT', body: { message: 'Import content from files via admin page', content: b64(new TextEncoder().encode(JSON.stringify(en, null, 2) + '\n')), sha, branch: S.b } });
-        sha = j.content.sha; KIMP.enTouched = false;
-      }
-      if (KIMP.arTouched) {
-        const out = compact(mirror(en, DAR || {}));
-        const body = { message: 'Import Arabic content from files via admin page', content: b64(new TextEncoder().encode(JSON.stringify(out, null, 2) + '\n')), branch: S.b };
-        if (shaAR) body.sha = shaAR;
-        const k = await api(arPath(), { method: 'PUT', body: body });
-        shaAR = k.content.sha; DAR = out; KIMP.arTouched = false;
-      }
-      KIMP.pending = false; mark(false); tabs();
-      toast(t('saved'));
-    } catch (e) { mark(true); toast(e.message || String(e), false); }
-  };
+  KIMP.save = function () { return save(); }; // the normal Save writes both files (only the ones that changed)
 
   /* ---------- open ---------- */
-  function open() {
+  function open(m) {
     if (!D) return;
+    mode = m === 'blog' ? 'blog' : '';
+    if (mode === 'blog') wtype = 'blog';
     if (lang === 'ar' && DEN === null) return toast(t('t_reload'), false);
     dlang = (enData().languages === 'en') ? 'en' : 'ar'; exLang = dlang;
     try { ul = localStorage.getItem('imp-ui') || ''; } catch (_) { ul = ''; }
@@ -318,6 +351,7 @@
         <div id="imp-body" class="space-y-3"></div>
       </div></div>`));
     draw();
+    if (mode === 'blog') { const fi = document.getElementById('imp-file'); if (fi) fi.click(); }   // one press on the News button goes straight to choosing the file
   }
 
   document.addEventListener('click', function (e) {
@@ -327,7 +361,7 @@
     if (eg) { doExport(eg.dataset.exgo); return; }
     const b = e.target.closest('[data-act="import"],#imp-cancel,#imp-x,#imp-apply,#imp-sw');
     if (!b) return;
-    if (b.dataset.act === 'import') open();
+    if (b.dataset.act === 'import') open(b.dataset.mode);
     else if (b.id === 'imp-apply') apply();
     else if (b.id === 'imp-sw') { ul = ul === 'ar' ? 'en' : 'ar'; try { localStorage.setItem('imp-ui', ul); } catch (_) {} draw(); }
     else close();
@@ -341,6 +375,7 @@
     else if (id === 'imp-exlang') exLang = e.target.value;
     else if (id === 'imp-wtype') { wtype = e.target.value; preview(); }
     else if (id === 'imp-wgroup') { wgroup = e.target.value; preview(); }
+    else if (id === 'imp-dl') dlpics = e.target.checked;
     else if (id === 'imp-lang') { dlang = e.target.value; if (files.length) preview(); }
   });
   addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });

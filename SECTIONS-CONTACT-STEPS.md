@@ -1,5 +1,7 @@
 # Phase 12b: Sections and Contact
 
+Note (Phase 18): the Sections list described below is now the **Sections** tab (one card per section: Content, Style, Animation). Contact is now General > **Contact** (sub-tab).
+
 Upload this folder to GitHub (replace the files), wait 1-2 minutes, then open admin.html > Website content.
 
 ## Sections tab (was "Backgrounds")
@@ -17,7 +19,7 @@ Upload this folder to GitHub (replace the files), wait 1-2 minutes, then open ad
   It is used by the WhatsApp box at the bottom of every page and by the "WhatsApp us" buttons.
 - **Contact details**: any number of phones (optional label), the email and the address.
   The About page shows all of them; the service pages show the email and the first phone.
-  Arabic address: switch the admin page to عربي > General.
+  Arabic address: type it in the Arabic box next to the English address (General > Contact).
 - **Map**: latitude and longitude for the About page map. Empty = map hidden.
 - **Social media**: LinkedIn, YouTube, Facebook, Instagram, X, TikTok, Telegram. Only filled boxes show an icon,
   in the header of every page. (Addresses must start with https://.)

@@ -38,9 +38,9 @@
     if(k==='my-files'){location.href='my-stuff.html';return}
     if(k==='tenders'){location.href='tenders.html';return}
     if(k==='directory'){location.href='directory.html';return}
-    if(k==='about'){/about\.html/.test(location.pathname)?page.scrollTo({top:0,behavior:'smooth'}):location.href='about.html';return}
-    if(k==='top')document.getElementById('app-top')?page.scrollTo({top:0,behavior:'smooth'}):location.href='index.html';
-    else el&&el.offsetParent!==null?el.scrollIntoView({behavior:'smooth'}):location.href='index.html#'+k;
+    if(k==='about'){/about\.html/.test(location.pathname)?page.scrollTo({top:0,behavior:(window.kSmooth?kSmooth():'smooth')}):location.href='about.html';return}
+    if(k==='top')document.getElementById('app-top')?page.scrollTo({top:0,behavior:(window.kSmooth?kSmooth():'smooth')}):location.href='index.html';
+    else el&&el.offsetParent!==null?el.scrollIntoView({behavior:(window.kSmooth?kSmooth():'smooth')}):location.href='index.html#'+k;
   });
   let pi=0,ci=0,del=false;
   (function tick(){

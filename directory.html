@@ -63,7 +63,7 @@
 <body class="font-sans font-normal antialiased">
 <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
   <div class="wrap py-3 flex items-center justify-between">
-    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
+    <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg?v=2" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
     <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
       <a href="index.html" class="hover:text-brand-600 transition" data-i18n="bar_home">Home</a><a href="patents.html" class="hover:text-brand-600 transition" data-svc-page="patents.html">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition" data-svc-page="trademarks.html">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition" data-svc-page="translation.html">Translation</a><a href="about.html" class="hover:text-brand-600 transition" data-i18n="bar_about">About</a>
     <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a><a href="directory.html" class="text-brand-700 font-normal transition" aria-current="page" data-i18n="nav_directory">Directory</a></nav>
@@ -121,7 +121,7 @@ async function shareLink(url,title){
   try{if(navigator.share){await navigator.share({title,text:title,url});return}}catch(e){if(e&&e.name==='AbortError')return}
   try{await navigator.clipboard.writeText(url);toastMsg(T('dir_copied'))}catch(_){window.prompt(T('dir_share'),url)}
 }
-const imgUrl=p=>sb.storage.from('directory-images').getPublicUrl(p).data.publicUrl;
+const imgUrl=p=>kv(sb.storage.from('directory-images').getPublicUrl(p).data.publicUrl);
 
 async function fetchApproved(){
   const out=[],cols='id,name,name_ar,entry_type,sector_id,city,address,phones,whatsapp,website_url,social_url,offer_title,offer_ends,image_path';

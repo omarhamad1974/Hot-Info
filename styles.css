@@ -149,7 +149,13 @@ header .wrap{width:100%;max-width:76rem}
   .rv,.fu{opacity:1;transform:none;filter:none;clip-path:none;transition:none}
   .slide,.slide.on img,.card,.sheet,#news-list>.ncard,.tcard,.tm-track,.ct-tile{transition:none;animation:none}
   .card:hover{transform:none}
+  /* safety net for every other page and effect (directory, tenders, sign-up...): movement ends at once, nothing loops */
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
 }
+
+/* pause / play button on the home carousel (stops every auto-moving block on the page) */
+#k-pause{position:absolute;z-index:10;top:.75rem;inset-inline-end:.75rem;width:2.5rem;height:2.5rem;border-radius:999px;border:1px solid rgba(255,255,255,.4);background:rgb(var(--c-ink-rgb) / .6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;cursor:pointer;backdrop-filter:blur(3px)}
+#k-pause:hover{background:rgb(var(--c-ink-rgb) / .85)}
 
 /* ---------- Sections with a background colour or photo chosen in admin (see theme.js) ---------- */
 /* Dark backgrounds: titles and text turn light; white cards, chips and frames keep dark text */

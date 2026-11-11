@@ -8,7 +8,7 @@
   const same=(a,b)=>String(a==null||String(a).trim()===''?'general':a).trim().toLowerCase()===String(b==null||String(b).trim()===''?'general':b).trim().toLowerCase();
   const txt=v=>typeof v==='string'&&v.trim()!=='';
   /* a bare file name lives in ./assets/ (same rule as the rest of the site) */
-  const img=u=>esc(/^(https?:\/\/|\.\/|\/|data:image)/.test(u)?u:'./assets/'+u);
+  const img=u=>esc((typeof window!=='undefined'&&window.kv||(x=>x))(/^(https?:\/\/|\.\/|\/|data:image)/.test(u)?u:'./assets/'+u));
   /* links: only web, mail, phone, page and #anchor links are kept */
   const href=u=>{u=String(u||'').trim();return /^(https?:\/\/|mailto:|tel:|#|\.\/|\/|[\w-]+\.html)/i.test(u)?esc(u):''};
   const ext=u=>/^https?:\/\//i.test(String(u||''));
@@ -30,7 +30,7 @@
       const link=href(x.link),cta=href(x.ctaLink||x.link),ctaText=txt(x.ctaText)?x.ctaText:'';
       const rel=ext(x.ctaLink||x.link)?' target="_blank" rel="noopener"':'';
       const icon=/^ph-/.test(x.icon||'')?esc(String(x.icon).replace(/^ph-light\s*/,'')):'';
-      const inner=(txt(x.image)?'<img src="'+img(x.image)+'" alt="" loading="lazy" class="w-full h-40 object-cover">':'')
+      const inner=(txt(x.image)?'<img src="'+img(x.image)+'" alt="'+esc(txt(x.alt)?x.alt:'')+'" loading="lazy" class="w-full h-40 object-cover">':'')
         +'<div class="p-5 md:p-6 flex flex-col gap-3 flex-1">'
         +(icon||txt(x.badge)?'<div class="flex items-center gap-3">'+(icon?'<span class="w-11 h-11 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light '+icon+' text-2xl" aria-hidden="true"></i></span>':'')+(txt(x.badge)?'<span class="cat-tag">'+esc(x.badge)+'</span>':'')+'</div>':'')
         +'<h3 class="font-display text-xl md:text-2xl font-semibold text-title leading-tight" dir="auto">'+esc(x.title)+'</h3>'

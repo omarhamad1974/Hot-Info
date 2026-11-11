@@ -2,7 +2,7 @@
    Loaded in <head> on every public page. The values come from "theme" in app-data.json
    (edit them in admin.html, tabs Colors and Backgrounds). With no "theme" block the defaults
    below apply, and they are the colours the site always used.
-   It also holds KFX, the image effects (colour overlay and SVG mask) used by every page that shows a photo. */
+   It also holds KFX, the image effects (colour overlay, SVG mask and shadow) used by every page that shows a photo. */
 (function(){
   const CACHE='khip-data-v3';
   // Default palette = the colours the site used before the palette existed.
@@ -77,10 +77,11 @@
     if(ref.indexOf('custom:')===0){const x=((T||{}).custom||[]).find(y=>String(y.id)===ref.slice(7));return x&&HEX.test(x.hex||'')?x.hex:null}
     return null;
   }
-  const imgUrl=u=>/^(https?:\/\/|\.\/|\/|data:image)/.test(u)?u:'./assets/'+u;
+  const imgUrl=u=>(typeof window!=='undefined'&&window.kv||(x=>x))(/^(https?:\/\/|\.\/|\/|data:image)/.test(u)?u:'./assets/'+u);
   /* ---------- Image effects: colour overlay + SVG mask ----------
      Saved beside any image as "<field>Fx" (a section background: "imageFx"):
        {ov:{type:'matt'|'gradient', color, opacity, color2, opacity2, dir}, mask:{shape, fit, invert}}
+       and shadow:{type:'drop'|'cast'|'extrude', color, opacity, angle, length, blur} (see the Shadow block below)
      colours are brand:N / role:x / custom:id / #hex; opacity is 0 to 100;
      shape is one of MASKS below, or "file:<name>.svg" (an SVG uploaded to assets/).
      Nothing is changed for an image that has no effect: it keeps its original markup. */
@@ -108,6 +109,38 @@
   const clamp=(v,a,b)=>Math.min(b,Math.max(a,v)),num=(v,d)=>{v=parseFloat(v);return isFinite(v)?v:d};
   const rgba=(h,a)=>{const [r,g,b]=parts(h);return `rgba(${r},${g},${b},${+a.toFixed(3)})`};
   const encSvg=t=>'data:image/svg+xml,'+encodeURIComponent(t).replace(/'/g,'%27').replace(/\(/g,'%28').replace(/\)/g,'%29');
+  /* ---------- Shadow (3D look) ----------
+     imageFx.shadow = {type:'drop'|'cast'|'extrude', color, opacity 0-100, angle 0-360 (0 = right, 90 = down), length 0-100, blur 0-100}
+       drop    = a soft shadow offset behind the picture, following the shape's outline.
+       cast    = the shape's silhouette lying on the floor: flipped at the foot of the shape, leaning with the light, fading and softening with distance.
+       extrude = a solid edge as thick as "length" (looks like a thick slab).
+     Sizes are a share of the picture's width (cqw), so it looks the same on any screen size. The shadow lives on its own layer
+     because a mask clips whatever sits on the same element. Without a shadow the markup is exactly as before. */
+  const SHADOWS=[['drop','Drop shadow'],['cast','Cast shadow (lies on the floor)'],['extrude','Extruded edge (thick slab)']];
+  const SH_DEF={drop:{length:30,blur:30,opacity:45},cast:{length:40,blur:25,opacity:55},extrude:{length:30,blur:0,opacity:100}};
+  const shDef=t=>Object.assign({angle:60},Object.prototype.hasOwnProperty.call(SH_DEF,t)?SH_DEF[t]:SH_DEF.drop);
+  function shInfo(s,T){
+    if(!s||typeof s!=='object'||!Object.prototype.hasOwnProperty.call(SH_DEF,s.type))return null;
+    const d=shDef(s.type);
+    return {type:s.type,col:resolve(s.color,T)||palette(T).ink,op:clamp(num(s.opacity,d.opacity),0,100)/100,ang:clamp(num(s.angle,d.angle),0,360),len:clamp(num(s.length,d.length),0,100),blur:clamp(num(s.blur,d.blur),0,100)};
+  }
+  const f3=v=>+v.toFixed(3);
+  // drop and extrude: a CSS filter for the layer that holds the picture (px first for old browsers, then the cqw version)
+  function shFilter(a){
+    const r=a.ang*Math.PI/180,ux=Math.cos(r),uy=Math.sin(r),L=a.len*0.12;
+    const mkf=cq=>{const n=v=>cq?f3(v)+'cqw':f3(v*3)+'px';
+      if(a.type==='drop')return `drop-shadow(${n(ux*L)} ${n(uy*L)} ${n(a.blur*0.1)} ${rgba(a.col,a.op)})`;
+      // extrude: 6 chained copies at 1, 2, 4, 8, 16, 32 steps give every step from 0 to 63, a solid edge with no gaps
+      const d=a.len*0.2/63,c=rgba(a.col,1);let o='';for(let i=0;i<6;i++){const k=d*(1<<i);o+=(i?' ':'')+`drop-shadow(${n(ux*k)} ${n(uy*k)} 0 ${c})`}return o};
+    return `filter:${mkf(0)};filter:${mkf(1)};`;
+  }
+  // cast: three nested layers (transform + blur > fade with distance > the shape in the shadow colour)
+  function shCast(a,mk,rd,size){
+    const oy=mk?clamp(50+num(size,100)*0.48,0,100):100,sk=Math.cos(a.ang*Math.PI/180)*55,sc=0.15+a.len/100*0.85;
+    const A=`transform-origin:50% ${f3(oy)}%;transform:skewX(${f3(sk)}deg) scaleY(${f3(-sc)});opacity:${f3(a.op)};`+(a.blur>0?`filter:blur(${f3(a.blur*0.3)}px);filter:blur(${f3(a.blur*0.1)}cqw);`:'');
+    const g=`linear-gradient(to top,#000 ${f3(100-oy)}%,rgba(0,0,0,.04) 100%)`;
+    return `<span class="kfx-cast" style="${A}"><span class="kfx-cf" style="-webkit-mask-image:${g};mask-image:${g}"><span class="kfx-cs ${rd}" style="background:${a.col};${mk}"></span></span></span>`;
+  }
   // one mask SVG. o = {size:%, rotate:deg, feather:0-100}: size and rotation turn the shape around the centre of its box,
   // feather blurs its edge (the picture fades out softly). With no options the markup is exactly the old one.
   function buildSvg(vb,inner,o){
@@ -135,7 +168,7 @@
         const css=maskCss({shape:'file:'+a[0],size:a[1],rotate:a[2],feather:a[3],fit:a[4]||undefined,invert:a[5]==='1'});
         css.split(';').forEach(dc=>{const i=dc.indexOf(':');if(i>0)el.style.setProperty(dc.slice(0,i).trim(),dc.slice(i+1).trim())})})}).catch(()=>{});
   }
-  let fileUrl=n=>'./assets/'+n;                      // the admin page replaces this to preview files not yet published
+  let fileUrl=n=>(typeof window!=='undefined'&&window.kv||(x=>x))('./assets/'+n);                      // the admin page replaces this to preview files not yet published
   // overlay -> {css (a background value), a (average opacity 0 to 1), c (main colour)} or null when there is no overlay
   function ovInfo(ov,T){
     if(!ov||(ov.type!=='matt'&&ov.type!=='gradient'))return null;
@@ -163,16 +196,21 @@
   // One <img>. cls = the classes the plain image had (size, margins, rounding, object-fit, opacity).
   // With no effect the result is exactly the old <img>; with an effect it is a wrapper that holds the image and the overlay.
   function fxImg(o){
-    const fx=o.fx||{},oi=ovInfo(fx.ov,o.T),mk=maskCss(fx.mask),cls=String(o.cls||''),at=o.attrs||'';
-    if(!oi&&!mk)return `<img src="${o.src}" ${at} class="${cls}">`;
+    const fx=o.fx||{},oi=ovInfo(fx.ov,o.T),mk=maskCss(fx.mask),sh=shInfo(fx.shadow,o.T),cls=String(o.cls||''),at=o.attrs||'';
+    if(!oi&&!mk&&!sh)return `<img src="${o.src}" ${at} class="${cls}">`;
     const tk=cls.split(/\s+/).filter(Boolean),onImg=/^(?:[\w-]+:)*(?:opacity-|object-)/,round=/^(?:[\w-]+:)*rounded/;
+    if(sh){   // outer box (size, margins) > [cast shadow] + filter layer > the masked picture; the outer box does not crop, so the shadow can fall outside the frame
+      const outer=tk.filter(x=>!onImg.test(x)&&!round.test(x)).join(' '),rd=mk?'':tk.filter(x=>round.test(x)).join(' '),im=tk.filter(x=>onImg.test(x)).join(' ');
+      const cast=sh.type==='cast'?shCast(sh,mk,rd,(fx.mask||{}).size):'',flt=sh.type==='cast'?'':shFilter(sh);
+      return `<span class="kfx-sh ${outer}">${cast}<span class="kfx-fl"${flt?` style="${flt}"`:''}><span class="kfx ${rd}"${mk?` style="${mk}"`:''}><img src="${o.src}" ${at} class="${im}">${oi?`<span class="kfx-ov" style="background:${oi.css}"></span>`:''}</span></span></span>`;
+    }
     const wrap=tk.filter(x=>!onImg.test(x)&&!(mk&&round.test(x))).join(' '),inner=tk.filter(x=>onImg.test(x)).join(' ');
     return `<span class="kfx ${wrap}"${mk?` style="${mk}"`:''}><img src="${o.src}" ${at} class="${inner}">${oi?`<span class="kfx-ov" style="background:${oi.css}"></span>`:''}</span>`;
   }
   (function(){
     if(document.getElementById('kfx-css'))return;
     const st=document.createElement('style');st.id='kfx-css';
-    st.textContent='.kfx{position:relative;display:block;overflow:hidden}.kfx>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}.kfx-ov{position:absolute;inset:0;display:block;pointer-events:none}.kfx-sec{position:relative;isolation:isolate}.kfx-bg{position:absolute;inset:0;z-index:-1;pointer-events:none}[data-sec].ov-on{position:relative;margin-bottom:calc(var(--ov-m,0) * -1px)}[data-sec].ov-next{position:relative}@media(min-width:768px){[data-sec].ov-on{margin-bottom:calc(var(--ov-t,0) * -1px)}}@media(min-width:1024px){[data-sec].ov-on{margin-bottom:calc(var(--ov-d,0) * -1px)}}';
+    st.textContent='.kfx{position:relative;display:block;overflow:hidden}.kfx>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}.kfx-ov{position:absolute;inset:0;display:block;pointer-events:none}.kfx-sh{position:relative;display:block;container-type:inline-size}.kfx-fl{position:absolute;inset:0;display:block}.kfx-fl>.kfx{position:absolute;inset:0}.kfx-cast,.kfx-cf,.kfx-cs{position:absolute;inset:0;display:block;pointer-events:none}.kfx-shw{container-type:inline-size}.kfx-sec{position:relative;isolation:isolate}.kfx-bg{position:absolute;inset:0;z-index:-1;pointer-events:none}[data-sec].ov-on{position:relative;margin-bottom:calc(var(--ov-m,0) * -1px)}[data-sec].ov-next{position:relative}@media(min-width:768px){[data-sec].ov-on{margin-bottom:calc(var(--ov-t,0) * -1px)}}@media(min-width:1024px){[data-sec].ov-on{margin-bottom:calc(var(--ov-d,0) * -1px)}}';
     (document.head||document.documentElement).appendChild(st);
   })();
   /* Header colours (theme.header: bg, opacity, text, active, border; each a colour reference). Nothing saved = the header looks as before. */
@@ -233,12 +271,20 @@
         layers.push(`url("${imgUrl(String(s.image)).replace(/"/g,'%22')}")`);
         const bg=layers.join(',');
         if(mk){                                                               // a mask must not hide the text: the picture goes on its own layer behind the content
-          const L=document.createElement('div');L.className='kfx-bg';L.setAttribute('aria-hidden','true');
-          L.style.cssText=`background-image:${bg};background-size:cover;background-position:center;background-repeat:no-repeat;${mk}`;
-          el.insertBefore(L,el.firstChild);el.classList.add('kfx-sec');
+          const css=`background-image:${bg};background-size:cover;background-position:center;background-repeat:no-repeat;${mk}`,sh=shInfo(fx.shadow,T);
+          const L=document.createElement('div');L.setAttribute('aria-hidden','true');
+          if(!sh){L.className='kfx-bg';L.style.cssText=css;el.insertBefore(L,el.firstChild)}
+          else{                                                               // a shadow needs its own layers: wrapper > [cast shadow] + filter layer > the masked picture
+            L.style.cssText='position:absolute;inset:0;display:block;'+css;
+            const W=document.createElement('div');W.className='kfx-bg kfx-shw';W.setAttribute('aria-hidden','true');
+            if(sh.type==='cast')W.innerHTML=shCast(sh,mk,'',(fx.mask||{}).size);
+            const M=document.createElement('div');M.className='kfx-fl';if(sh.type!=='cast')M.style.cssText=shFilter(sh);
+            M.appendChild(L);W.appendChild(M);el.insertBefore(W,el.firstChild)}
+          el.classList.add('kfx-sec');
         }else{el.style.backgroundImage=bg;el.style.backgroundSize='cover';el.style.backgroundPosition='center';el.style.backgroundRepeat='no-repeat'}
         light=tone==='light'||(tone==='auto'&&(oi?oi.a>=.4&&lum(oi.c)<.45:lg>=.4));
-        if(light)el.style.backgroundColor=ink;
+        if(mk){const mb=s.maskBg;if(mb){const c=resolve(mb,T);if(c)el.style.backgroundColor=c}}   // masked picture: the cut-away parts are transparent unless a color is chosen ("maskBg")
+        else if(light)el.style.backgroundColor=ink;
       }
       el.classList.toggle('sec-light',light);
     });
@@ -280,7 +326,11 @@
   function apply(D){const T=(D&&D.theme)||{};vars(T);paint(T);fonts(T)}
   const NOWIDTH=['patents-contact','trademarks-contact','translation-contact'];     // blocks inside another section: no width of their own
   window.KTHEME={DEFAULTS,ROLES,SECTIONS,HEX,resolve,lum,palette,apply,BRAND_DEFAULTS,brandPal,FONTS,FONT_KEYS,cssName,NOWIDTH};
-  window.KFX={MASKS,DIRS,img:fxImg,ovInfo,maskCss,svgOf,buildSvg,encSvg,setFileUrl:f=>{fileUrl=f}};
+  // Motion helpers for every page: kSmooth() = 'auto' when the visitor asked for less movement (use it in scrollTo / scrollIntoView),
+  // KPAUSE = the visitor's "pause moving content" choice (the pause button on the home carousel); it is remembered on this device.
+  window.kSmooth=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}catch{return 'smooth'}};
+  window.KPAUSE={on:(()=>{try{return localStorage.getItem('khip-pause')==='1'}catch{return false}})(),set(v){this.on=!!v;try{localStorage.setItem('khip-pause',this.on?'1':'0')}catch{}}};
+  window.KFX={MASKS,SHADOWS,shDef,shInfo,DIRS,img:fxImg,ovInfo,maskCss,svgOf,buildSvg,encSvg,setFileUrl:f=>{fileUrl=f}};
   // The admin page uses the definitions only; it must not recolour itself.
   if(/admin\.html$/.test(location.pathname))return;
   let cached=null;try{cached=JSON.parse(localStorage.getItem(CACHE))}catch{}

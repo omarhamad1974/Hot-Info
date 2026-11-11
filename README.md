@@ -10,7 +10,8 @@ Open `https://YOUR-SITE/admin.html`. It has two areas, switched from the dark ba
 
 **Website content** (saves to `app-data.json` on GitHub)
 - Sign in with a GitHub fine-grained token (Contents: read and write, for this repository only). The repository name field starts as `Hot-Info`; enter your GitHub username or organization once and the browser remembers it.
-- Tabs: General, **Colors**, **Backgrounds**, Carousel, Jurisdictions, News, Services, Testimonials, Team.
+- Tabs: General (Basics, Brand, Colors, Contact), Menu, **Sections**, Site texts, Carousel, Countries, News, Services, Testimonials, Team, FAQ, Cards, Gallery, Page blocks. English and Arabic are written side by side.
+- **Sections**: every website section is one card with its content (English | Arabic), its style (hide, width, overlap, background) and its animation. The first card holds the settings for the whole site (section width, bottom bar, animation).
 - **Colors**: the site palette. Ten colors (titles, dark, gold, accent blue, sand, page and section backgrounds, body text) start at the colors the site always used; change any of them, pick a ready-made palette, or add your own named colors. Also sets the **section width** on tablet and desktop (67% is about two thirds).
 - **Backgrounds**: give any section (home, About, Patents, Trademarks, Translation) a background color from the palette, or a photo that covers the section (with an optional darkening slider). Text turns light on dark backgrounds by itself; the "Text color" option overrides that.
 - Text boxes support `**bold**`, `## subtitle` and `- bullet` (use the B, H and list buttons).
@@ -27,7 +28,7 @@ Open `https://YOUR-SITE/admin.html`. It has two areas, switched from the dark ba
 ## Arabic (right-to-left) site, phase 2 of 3
 Files: `lang.js` (language engine), `app-data.ar.json` (the Arabic content), `service-page.js`, plus `index.html`, `about.html`, `patents.html`, `trademarks.html`, `translation.html`, `footer.js`, `styles.css`, `rich.js`, `admin.html`.
 - **Choose the languages:** admin, Website content, General tab, **Site languages**: English only, Arabic only, or both. With both, a button in the header (العربية / English) switches; the visitor's choice is remembered. Save to GitHub to apply.
-- **Write the Arabic content:** in the admin use the **EN | عربي** switch at the top. The Arabic form has the same items as the English content, with the English text above each box. Images, dates, icons and ids are shared. Saving in Arabic mode writes only `app-data.ar.json`.
+- **Write the Arabic content:** in the admin every translatable box is shown side by side, English on the left and عربي on the right (there is no EN | عربي switch any more). Images, dates, icons and ids are shared. One Save writes `app-data.json` and `app-data.ar.json` (only the one that changed). **Site texts** has two sub-tabs, **Page text** and **Interface text**, each with the English on the left and the Arabic box on the right.
 - **The placeholder "المحتوى العربي":** nothing is translated for you. On the About page, the Patents, Trademarks and Translation pages, the team and the testimonials, every piece of Arabic text that has not been written yet shows the placeholder **المحتوى العربي**. Write the Arabic in the admin and it replaces the placeholder. (Home page carousel, jurisdictions and news still show the English text when their Arabic is empty, as in phase 1.)
 - **Phase 2 covers:**
   - **About page** (`about.html`): all its fixed text is written under Arabic > **Page text** > About page. The service cards and pop-ups use the Arabic of the Services tab; country names and filing guidelines use the Arabic of the Jurisdictions tab.
@@ -156,6 +157,21 @@ See `TENDERS-PLAN.md` (all phases) . The top-bar tab **Tender images** is now **
 ## Update 2026-11-04: Tenders redesign (four tabs)
 Tenders in the admin are now four tabs: 1 Input tender (scan + read in one table, column cutter, Excel import by template, bulk date/governorate/delete), 2 Classification & notification, 3 Settings (Hot News slider), 4 Generate file (Excel, Word, PDF by publishing-date range). No automatic filling or text-to-cell mapping. Also new: section overlap and order (Sections tab, `SECTIONS-OVERLAP-STEPS.md`) and mask size, feather and rotation (`IMAGE-EFFECTS-STEPS.md`). Files: `admin.html`, `theme.js`, `scripts/validate.js`. No new SQL (needs the step 9 and step 18 SQL already run). Manual: `MANUAL.md`, "Tenders".
 
+## Update 2026-11-12: Reduced motion and a pause button (Phase 18 P9)
+Script scrolling and every other animation follow the visitor's "reduce motion" setting; the home carousel has a pause / play button that stops all auto-moving blocks. See `PHASE-18-ROADMAP.md`.
+
+## Update 2026-11-12: Picture descriptions / alt text (Phase 18 P8)
+New **Picture description** field (English and Arabic) for carousel slides, news, team and cards, read by screen readers and search engines. See `PHASE-18-ROADMAP.md` (also lists the next phases).
+
+## Update 2026-11-12: Shadow for pictures and shapes (Phase 18 P7)
+Image effects > **Shadow (3D look)**: drop shadow, cast shadow (the shape lying on the floor) or a thick extruded edge, with color, light direction, length, softness and strength. Works with every shape, including your own SVGs. See `IMAGE-EFFECTS-STEPS.md`.
+
+## Update 2026-11-11: Color behind a masked section photo (Phase 18 P6)
+Sections > a section with a photo > Style > **Behind the cut-away parts**: Transparent (default) or a color. Fixes the dark fill that showed through the shape mask when the section had light text. See `IMAGE-EFFECTS-STEPS.md`. Files: `theme.js`, `admin.html`, `scripts/validate.js`. No SQL.
+
+## Update 2026-11-11: Import blogs with one button (Phase 18 P5)
+Website content > **News** has a new button **Import blogs from file**: choose one `.md` or Word file holding many blogs (10 or more) and press Add: each blog becomes a complete news article (title, summary, category, date, picture, text). The picture can be a file name or a web link. New files: `content-templates/blogs.md` and `content-templates/word-template-blogs.docx`. Files changed: `admin.html`, `admin-import.js`, `content-import.js`, `word-import.js`, `scripts/test-content-import.js`. No SQL. Steps in `content-templates/IMPORT-GUIDE.md`.
+
 ## Update 2026-11-05: Payments (phases P1 to P4)
 Manual online payment with admin approval, no gateway. Run `supabase-step18-payments.sql` once, then set prices and payment methods in admin > **Settings**. Users subscribe at `subscribe.html` (also linked from My files): pick a package and sectors, pay in their own app, upload the receipt; you approve in admin > Payments > Requests. Packages: weekly (free, needs approval, once per sector), 6 months, 1 year, 2 years (same price for all sectors). Full steps in MANUAL.md ("Payments"), design in PAYMENTS-PLAN.md. `node scripts/validate.js` now also checks the payments files and the English / Arabic texts.
 
@@ -179,3 +195,7 @@ Three new tabs in Admin > Website > Website content (English and Arabic): **FAQ*
 
 ## Phase 17D: FAQ, Cards and Gallery on the public site
 New file `blocks.js` (added to index, about, patents, trademarks and translation pages, each with a `<div data-blocks="page">`). New admin tab **Page blocks** (Website content): page, type, group, title, introduction, shown/hidden, order. Arabic: block title and introduction, plus the Arabic text of the entries (English shows where Arabic is empty; `lang.js` merges them). Gallery has a keyboard-friendly large-picture viewer; links are limited to web, mail, phone, page and # links. Files: `blocks.js`, `admin.html`, `lang.js`, `index.html`, `about.html`, `patents.html`, `trademarks.html`, `translation.html`, `scripts/validate.js`, `scripts/test-blocks.js`. No SQL. Upload all of these.
+
+
+## Image version (cache)
+All image addresses get `?v=2` so the newest picture on GitHub is shown instead of a cached copy. If you replace a picture under the same file name, change `2` to `3` in `tailwind-config.js` (`window.KIMG_V`) and in `admin.html` (`const KIMG_V`).
