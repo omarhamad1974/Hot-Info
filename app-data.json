@@ -410,6 +410,10 @@
     "sections": {
       "home-services": {
         "widthDesktop": "63"
+      },
+      "home-offers": {
+        "mode": "color",
+        "color": "role:accent"
       }
     },
     "sectionWidthTablet": "68",
@@ -490,8 +494,17 @@
       "page": "about",
       "type": "cards",
       "group": "new-group1",
-      "title": "Ne-Group-of-Cards",
+      "title": "New-Group-of-Cards",
       "subtitle": "This is a new group of cards",
+      "show": "1"
+    },
+    {
+      "id": "4",
+      "page": "home",
+      "type": "faq",
+      "group": "new-group1",
+      "title": "",
+      "subtitle": "",
       "show": "1"
     }
   ],
@@ -502,9 +515,35 @@
       "title": "Card 1",
       "description": "dasdfasdad",
       "icon": "",
-      "image": "",
+      "image": "mwc6ekre-logo_04.png",
       "badge": "",
       "price": "",
+      "link": "",
+      "ctaText": "",
+      "ctaLink": ""
+    },
+    {
+      "id": "2",
+      "group": "Featured-products-cards",
+      "title": "Card 2",
+      "description": "fasasdfasdf",
+      "icon": "",
+      "image": "mwc6fgtp-logo_02.png",
+      "badge": "",
+      "price": "",
+      "link": "about.html",
+      "ctaText": "afasdfasdf",
+      "ctaLink": ""
+    },
+    {
+      "id": "3",
+      "group": "Featured-products-cards",
+      "title": "Card 3",
+      "description": "Card 3 text",
+      "icon": "",
+      "image": "mwc6gv09-logo_01ddd.png",
+      "badge": "",
+      "price": "199",
       "link": "",
       "ctaText": "",
       "ctaLink": ""
