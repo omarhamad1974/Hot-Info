@@ -46,6 +46,32 @@ for(const [k,fields] of Object.entries(need)){
     if(k==='services'&&x.page&&!/^[\w-]+\.html$/.test(x.page))errs.push(`${k}[${i}]: page must look like patents.html`);
   });
 }
+// Phase 17: optional sections kept in groups (they may be missing; when present they must be well formed)
+const optional={faq:['id','question','answer'],cards:['id','title'],gallery:['id','image']};
+for(const [k,fields] of Object.entries(optional)){
+  const arr=d[k];if(arr===undefined)continue;
+  if(!Array.isArray(arr)){errs.push(`${k}: must be an array`);continue}
+  const ids=new Set();
+  arr.forEach((x,i)=>{
+    fields.forEach(f=>{if(!String(x[f]??'').trim())errs.push(`${k}[${i}]: missing "${f}"`)});
+    if(x.group!==undefined&&typeof x.group!=='string')errs.push(`${k}[${i}]: group must be text`);
+    if(ids.has(x.id))errs.push(`${k}[${i}]: duplicate id "${x.id}"`);ids.add(x.id);
+    for(const im of ['image']){if(typeof x[im]==='string'&&x[im]){const f=resolve(x[im]);if(f&&!fs.existsSync(path.join('.',f)))errs.push(`${k}[${i}]: image not found ${x[im]}`)}}
+  });
+}
+// Phase 17D: page blocks (which FAQ / Cards / Gallery group is shown on which page)
+if(d.blocks!==undefined){
+  if(!Array.isArray(d.blocks))errs.push('blocks: must be an array');
+  else{
+    const ids=new Set();
+    d.blocks.forEach((b,i)=>{
+      if(!['home','about','patents','trademarks','translation'].includes(b.page))errs.push(`blocks[${i}]: page must be home, about, patents, trademarks or translation`);
+      if(!['faq','cards','gallery'].includes(b.type))errs.push(`blocks[${i}]: type must be faq, cards or gallery`);
+      if(b.show!==undefined&&!['0','1',0,1,true,false].includes(b.show))errs.push(`blocks[${i}]: show must be 1 or 0`);
+      if(ids.has(b.id))errs.push(`blocks[${i}]: duplicate id "${b.id}"`);ids.add(b.id);
+    });
+  }
+}
 if(!d.about&&!d.aboutMainText)errs.push('missing about text');
 if(d.chatPrompts!==undefined&&!(Array.isArray(d.chatPrompts)&&d.chatPrompts.every(x=>typeof x==='string')))errs.push('chatPrompts must be a list of text lines');
 if(d.theme!==undefined){
@@ -64,7 +90,7 @@ if(d.theme!==undefined){
 if(fs.existsSync('app-data.ar.json')){
   let a=null;try{a=JSON.parse(fs.readFileSync('app-data.ar.json','utf8'))}catch(e){errs.push('app-data.ar.json: not valid JSON')}
   if(a){
-    for(const k of ['carousel','jurisdictions','news','services','testimonials','employees','products']){
+    for(const k of ['carousel','jurisdictions','news','services','testimonials','employees','products','faq','cards','gallery','blocks']){
       if(a[k]===undefined)continue;
       if(!Array.isArray(a[k])){errs.push(`app-data.ar.json ${k}: must be an array`);continue}
       const have=new Set((d[k]||[]).map(x=>String(x.id)));
@@ -203,6 +229,11 @@ for(const [k,v] of Object.entries(d.social||{}))if(v&&!/^https:\/\//.test(v))err
     const a=fs.readFileSync('admin.html','utf8');
     for(const f of ['payWatch','pLinesHtml','pCsv','postgres_changes'])if(!a.includes(f))errs.push(`admin.html: Payments piece ${f} is missing`);
   }
+}
+// File import (phases I1 to I4): modules, templates and the admin hooks exist.
+{
+  for(const q of ['content-import.js','word-import.js','admin-import.js','content-templates/IMPORT-GUIDE.md','content-templates/word-template.docx'])if(!fs.existsSync(q))errs.push(`import: ${q} is missing`);
+  if(fs.existsSync('admin.html')){const h=fs.readFileSync('admin.html','utf8');for(const f of ['content-import.js','word-import.js','admin-import.js'])if(!h.includes(`src="${f}"`))errs.push(`admin.html: ${f} is not loaded`)}
 }
 if(errs.length){console.error(errs.join('\n'));process.exit(1)}
 console.log('app-data.json OK');
