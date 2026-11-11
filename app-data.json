@@ -438,7 +438,11 @@
         "name": "Neutral",
         "hex": "#3a4051"
       }
-    ]
+    ],
+    "header": {
+      "opacity": "65",
+      "bg": "brand:5"
+    }
   },
   "newsCategories": [
     "مناقصات",
