@@ -26,8 +26,8 @@
     },
     {
       "id": "3",
-      "title": "Making a difference ",
-      "subtitle": "To people lives and people business ",
+      "title": "New chances every day",
+      "subtitle": "for your business",
       "tag": "",
       "image": "mvm9bed7-65080.jpg"
     }
@@ -418,13 +418,22 @@
             "color": "#1760de",
             "opacity": 100,
             "color2": "#1760de",
-            "opacity2": 0,
+            "opacity2": 25,
             "dir": "to top"
           },
           "mask": {
             "shape": "squircle",
             "fit": "cover",
-            "size": 80
+            "size": 80,
+            "feather": 26
+          },
+          "shadow": {
+            "type": "cast",
+            "color": "role:ink",
+            "angle": 60,
+            "length": 40,
+            "blur": 25,
+            "opacity": 55
           }
         }
       }
