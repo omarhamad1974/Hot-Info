@@ -455,6 +455,38 @@
       "title": "Featured products",
       "subtitle": "Hottest products",
       "show": "1"
+    },
+    {
+      "id": "2",
+      "page": "home",
+      "type": "faq",
+      "group": "Featured-products-cards",
+      "title": "",
+      "subtitle": "",
+      "show": "1"
+    }
+  ],
+  "cards": [
+    {
+      "id": "1",
+      "group": "general",
+      "title": "Card 1",
+      "description": "",
+      "icon": "",
+      "image": "",
+      "badge": "",
+      "price": "",
+      "link": "",
+      "ctaText": "",
+      "ctaLink": ""
+    }
+  ],
+  "faq": [
+    {
+      "id": "1",
+      "group": "Common Questions",
+      "question": "How to subscribe?",
+      "answer": "3 easy ways to subscribe\nInsasta pay\nVodafone cash\nPost office\nBank Transfer (CIB)"
     }
   ]
 }
