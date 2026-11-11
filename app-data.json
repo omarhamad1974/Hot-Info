@@ -407,7 +407,11 @@
     },
     "custom": [],
     "sectionWidth": "85",
-    "sections": {},
+    "sections": {
+      "home-services": {
+        "widthDesktop": "63"
+      }
+    },
     "sectionWidthTablet": "68",
     "brand": [
       {
