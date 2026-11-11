@@ -445,7 +445,14 @@
     },
     "motion": {
       "site": {
-        "type": "blur-in"
+        "type": "fade-up"
+      },
+      "sections": {
+        "home-carousel": {
+          "type": "none",
+          "cardType": "none",
+          "stagger": "0.05"
+        }
       }
     }
   },
