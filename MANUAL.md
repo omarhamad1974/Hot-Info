@@ -243,6 +243,9 @@ Press **Ctrl+K** (Cmd+K on Mac) anywhere in the admin to jump to a page or setti
 ## Filters on phones (Phase 16e)
 On a phone, Tenders and Directory show the search box and a **Filters** button. Tap it to open the other filters. Active ones appear as chips; tap a chip to remove that filter, or **Clear** to remove all.
 
+## Subscribing and renewing (Phase 16f)
+Subscribers see three steps at the top of the Subscribe page: **Choose, Pay, Upload receipt**. In **My files** each sector shows how many days are left and a **Renew** button that takes them straight to that sector on the Subscribe page. Each request in "My requests" has a timeline (sent, under review, approved or not). The "typical approval time" appears by itself after you run `supabase-step21-approval-time.sql` once and have at least 5 approvals in the last 90 days.
+
 ## Tenders (admin > top bar, four tabs)
 **1 · Input tender** (scan and read in one table)
 1. Add rows: **Choose image** / **Take photo** (set the details bar first), **Add typed row**, or **Import sheet** (use the **Template** button; every column is optional, empty cells stay empty, nothing is filled in automatically).

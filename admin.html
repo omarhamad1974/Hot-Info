@@ -84,6 +84,7 @@ details[open]>summary .chev{transform:rotate(90deg)}
       <div class="min-w-0 flex-1"><h1 class="font-extrabold truncate" id="repo-name"></h1><p id="state" class="text-xs text-gray-600">Loaded</p></div>
       <div id="lang-seg" class="flex rounded-xl overflow-hidden border border-gray-200 text-xs font-bold flex-shrink-0" role="group" aria-label="Content language"><button data-act="lang" data-l="en" class="px-3 py-2">EN</button><button data-act="lang" data-l="ar" class="px-3 py-2" lang="ar" dir="rtl">عربي</button></div>
       <button data-act="discard" id="discard" disabled class="text-xs bg-gray-100 hover:bg-gray-200 disabled:opacity-40 font-bold px-3 py-2 rounded-xl" title="Discard unsaved changes" aria-label="Discard unsaved changes"><i class="fas fa-rotate-left"></i></button>
+      <button data-act="import" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl" title="Import content from files (Markdown / Word)" aria-label="Import content from files"><i class="fas fa-file-import"></i></button>
       <button data-act="backup" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl" title="Download a copy" aria-label="Download a copy"><i class="fas fa-download"></i></button>
       <button data-act="out" class="text-xs bg-gray-100 hover:bg-gray-200 font-bold px-3 py-2 rounded-xl">Sign out</button>
       <button id="save" data-act="save" disabled class="text-xs bg-brand-600 hover:bg-brand-700 disabled:bg-gray-300 text-white font-bold px-4 py-2 rounded-xl" title="Ctrl+S">Save to GitHub</button>
@@ -149,6 +150,9 @@ details[open]>summary .chev{transform:rotate(90deg)}
 <script src="motion.js"></script>
 <script src="lang.js" data-passive></script>
 <script src="tender-dict.js"></script>
+<script src="content-import.js"></script>
+<script src="word-import.js"></script>
+<script src="admin-import.js"></script>
 <script>
 /* ============================ shared ============================ */
 const $=id=>document.getElementById(id);
@@ -157,7 +161,7 @@ function toast(m,ok=true){const t=$('toast');t.textContent=m;t.className=`fixed 
 const inp='w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white font-normal';
 const inpc='px-2.5 py-1.5 text-[13px] rounded-lg border border-gray-300 bg-white font-normal'; // compact boxes for filter bars (inline, one line)
 const PH='المحتوى العربي'; // shown on the site wherever Arabic has not been written (About, service pages, team, testimonials)
-const PHSEC=new Set(['employees','testimonials','services']);
+const PHSEC=new Set(['employees','testimonials','services','faq','cards','gallery']);
 const sizeOf=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
 
 let pane='content';
@@ -185,6 +189,10 @@ const SC={
  services:{label:'Services',icon:'fa-balance-scale',one:'service',title:'title',req:['title','description'],f:[['title','Title'],['icon','Icon (optional, e.g. ph-lightbulb)'],['description','1. Brief (on the home page card, and the top of the pop-up)','area'],['details','2. Pop-up content (more information, shown when the card is opened)','area'],['page','Dedicated page file (e.g. patents.html). Adds the "More information" button'],['pageContent','3. Dedicated page content. Text before the first ## is the introduction; each ## Heading becomes a card on the page','area']]},
  testimonials:{label:'Testimonials',icon:'fa-quote-right',one:'testimonial',title:'name',req:['name','text'],f:[['name','Client name'],['role','Role and company (eg, CEO, Acme)'],['text','Testimonial','plain']]},
  employees:{label:'Team',icon:'fa-users',one:'team member',title:'name',req:['name','position'],f:[['name','Name'],['position','Position'],['image','Photo (square; resized and cropped to fit automatically)','img']]},
+ faq:{label:'FAQ',icon:'fa-circle-question',one:'question',title:'question',req:['question','answer'],grouped:1,f:[['group','Group (questions with the same group name are shown together)','group'],['question','Question'],['answer','Answer','area']]},
+ cards:{label:'Cards',icon:'fa-table-cells',one:'card',title:'title',req:['title'],grouped:1,f:[['group','Group (cards with the same group name are shown together)','group'],['title','Title'],['description','Text','area'],['icon','Icon (optional, e.g. ph-lightbulb)'],['image','Image (optional)','img'],['badge','Badge (small label, optional)'],['price','Price (optional)'],['link','Link (optional)'],['ctaText','Button text (optional)'],['ctaLink','Button link (optional)']]},
+ gallery:{label:'Gallery',icon:'fa-photo-film',one:'picture',title:'caption',req:['image'],grouped:1,f:[['group','Group (pictures with the same group name are shown together)','group'],['image','Picture','img'],['caption','Caption'],['alt','Alternative text (describes the picture for screen readers)']]},
+ blocks:{label:'Page blocks',icon:'fa-puzzle-piece',one:'block',title:'title',req:['page','type'],grouped:1,f:[['page','Show on page','sel:home=Home page|about=About page (before Contact)|patents=Patents page (at the end)|trademarks=Trademarks page (at the end)|translation=Translation page (at the end)'],['type','What to show','sel:faq=FAQ (questions and answers)|cards=Cards|gallery=Gallery (pictures)'],['group','Group to show (the group name used in the FAQ, Cards or Gallery tab)','group'],['title','Title above the block (optional)'],['subtitle','Short introduction (optional)','plain'],['show','On the website','sel:1=Shown|0=Hidden (kept, not shown)']]},
 };
 const GEN=[['aboutMainText','About text (home page)','area'],['about','Short tagline'],['hot.perSector','HOT News: how many tenders to show under each sector (1 to 12, default 6)'],['brand.headerImage','Header logo (optional: leave empty to use the logo below in the header too)','img'],['brand.image','Logo: home page and About page (and the header, when no header logo is uploaded). A PNG with a transparent background looks best','img'],['brand.tagline','Header text next to the logo (leave empty for the built-in "Intellectual Properties")'],['chatPrompts','Suggestions typed into the WhatsApp box (one per line)','lines'],['newsCategories','News categories / labels (one per line)','lines']];
 const DEFCATS=['General','KHIP News','Intellectual Property','Patents','Trademarks','Translation'];
@@ -239,6 +247,8 @@ function fld(base,[k,l,t],req=[]){
   else if(t==='plain')h=`<textarea data-p="${p}" ${xa} aria-label="${esc(l)}" rows="4" class="${inp}">${esc(v)}</textarea>`;
   else if(t==='lines')h=`<textarea data-p="${p}" ${xa} data-lines="1" aria-label="${esc(l)}" rows="4" class="${inp}">${esc(Array.isArray(v)?v.join('\n'):v)}</textarea>`;
   else if(t==='select'){const o=((D.newsCategories||[]).filter(Boolean).length?D.newsCategories.filter(Boolean):DEFCATS).slice(),cur=v||o[0];if(cur&&!o.includes(cur))o.push(cur);h=`<select data-p="${p}" ${xa} aria-label="${esc(l)}" class="${inp}">${o.map(x=>`<option ${x===cur?'selected':''}>${esc(x)}</option>`).join('')}</select>`}
+  else if(typeof t==='string'&&t.startsWith('sel:')){const o=t.slice(4).split('|').map(x=>x.split('=')),cur=String(v===''||v==null?o[0][0]:v);h=`<select data-p="${p}" ${xa} aria-label="${esc(l)}" class="${inp}">${o.map(([a,b])=>`<option value="${esc(a)}" ${a===cur?'selected':''}>${esc(b)}</option>`).join('')}</select>`}
+  else if(t==='group'){const sec=base.split('.')[0],gs=[...new Set((sec==='blocks'?['faq','cards','gallery'].flatMap(k=>D[k]||[]):(D[sec]||[])).map(x=>String(x.group||'').trim()).filter(Boolean))];h=`<input data-p="${p}" ${xa} aria-label="${esc(l)}" list="grp-${sec}" value="${esc(v)}" placeholder="general" class="${inp}"><datalist id="grp-${sec}">${gs.map(g=>`<option value="${esc(g)}">`).join('')}</datalist>`}
   else if(t==='img')h=`<div class="flex items-center gap-2"><img data-prev="${p}" src="${esc(imgSrc(v))}" alt="" onerror="this.style.visibility='hidden'" class="w-12 h-12 rounded-lg object-cover bg-gray-200 flex-shrink-0"><input data-p="${p}" ${xa} aria-label="${esc(l)}" value="${esc(v)}" list="assets" placeholder="File name in assets, or upload" class="${inp}"><label class="flex-shrink-0 text-xs bg-brand-50 text-brand-700 font-bold px-3 py-2.5 rounded-lg cursor-pointer hover:bg-brand-100" title="Upload an image"><i class="fas fa-upload"></i><input type="file" accept="image/*" data-up="${p}" class="hidden"></label></div>`+(lang!=='ar'&&FXPATH.test(p)?fxEditor(p):'');
   else h=`<input data-p="${p}" ${xa} aria-label="${esc(l)}" type="${t==='date'?'date':'text'}" value="${esc(v)}" class="${inp}">`;
   return `<div><span class="text-xs font-bold text-gray-700">${esc(l)}${star}</span>${ref?`<span class="block text-xs text-gray-600 mb-1 line-clamp-3" dir="ltr">${esc(ref)}</span>`:''}${h}</div>`;
@@ -265,7 +275,7 @@ function items(){
   const rows=arr.map((x,i)=>[x,i]).filter(([x])=>!ql||s.f.some(([k])=>String(x[k]??'').toLowerCase().includes(ql)));
   $('items').innerHTML=(arr.length?'':`<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">Nothing here yet. Add the first ${s.one}.</p>`)
   +(arr.length&&!rows.length?'<p class="text-sm text-gray-600 bg-white p-4 rounded-2xl border">No match.</p>':'')
-  +rows.map(([x,i])=>`<details ${openItem===`${tab}.${i}`?'open':''} class="bg-white rounded-2xl border border-gray-200 shadow-sm"><summary class="flex items-center gap-2 p-3 cursor-pointer"><i class="fas fa-chevron-right chev text-xs text-gray-600"></i>${imgF&&x[imgF[0]]?`<img src="${esc(imgSrc(x[imgF[0]]))}" alt="" onerror="this.style.display='none'" class="w-8 h-8 rounded-md object-cover bg-gray-200 flex-shrink-0">`:''}<span class="flex-1 min-w-0 font-bold text-sm truncate">${esc(x[s.title]||(lang==='ar'&&DEN[tab][i]?DEN[tab][i][s.title]:'')||'Untitled '+s.one)}</span>
+  +rows.map(([x,i])=>`<details ${openItem===`${tab}.${i}`?'open':''} class="bg-white rounded-2xl border border-gray-200 shadow-sm"><summary class="flex items-center gap-2 p-3 cursor-pointer"><i class="fas fa-chevron-right chev text-xs text-gray-600"></i>${imgF&&x[imgF[0]]?`<img src="${esc(imgSrc(x[imgF[0]]))}" alt="" onerror="this.style.display='none'" class="w-8 h-8 rounded-md object-cover bg-gray-200 flex-shrink-0">`:''}<span class="flex-1 min-w-0 font-bold text-sm truncate">${esc(x[s.title]||(lang==='ar'&&DEN[tab][i]?DEN[tab][i][s.title]:'')||(x.image&&s.title==='caption'?x.image:'')||'Untitled '+s.one)}</span>${s.grouped&&(x.group||(lang==='ar'&&DEN[tab][i]&&DEN[tab][i].group))?`<span class="text-xs font-bold px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 flex-shrink-0 max-w-[7rem] truncate" dir="ltr">${esc(x.group||DEN[tab][i].group)}</span>`:''}
     ${lang==='ar'?'':`<button data-act="up" data-i="${i}" ${i&&!ql?'':'disabled'} aria-label="Move up" class="w-8 h-8 rounded-lg bg-gray-100 disabled:opacity-30"><i class="fas fa-arrow-up text-xs"></i></button>
     <button data-act="down" data-i="${i}" ${i<arr.length-1&&!ql?'':'disabled'} aria-label="Move down" class="w-8 h-8 rounded-lg bg-gray-100 disabled:opacity-30"><i class="fas fa-arrow-down text-xs"></i></button>
     <button data-act="dup" data-i="${i}" aria-label="Duplicate" title="Duplicate" class="w-8 h-8 rounded-lg bg-gray-100"><i class="fas fa-clone text-xs"></i></button>
@@ -725,38 +735,7 @@ document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.datas
 
 /* Markdown import: keeps only the structure (title, subtitles, paragraphs, bullets, bold).
    Fonts, colours and sizes always come from the site, so nothing visual is imported. */
-function mdToKhip(src){
-  const t=String(src).replace(/^﻿/,'').replace(/\r\n?/g,'\n').replace(/^---\n[\s\S]*?\n---\n/,'');
-  const inl=x=>x.replace(/!\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replace(/`([^`]+)`/g,'$1')
-    .replace(/(\*\*|__)(.+?)\1/g,'**$2**').replace(/(^|[^*\w])\*(?![\s*])([^*]+?)\*(?!\*)/g,'$1$2')
-    .replace(/(^|[\s(])_(?!\s)([^_]+?)_(?=[\s).,;:!?]|$)/g,'$1$2').replace(/~~(.+?)~~/g,'$1').replace(/<[^>]+>/g,'').trim();
-  const out=[];let para=[],fence=false,title='';
-  const flush=()=>{if(para.length){const x=inl(para.join(' '));if(x)out.push({p:x});para=[]}};
-  for(let line of t.split('\n')){
-    if(/^\s*(```|~~~)/.test(line)){flush();fence=!fence;continue}
-    if(fence){if(line.trim())out.push({p:line.trim()});continue}
-    line=line.replace(/^\s*>\s?/,'');
-    if(!line.trim()){flush();continue}
-    if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)){flush();continue}
-    let m=line.match(/^\s{0,3}(#{1,6})\s+(.*?)\s*#*\s*$/);
-    if(m){flush();const h=inl(m[2]).replace(/\*\*/g,'');
-      if(!title&&!out.length&&m[1].length===1)title=h;else if(h)out.push({h});continue}
-    m=line.match(/^\s*(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?(.*)$/);
-    if(m){flush();const x=inl(m[1]);if(x)out.push({li:x});continue}
-    if(/^\s*\|/.test(line)){flush();if(/^[\s:|-]+$/.test(line))continue;
-      const x=inl(line.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim()).filter(Boolean).join(' - '));if(x)out.push({p:x});continue}
-    if(/^\s+\S/.test(line)&&!para.length&&out.length&&out[out.length-1].li!=null){out[out.length-1].li+=' '+inl(line);continue}
-    para.push(line.trim());
-  }
-  flush();
-  let s='',prev=null;
-  for(const b of out){
-    const k=b.h!=null?'h':b.li!=null?'li':'p';
-    if(prev)s+=(prev==='li'&&k==='li')||prev==='h'?'\n':'\n\n';
-    s+=k==='h'?'## '+b.h:k==='li'?'- '+b.li:b.p;prev=k;
-  }
-  return {title,body:s};
-}
+const mdToKhip=KImport.mdToKhip; // shared with the file import (content-import.js)
 async function importMd(file,p){
   const ta=document.querySelector(`textarea[data-p="${p}"]`);if(!ta)return;
   if(file.size>1048576)return toast('That file is too large (limit 1 MB).',false);
@@ -789,6 +768,7 @@ function validate(){
   for(const [k,s] of Object.entries(SC)){
     const ids=new Set();
     for(const [i,x] of (D[k]||[]).entries()){
+      if(s.grouped&&!String(x.group??'').trim())x.group='general';
       for(const f of s.req)if(!String(x[f]??'').trim())return bad(k,i,f,`${s.label}, item ${i+1}: "${f}" is required.`);
       if(ids.has(x.id))x.id=String(Math.max(0,...D[k].map(y=>+y.id||0))+1);ids.add(x.id);
     }
@@ -801,7 +781,7 @@ function bad(k,i,f,msg){
   return msg;
 }
 /* ---------- Arabic content: app-data.ar.json mirrors the English file; empty fields fall back to English on the site ---------- */
-const TRF={carousel:['title','subtitle','tag'],jurisdictions:['country','tag','brief','details'],news:['title','excerpt','text'],services:['title','description','details','pageContent'],testimonials:['name','role','text'],employees:['name','position']};
+const TRF={carousel:['title','subtitle','tag'],jurisdictions:['country','tag','brief','details'],news:['title','excerpt','text'],services:['title','description','details','pageContent'],testimonials:['name','role','text'],employees:['name','position'],faq:['question','answer'],cards:['title','description','badge','ctaText'],gallery:['caption','alt'],blocks:['title','subtitle']};
 const UIK=Object.keys(KLang.DICT.en).filter(k=>typeof KLang.DICT.en[k]==='string'&&k!=='switch_to');
 const arPath=()=>S.p.replace(/\.json$/,'')+'.ar.json';
 const enRef=p=>{const v=get(DEN,p);return Array.isArray(v)?v.join(' / '):String(v||'')};
@@ -886,6 +866,7 @@ function viewUi(){
   $('view').innerHTML=`<div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-3"><p class="text-xs text-gray-600">The short words the site uses (menu, buttons, headings). The grey Arabic is a starting suggestion; type your own to replace it, or leave a box empty to keep it. <b>{x}</b> is replaced automatically by a name.</p>${UIK.map(k=>`<label class="block"><span class="block text-xs text-gray-600" dir="ltr">${esc(KLang.DICT.en[k])}</span><input data-p="ui.${k}" dir="rtl" value="${esc((D.ui||{})[k]||'')}" placeholder="${esc(KLang.DICT.ar[k])}" class="${inp}"></label>`).join('')}</div>`;
 }
 async function save(){
+  if(window.KIMP&&KIMP.pending)return KIMP.save();
   if(lang==='ar')return saveAr();
   const err=validate();if(err)return toast(err,false);
   cleanFx();cleanTheme();
@@ -979,7 +960,7 @@ document.addEventListener('click',e=>{
   if(t.closest('summary'))e.preventDefault();
   if(brandAct(a,t)||menuAct(a,t))return;
   if(a==='tab'){tab=t.dataset.k;openItem=null;q='';tabs();view()}
-  else if(a==='add'){const s=SC[tab];const o={id:String(Math.max(0,...arr.map(x=>+x.id||0))+1)};s.f.forEach(([k])=>o[k]='');if(tab==='news')o.category=(D.newsCategories||[]).filter(Boolean)[0]||'General';arr.push(o);openItem=`${tab}.${arr.length-1}`;q='';mark();tabs();view();document.querySelector('details[open] input')?.focus()}
+  else if(a==='add'){const s=SC[tab];const o={id:String(Math.max(0,...arr.map(x=>+x.id||0))+1)};s.f.forEach(([k])=>o[k]='');if(tab==='news')o.category=(D.newsCategories||[]).filter(Boolean)[0]||'General';if(s.grouped)o.group=(arr.length&&String(arr[arr.length-1].group||'').trim())||'general';if(tab==='blocks'){o.page='home';o.type='faq';o.show='1'}arr.push(o);openItem=`${tab}.${arr.length-1}`;q='';mark();tabs();view();document.querySelector('details[open] input')?.focus()}
   else if(a==='dup'){const c=JSON.parse(JSON.stringify(arr[i]));c.id=String(Math.max(0,...arr.map(x=>+x.id||0))+1);const k=SC[tab].title;c[k]=(c[k]||'')+' (copy)';arr.splice(i+1,0,c);openItem=`${tab}.${i+1}`;mark();tabs();view()}
   else if(a==='del'){if(confirm(`Delete "${arr[i][SC[tab].title]||'this item'}"?`)){arr.splice(i,1);openItem=null;mark();tabs();view()}}
   else if(a==='up'||a==='down'){const j=a==='up'?i-1:i+1;[arr[i],arr[j]]=[arr[j],arr[i]];openItem=`${tab}.${j}`;mark();view()}
@@ -994,7 +975,7 @@ document.addEventListener('click',e=>{
   else if(a==='lang')switchLang(t.dataset.l);
   else if(a==='fmt')fmt(t.dataset.k,t.dataset.t);
   else if(a==='save')save();
-  else if(a==='discard'){if(confirm('Discard all unsaved changes and reload from GitHub?')){dirty=false;if(lang==='ar'){DAR=null;D=DEN;lang='en';switchLang('ar')}else connect(S)}}
+  else if(a==='discard'){if(confirm('Discard all unsaved changes and reload from GitHub?')){dirty=false;if(window.KIMP&&KIMP.pending){KIMP.pending=KIMP.enTouched=KIMP.arTouched=false;connect(S);return}if(lang==='ar'){DAR=null;D=DEN;lang='en';switchLang('ar')}else connect(S)}}
   else if(a==='backup'){const l=document.createElement('a');l.href=URL.createObjectURL(new Blob([JSON.stringify(D,null,2)],{type:'application/json'}));l.download='app-data-backup.json';l.click()}
   else if(a==='out'){if(!dirty||confirm('You have unsaved changes. Sign out anyway?')){sessionStorage.removeItem('khip-admin-t');dirty=false;location.reload()}}
 });
@@ -4229,6 +4210,10 @@ const GOTO=[
  ['Services','Service cards and pages','fa-balance-scale','Website','web:services','patents trademarks translation'],
  ['Testimonials','Client quotes','fa-quote-right','Website','web:testimonials','reviews quotes'],
  ['Team','Team members','fa-users','Website','web:employees','employees staff photos'],
+ ['Page blocks','Show FAQ, cards or gallery on a page','fa-puzzle-piece','Website','web:blocks','faq gallery cards show page group'],
+ ['FAQ','Questions and answers','fa-circle-question','Website','web:faq','questions answers help'],
+ ['Cards','Cards, features, offers','fa-table-cells','Website','web:cards','items features offers boxes'],
+ ['Gallery','Pictures with captions','fa-photo-film','Website','web:gallery','photos images pictures'],
  ['1 \u00b7 Input tender','Upload images, OCR, type or import rows','fa-table','Tenders','pane:tenders1','ocr excel import upload newspaper'],
  ['2 \u00b7 Classification & notification','Confirm sectors, approve and notify','fa-tags','Tenders','pane:tenders2','approve classify sector notify'],
  ['3 \u00b7 Featured','Featured tenders','fa-star','Tenders','pane:tenders3','featured hot'],

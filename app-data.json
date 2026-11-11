@@ -1,7 +1,7 @@
 {
   "languages": "ar",
-  "about": "Great company ",
-  "aboutMainText": "Hot information wa established in 2000\n",
+  "about": "",
+  "aboutMainText": "هوت انفرمبشن \nالأفضل منذ 20 عاما .. نحن شركة ممتازة و مميزه \nهوت انفرمبشن \nالأفضل منذ 20 عاما .. نحن شركة ممتازة و مميزه \n",
   "carousel": [
     {
       "id": "1",
@@ -202,16 +202,166 @@
   ],
   "employees": [
     {
+      "id": "1",
+      "name": "Khaled Hamada",
+      "position": "CEO",
+      "image": "./assets/Khaled-Hamada.jpg"
+    },
+    {
+      "id": "2",
+      "name": "Sherif Youssef",
+      "position": "Translation Department Head",
+      "image": "./assets/Sherif-Youssef.jpg"
+    },
+    {
+      "id": "3",
+      "name": "Mirna Al Kayyali",
+      "position": "IP Department Head",
+      "image": "./assets/Mirna-AlKayyali.jpg"
+    },
+    {
+      "id": "4",
+      "name": "Magdy Gamal",
+      "position": "Senior Project Manager",
+      "image": "./assets/Magdy-Gamal.jpg"
+    },
+    {
+      "id": "5",
+      "name": "Rania Gamal",
+      "position": "Translation Department Technical Head",
+      "image": "Rania-Gamal.jpg"
+    },
+    {
+      "id": "6",
+      "name": "Tarek Shaaban",
+      "position": "Senior Reviwer",
+      "image": ""
+    },
+    {
+      "id": "7",
+      "name": "Mohammad Ghanem",
+      "position": "Senior Trademark Attorney ",
+      "image": "Mohamed-Ghanem.jpg"
+    },
+    {
+      "id": "8",
+      "name": "Ahd Youssef",
+      "position": "IP Attorney ",
+      "image": "Ahd-Youssef.jpg"
+    },
+    {
+      "id": "9",
+      "name": "Hanna",
+      "position": "Patent Agent (Biotechnology)",
+      "image": "Hanna.jpg"
+    },
+    {
+      "id": "10",
+      "name": "Dina Hussein",
+      "position": "Translator",
+      "image": ""
+    },
+    {
+      "id": "11",
+      "name": "Yasmine Saeed",
+      "position": " Project Manager & Sr. Reviewer",
+      "image": ""
+    },
+    {
+      "id": "12",
+      "name": "Sarah Abbas",
+      "position": "Translator ",
+      "image": "Sara-Abbas.jpg"
+    },
+    {
+      "id": "13",
+      "name": "Mona Abdelbary",
+      "position": "Translator",
+      "image": "Mona-Abdelbary.jpg"
+    },
+    {
+      "id": "14",
+      "name": "Haneen Ahmed",
+      "position": "Translator",
+      "image": "Haneed-Ahmed.jpg"
+    },
+    {
+      "id": "15",
+      "name": "Sarah Alaa",
+      "position": "DTP Offiver",
+      "image": "Sara-Alaa.jpg"
+    },
+    {
+      "id": "16",
+      "name": "Salma Mamdouh",
+      "position": "Translator",
+      "image": "Salma-Mamdouh.jpg"
+    },
+    {
+      "id": "17",
+      "name": "Alaa Adam",
+      "position": "DTP Offiver",
+      "image": "Alaa-Adam.jpg"
+    },
+    {
+      "id": "18",
+      "name": "Hedia Tawfik",
+      "position": "Translator",
+      "image": "Hedia-Tawfik.jpg"
+    },
+    {
+      "id": "19",
+      "name": "Moataz Haggag",
+      "position": " Senior Biotechnology Reviewer",
+      "image": "Moataz-Haggag.jpg"
+    },
+    {
+      "id": "20",
+      "name": "Elham Samy",
+      "position": "Senior Translator",
+      "image": ""
+    },
+    {
       "id": "21",
-      "name": "Mostafa Hamad",
-      "position": "Founder, CEO",
+      "name": "Mohammad Haitham",
+      "position": "Accoubtant",
       "image": "Mohamed-Haitham.jpg"
+    },
+    {
+      "id": "22",
+      "name": "Sayyed Boghdady",
+      "position": "Senior Trademark Attorney ",
+      "image": "Sayed-Baghdady.jpg"
+    },
+    {
+      "id": "23",
+      "name": "Nagwa Ibrahim",
+      "position": "Senior Translator",
+      "image": ""
+    },
+    {
+      "id": "24",
+      "name": "Heba Abdalla",
+      "position": "Senior Translator ",
+      "image": ""
+    },
+    {
+      "id": "25",
+      "name": "Khaled Saber",
+      "position": "Information Texhnology",
+      "image": ""
+    },
+    {
+      "id": "26",
+      "name": "Yonan",
+      "position": "Office clerk",
+      "image": ""
     }
   ],
   "social": {
-    "linkedin": "",
+    "linkedin": "https://www.linkedin.com/company/hotinformationonline/",
     "youtube": "",
-    "facebook": "",
+    "facebook": "https://web.facebook.com/HOTinformation.eg",
     "instagram": "",
     "x": "",
     "tiktok": "",
@@ -230,17 +380,17 @@
       }
     ],
     "email": "info@khipme.com",
-    "address": "111 Tereat Elzomor, St, El Omraniya, Giza Governorate 12515",
-    "mapLat": "30.0076° N",
-    "mapLng": "31.2058° E"
+    "address": "",
+    "mapLat": "30.027992248535156",
+    "mapLng": "31.48760223388672"
   },
   "brand": {
     "image": "mw0s6nc9-85113.png",
-    "tagline": "Business Information"
+    "tagline": "معلومات للبيزنس"
   },
   "chatPrompts": [
-    "Subscribe now",
-    "Send us a message here"
+    "اشترك مع هوت انفرمبشن",
+    "ارسل لنا استفسارك هنا"
   ],
   "theme": {
     "colors": {
@@ -258,11 +408,21 @@
     "custom": [],
     "sectionWidth": "85",
     "sections": {
-      "home-carousel": {
-        "mode": "color",
-        "color": "role:ink",
-        "fullWidth": true,
-        "heightMobile": "120"
+      "home-about": {
+        "mode": "image",
+        "overlay": 0,
+        "image": "mw0nqqhc-abstract-glass-window-roof-architecture-exterior.jpg",
+        "imageFx": {
+          "ov": {
+            "type": "matt",
+            "color": "#1760de",
+            "opacity": 70
+          },
+          "mask": {
+            "shape": "leaf",
+            "fit": "cover"
+          }
+        }
       }
     },
     "sectionWidthTablet": "68",
@@ -298,88 +458,9 @@
     ]
   },
   "newsCategories": [
-    "Tenders",
-    "Private tenders",
-    "Purchase Requests",
-    "Events",
-    "General"
-  ],
-  "menu": {
-    "items": [
-      {
-        "id": "home",
-        "en": "Home",
-        "ar": "الرئيسية",
-        "link": "index.html",
-        "icon": "ph-house",
-        "header": true,
-        "bar": true
-      },
-      {
-        "id": "services",
-        "en": "Services",
-        "ar": "الخدمات",
-        "link": "index.html#services",
-        "icon": "ph-seal-check",
-        "header": true,
-        "bar": true
-      },
-      {
-        "id": "news",
-        "en": "News",
-        "ar": "الأخبار",
-        "link": "index.html#news",
-        "icon": "ph-newspaper",
-        "header": true,
-        "bar": true
-      },
-      {
-        "id": "hot",
-        "en": "HOT News",
-        "ar": "أخبار HOT",
-        "link": "index.html#jurisdictions",
-        "icon": "ph-fire",
-        "header": true,
-        "bar": true
-      },
-      {
-        "id": "about",
-        "en": "About",
-        "ar": "من نحن",
-        "link": "about.html",
-        "icon": "ph-info",
-        "header": true,
-        "bar": true
-      },
-      {
-        "id": "files",
-        "en": "My files",
-        "ar": "ملفاتي",
-        "link": "my-stuff.html",
-        "icon": "ph-folder-user",
-        "header": true,
-        "bar": true
-      },
-      {
-        "id": "tenders",
-        "en": "Tenders",
-        "ar": "المناقصات",
-        "link": "tenders.html",
-        "icon": "ph-gavel",
-        "header": false,
-        "bar": false,
-        "hidden": true
-      },
-      {
-        "id": "contact",
-        "en": "Contact",
-        "ar": "اتصل بنا",
-        "link": "about.html#contact",
-        "icon": "ph-envelope-simple",
-        "header": false,
-        "bar": false,
-        "hidden": true
-      }
-    ]
-  }
+    "مناقصات",
+    "عملات",
+    "معارض",
+    "مناقصات خاصة"
+  ]
 }

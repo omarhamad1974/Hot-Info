@@ -19,3 +19,12 @@
 - The result count and **Clear** stay visible while the filters are closed.
 - Arabic and English: new texts `dir_filters` and `dir_remove` in lang.js. (tenders.html is English only, as before.)
 - Files: tenders.html, directory.html, lang.js. No database change.
+
+## 16f: Subscribe and renew flow (DONE)
+- **3-step progress** at the top of the Subscribe form: **Choose, Pay, Upload receipt**. It follows what the subscriber does (a package picked, a payment method chosen, a receipt attached). A free package shows Pay and Upload receipt as "Not needed (free)". Each step can be tapped to jump to its part of the page. The section headings were renumbered to match (1 Choose, 2 Choose how to pay, 3 Upload your receipt; "Check your order" belongs to step 1).
+- **My files**: every sector card now always shows a countdown ("12 days left, until 18 Nov 2026") and a **Renew** button. The countdown is amber at 14 days or fewer and red at 3 days or fewer, and the button is filled when renewal is close. If a request for that sector is already waiting, it says "Renewal under review" instead.
+- **Renew button** opens Subscribe with that sector in view and, when they paid before, the package they used last time already chosen (they still review the order and pay as usual). Free packages are never pre-chosen.
+- **Status timeline on every request** in My requests: Request sent, Under review, then Approved, Not approved or Cancelled, with the dates.
+- **Typical approval time**: shown on pending requests ("Typical approval time: about 5 hours") and after sending. It is the real median of the last 90 days of approvals, calculated in the database, and is shown only once there are at least 5 approved requests. It needs the optional file `supabase-step21-approval-time.sql` (run it once in Supabase > SQL editor). Without it everything works and only the estimate is missing.
+- Arabic and English: new texts in lang.js (`pay_stp_*`, `pay_tl_*`, `pay_tt_*`, `pay_renew_for`). My files is English only, as before.
+- Files: subscribe.html, my-stuff.html, lang.js, supabase-step21-approval-time.sql.

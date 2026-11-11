@@ -7,13 +7,10 @@
 <meta name="description" content="KHIP (Khaled Hamada Intellectual Property): patents, trademarks and translation across the Middle East.">
 <meta name="theme-color" content="#1d4ed8">
 <script src="lang.js"></script>
-<script>/* returning visitors: start fetching the first carousel picture before the page scripts run */
-try{var d=JSON.parse(localStorage.getItem('khip-data-v3'+(KLang.rtl?'-ar':''))),u=d&&d.carousel&&d.carousel[0]&&d.carousel[0].image;
-if(u&&!/^data:/.test(u)){u=/^(https?:\/\/|\.\/|\/)/.test(u)?u:'./assets/'+u;var l=document.createElement('link');l.rel='preload';l.as='image';l.href=u;l.setAttribute('fetchpriority','high');document.head.appendChild(l)}}catch(e){}</script>
-<link rel="preconnect" href="https://cdn.jsdelivr.net"><link rel="preconnect" href="https://cdnjs.cloudflare.com"><link rel="preconnect" href="https://cdn.tailwindcss.com"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/light/style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/7.2.3/css/flag-icons.min.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/7.2.3/css/flag-icons.min.css"></noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/7.2.3/css/flag-icons.min.css">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="tailwind-config.js"></script>
 <script src="theme.js"></script>
@@ -28,7 +25,7 @@ if(u&&!/^data:/.test(u)){u=/^(https?:\/\/|\.\/|\/)/.test(u)?u:'./assets/'+u;var 
 <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
   <div class="wrap py-3 flex items-center justify-between">
     <div class="flex items-center gap-3"><span class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></span></div>
-    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main" data-i18n-attr="aria-label:nav_main">
+    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
       <a href="#about" class="hover:text-brand-600 transition" data-i18n="nav_about">About</a><a href="#jurisdictions" class="hover:text-brand-600 transition" data-i18n="nav_jur">HOT News</a><a href="#services" class="hover:text-brand-600 transition" data-i18n="nav_services">IP Services</a><a href="#news" class="hover:text-brand-600 transition" data-i18n="nav_news">News</a>
     <a href="my-stuff.html" class="hover:text-brand-600 transition" data-i18n="nav_files">My files</a><a href="directory.html" class="hover:text-brand-600 transition" data-i18n="nav_directory">Directory</a></nav>
     <div class="flex items-center gap-2"><div id="lang-switch"></div><div class="flex gap-2" data-social></div></div>
@@ -47,10 +44,9 @@ if(u&&!/^data:/.test(u)){u=/^(https?:\/\/|\.\/|\/)/.test(u)?u:'./assets/'+u;var 
   </div></section>
 
   <section id="jurisdictions" data-sec="home-jurisdictions" class="band bg-surface hidden"><div class="wrap">
-    <div class="flex items-start justify-between gap-3"><div><h2 class="h2" data-i18n="jur_title">HOT News</h2><span class="rule"></span></div>
-      <button id="jur-pp" type="button" data-act="jurpp" aria-pressed="false" class="mt-1 flex-shrink-0 w-10 h-10 rounded-full border border-stone-300 bg-white hover:bg-stone-100 flex items-center justify-center transition touch-manipulation hidden"><i class="ph-light ph-pause text-lg" aria-hidden="true"></i></button></div>
-    <div id="jur-chips" role="tablist" class="relative flex gap-2.5 overflow-x-auto no-scrollbar pb-3"></div>
-    <div id="jur-card" role="tabpanel" aria-live="off" class="mt-2 rounded-3xl bg-stone-50 border border-stone-200 p-6 md:p-9"></div>
+    <div><h2 class="h2" data-i18n="jur_title">HOT News</h2><span class="rule"></span></div>
+    <div id="jur-chips" class="relative flex gap-2.5 overflow-x-auto no-scrollbar pb-3"></div>
+    <div id="jur-card" class="mt-2 rounded-3xl bg-stone-50 border border-stone-200 p-6 md:p-9"></div>
   </div></section>
 
   <section id="services" data-sec="home-services" class="band hidden"><div class="wrap">
@@ -78,6 +74,7 @@ if(u&&!/^data:/.test(u)){u=/^(https?:\/\/|\.\/|\/)/.test(u)?u:'./assets/'+u;var 
     <div id="t-dots" class="flex justify-center gap-2 mt-8"></div>
   </div></section>
 
+<div data-blocks="home"></div>
 </main>
 
 <div id="modal" class="fixed inset-0 bg-ink/70 backdrop-blur-sm z-50 flex items-end md:items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500" style="padding-bottom:var(--khip-h,0px)" data-act="close" role="dialog" aria-modal="true" aria-labelledby="m-title">
@@ -88,6 +85,7 @@ if(u&&!/^data:/.test(u)){u=/^(https?:\/\/|\.\/|\/)/.test(u)?u:'./assets/'+u;var 
 </div>
 
 <script src="rich.js"></script>
+<script src="blocks.js"></script>
 <script src="footer.js"></script>
 <script src="auth.js"></script>
 <script>
@@ -105,7 +103,7 @@ const icon=x=>/^ph-/.test(x.icon||'')?esc(x.icon.replace(/^ph-light\s*/,'')):(IC
 const show=(id,on)=>$(id).classList.toggle('hidden',!on);
 const imgErr='onerror="this.onerror=null;this.src=FALLBACK_IMG"';
 // A picture with its optional colour overlay and SVG mask (set in the admin, see theme.js > KFX). With no effect it is a plain <img>.
-const fxImg=(x,cls,lazy,extra)=>KFX.img({fx:x.imageFx,T:D.theme,src:img(x.image),attrs:`${lazy?'loading="lazy" ':''}decoding="async" ${extra||''} ${imgErr} alt=""`,cls});
+const fxImg=(x,cls,lazy)=>KFX.img({fx:x.imageFx,T:D.theme,src:img(x.image),attrs:`${lazy?'loading="lazy" ':''}${imgErr} alt=""`,cls});
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let D={},hot=[],hotLoaded=false,slide=0,timer=null,lastFocus=null;
 
@@ -197,7 +195,7 @@ function setN(i){
 function carousel(slides){
   clearInterval(timer);slide=0;const c=$('carousel');
   c.parentElement.classList.toggle('hidden',!slides.length);
-  c.innerHTML=slides.map((s,i)=>`<div class="slide absolute inset-0 ${i?'':'on'}">${i?fxImg(s,'w-full h-full object-cover opacity-80',1):fxImg(s,'w-full h-full object-cover opacity-80',0,'fetchpriority="high"')}<div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/50 to-ink/10 p-6 md:p-12 flex flex-col justify-end text-white"><h2 class="font-display text-3xl md:text-5xl font-medium leading-tight max-w-2xl [text-shadow:0_1px_4px_rgba(0,0,0,.45)]">${esc(s.title)}</h2><p class="text-sm md:text-base text-stone-100 mt-2 max-w-xl [text-shadow:0_1px_3px_rgba(0,0,0,.5)]">${esc(s.subtitle)}</p></div></div>`).join('');
+  c.innerHTML=slides.map((s,i)=>`<div class="slide absolute inset-0 ${i?'':'on'}">${fxImg(s,'w-full h-full object-cover opacity-80')}<div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/50 to-ink/10 p-6 md:p-12 flex flex-col justify-end text-white"><h2 class="font-display text-3xl md:text-5xl font-medium leading-tight max-w-2xl [text-shadow:0_1px_4px_rgba(0,0,0,.45)]">${esc(s.title)}</h2><p class="text-sm md:text-base text-stone-100 mt-2 max-w-xl [text-shadow:0_1px_3px_rgba(0,0,0,.5)]">${esc(s.subtitle)}</p></div></div>`).join('');
   if(slides.length>1){
     const go=()=>{clearInterval(timer);if(!REDUCED)timer=setInterval(()=>setSlide((slide+1)%slides.length),10000)};go();
     c.onmouseenter=()=>clearInterval(timer);c.onmouseleave=go;
@@ -274,89 +272,42 @@ function offersPaint(){
 async function hotInit(){
   if(hotLoaded){hotPaint();return}
   hotLoaded=true;
-  try{const c=JSON.parse(sessionStorage.getItem('khip-hot-v2')||localStorage.getItem('khip-hot-v2'));if(Array.isArray(c)){hot=c;hotPaint()}}catch{}   // saved copy: this visit, or the last visit (works offline)
-  if(!hot.length)hotSkeleton();
+  try{const c=JSON.parse(sessionStorage.getItem('khip-hot-v2'));if(Array.isArray(c)){hot=c;hotPaint()}}catch{}
   try{
     if(!window.KHIP_SUPABASE)await new Promise((ok,no)=>{const e=document.createElement('script');e.src='supabase-config.js';e.onload=ok;e.onerror=no;document.head.appendChild(e)});
     const C=window.KHIP_SUPABASE;if(!C||/YOUR-/.test(C.url||''))return;
     const per=Math.min(12,Math.max(1,parseInt((D.hot||{}).perSector)||6));
     const r=await fetch(C.url+'/rest/v1/rpc/hot_news',{method:'POST',headers:{apikey:C.anonKey,Authorization:'Bearer '+C.anonKey,'Content-Type':'application/json'},body:JSON.stringify({p_per:per})});
     if(!r.ok)throw new Error('HTTP '+r.status);
-    hot=await r.json();try{const j=JSON.stringify(hot);sessionStorage.setItem('khip-hot-v2',j);localStorage.setItem('khip-hot-v2',j)}catch{}
+    hot=await r.json();try{sessionStorage.setItem('khip-hot-v2',JSON.stringify(hot))}catch{}
   }catch(e){console.warn('HOT News not loaded',e)}
   hotPaint();
 }
-function hotPaint(){show('jurisdictions',hot.length);chips();$('jur-pp').classList.toggle('hidden',hot.length<2);hotPPLabel();pick(Math.min(jc,Math.max(0,hot.length-1)));hotFit()}
-// Reserve the height of the tallest sector so the page below never jumps when the sector changes
-function hotFit(){
-  const c=$('jur-card');if(!c||!hot.length||c.offsetWidth<1)return;
-  c.style.minHeight='';
-  const m=c.cloneNode(false);m.removeAttribute('id');m.style.cssText='position:absolute;visibility:hidden;pointer-events:none;inset-inline:0;top:0;opacity:1;transform:none;min-height:0;width:'+c.offsetWidth+'px';
-  c.parentElement.style.position='relative';c.parentElement.appendChild(m);
-  let h=0;hot.forEach(j=>{m.innerHTML=hotCard(j);h=Math.max(h,m.offsetHeight)});m.remove();
-  c.style.minHeight=Math.ceil(h)+'px';
-}
-let hotRz;addEventListener('resize',()=>{clearTimeout(hotRz);hotRz=setTimeout(hotFit,200)});
-// While the sectors load for the first time, show a placeholder instead of nothing
-function hotSkeleton(){
-  show('jurisdictions',true);
-  $('jur-chips').innerHTML=[0,1,2,3].map(()=>'<span class="h-10 w-28 rounded-full bg-stone-200 animate-pulse flex-shrink-0"></span>').join('');
-  $('jur-card').innerHTML='<div class="animate-pulse space-y-3" aria-hidden="true"><div class="h-8 w-1/3 rounded bg-stone-200"></div><div class="h-4 w-full rounded bg-stone-200"></div><div class="h-4 w-5/6 rounded bg-stone-200"></div><div class="h-4 w-2/3 rounded bg-stone-200"></div></div>';
-  $('jur-card').style.minHeight='14rem';
-}
+function hotPaint(){show('jurisdictions',hot.length);chips();pick(Math.min(jc,Math.max(0,hot.length-1)))}
 function chips(){
   window.jm=hot.map((x,i)=>i);
-  $('jur-chips').innerHTML=hot.map((x,i)=>`<button role="tab" aria-selected="false" tabindex="-1" data-act="jur" data-i="${i}" id="chip-${i}" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm flex-shrink-0 bg-white border border-stone-300 transition"><i class="ph-light ph-fire text-base"></i>${esc(hotName(x))}<span class="text-xs opacity-70">${x.count}</span></button>`).join('');
+  $('jur-chips').innerHTML=hot.map((x,i)=>`<button data-act="jur" data-i="${i}" id="chip-${i}" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm flex-shrink-0 bg-white border border-stone-300 transition"><i class="ph-light ph-fire text-base"></i>${esc(hotName(x))}<span class="text-xs opacity-70">${x.count}</span></button>`).join('');
 }
-function hotCard(j){return `<div class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ph-fire text-2xl"></i></span><div class="min-w-0"><h3 class="font-display text-[1.4rem] leading-tight font-semibold text-title">${esc(hotName(j))}</h3><p class="text-xs text-stone-600">${esc(j.count===1?KLang.t('hot_n1'):KLang.t('hot_n',{x:j.count}))}</p></div></div>`
-      +`<ul class="mt-4 divide-y divide-stone-200">${j.tenders.map(t=>`<li class="py-3"><p dir="auto" class="text-sm md:text-base leading-relaxed text-ink">${esc(hotWords(t.subject))}</p><div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-600">${t.entity?`<span dir="auto" class="flex items-center gap-1.5 min-w-0"><i class="ph-light ph-buildings flex-shrink-0"></i><span class="min-w-0">${esc(t.entity)}</span></span>`:''}${t.publish_date?`<span class="flex items-center gap-1.5"><i class="ph-light ph-calendar-blank flex-shrink-0"></i>${esc(hotDate(t.publish_date))}</span>`:''}<button data-act="tender" data-id="${esc(t.id)}" class="ms-auto inline-flex items-center gap-1 text-brand-600 hover:underline font-semibold">${esc(KLang.t('hot_more'))}<i class="ph-light ${KLang.rtl?'ph-arrow-left':'ph-arrow-right'}"></i></button></div></li>`).join('')}</ul>`
-      +`<div class="mt-5 flex flex-wrap items-center gap-3"><a href="tenders.html" class="inline-flex items-center gap-2 bg-ink hover:bg-stone-800 text-white text-sm px-6 py-2.5 rounded-full transition"><i class="ph-light ph-gavel"></i>${esc(KLang.t('hot_cta'))}</a><span class="text-xs text-stone-600">${esc(KLang.t('hot_note'))}</span></div>`;}
 let jc=0;
 function pick(i){
   const j=hot[i];if(!j){$('jur-card').innerHTML='';return}
   jc=i;
-  document.querySelectorAll('[id^=chip-]').forEach(b=>{const on=b.id==='chip-'+i;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;b.classList.toggle('bg-ink',on);b.classList.toggle('text-white',on);b.classList.toggle('border-ink',on);b.classList.toggle('bg-white',!on)});
+  document.querySelectorAll('[id^=chip-]').forEach(b=>{const on=b.id==='chip-'+i;b.classList.toggle('bg-ink',on);b.classList.toggle('text-white',on);b.classList.toggle('border-ink',on);b.classList.toggle('bg-white',!on)});
   const ch=$('chip-'+i),box=$('jur-chips');
-  // centre the active chip inside its own row only; never scrollIntoView (it drags the whole page to this section). Rect maths works for LTR and RTL.
-  if(ch&&box){const a=ch.getBoundingClientRect(),b=box.getBoundingClientRect();box.scrollTo({left:box.scrollLeft+(a.left+a.width/2)-(b.left+b.width/2),behavior:REDUCED?'auto':'smooth'})}
+  if(ch){if(KLang.rtl)ch.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});else box.scrollTo({left:ch.offsetLeft-(box.clientWidth-ch.offsetWidth)/2,behavior:'smooth'})}
   const c=$('jur-card');c.style.transition='opacity .3s ease,transform .3s ease';c.style.opacity=0;c.style.transform='translateX('+(-24*(KLang.rtl?-1:1))+'px)';
   setTimeout(()=>{
-    c.innerHTML=hotCard(j);
+    c.innerHTML=`<div class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0"><i class="ph-light ph-fire text-2xl"></i></span><div class="min-w-0"><h3 class="font-display text-[1.4rem] leading-tight font-semibold text-title">${esc(hotName(j))}</h3><p class="text-xs text-stone-600">${esc(j.count===1?KLang.t('hot_n1'):KLang.t('hot_n',{x:j.count}))}</p></div></div>`
+      +`<ul class="mt-4 divide-y divide-stone-200">${j.tenders.map(t=>`<li class="py-3"><p dir="auto" class="text-sm md:text-base leading-relaxed text-ink">${esc(hotWords(t.subject))}</p><div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-600">${t.entity?`<span dir="auto" class="flex items-center gap-1.5 min-w-0"><i class="ph-light ph-buildings flex-shrink-0"></i><span class="min-w-0">${esc(t.entity)}</span></span>`:''}${t.publish_date?`<span class="flex items-center gap-1.5"><i class="ph-light ph-calendar-blank flex-shrink-0"></i>${esc(hotDate(t.publish_date))}</span>`:''}<button data-act="tender" data-id="${esc(t.id)}" class="ms-auto inline-flex items-center gap-1 text-brand-600 hover:underline font-semibold">${esc(KLang.t('hot_more'))}<i class="ph-light ${KLang.rtl?'ph-arrow-left':'ph-arrow-right'}"></i></button></div></li>`).join('')}</ul>`
+      +`<div class="mt-5 flex flex-wrap items-center gap-3"><a href="tenders.html" class="inline-flex items-center gap-2 bg-ink hover:bg-stone-800 text-white text-sm px-6 py-2.5 rounded-full transition"><i class="ph-light ph-gavel"></i>${esc(KLang.t('hot_cta'))}</a><span class="text-xs text-stone-600">${esc(KLang.t('hot_note'))}</span></div>`;
     c.style.transition='none';c.style.transform='translateX('+(24*(KLang.rtl?-1:1))+'px)';void c.offsetWidth;
     c.style.minHeight=Math.max(parseFloat(c.style.minHeight)||0,c.scrollHeight)+'px';c.style.transition='opacity .6s ease,transform .7s cubic-bezier(.16,1,.3,1)';c.style.opacity=1;c.style.transform='none';
   },300);
 }
-function hotToggle(){
-  const sec=$('jurisdictions'),b=$('jur-pp');sec._off=!sec._off;
-  b.setAttribute('aria-pressed',sec._off);b.firstElementChild.className='ph-light '+(sec._off?'ph-play':'ph-pause')+' text-lg';hotPPLabel();
-}
-function hotPPLabel(){const b=$('jur-pp'),off=$('jurisdictions')._off;b.setAttribute('aria-label',KLang.t(off?'hot_play':'hot_pause'));b.title=KLang.t(off?'hot_play':'hot_pause')}
-hotPPLabel();
-// The sectors advance by themselves every 15 seconds, but never while the visitor is using them
-(function(){
-  const sec=$('jurisdictions'),chips=$('jur-chips'),card=$('jur-card');
-  watch(sec);
-  const manual=()=>{sec._manual=Date.now()+30000};
-  window.hotManual=manual;
-  // arrow keys move between the sector tabs (right/left swap in Arabic)
-  chips.addEventListener('keydown',e=>{
-    const k=e.key,n=hot.length;if(!n)return;
-    let to=null;const fwd=KLang.rtl?'ArrowLeft':'ArrowRight',back=KLang.rtl?'ArrowRight':'ArrowLeft';
-    if(k===fwd)to=(jc+1)%n;else if(k===back)to=(jc-1+n)%n;else if(k==='Home')to=0;else if(k==='End')to=n-1;
-    if(to===null)return;e.preventDefault();manual();pick(to);const b=$('chip-'+to);b&&b.focus({preventScroll:true});
-  });
-  // swipe the card sideways to change sector
-  let x0=null,y0=null;
-  card.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
-  card.addEventListener('touchend',e=>{
-    if(x0===null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
-    if(Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.5||hot.length<2)return;
-    manual();pick((jc+((dx<0)!==KLang.rtl?1:-1)+hot.length)%hot.length);
-  },{passive:true});
-})();
+// The sectors advance by themselves every 15 seconds
 setInterval(()=>{
   const sec=$('jurisdictions'),m=window.jm||[];
-  if(REDUCED||sec._off||Date.now()<(sec._manual||0)||paused(sec)||m.length<2||!$('modal').classList.contains('pointer-events-none'))return;
+  if(REDUCED||paused(sec)||m.length<2||!$('modal').classList.contains('pointer-events-none'))return;
   pick(m[(m.indexOf(jc)+1)%m.length]);
 },15000);
 
@@ -406,7 +357,7 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('[data-act]');if(!t)return;
   const {act,i,id,q}=t.dataset;
   if(act==='close'){if(e.target===t||t.tagName==='BUTTON')closeModal()}
-  else if(act==='jur'){pick(+i);window.hotManual&&window.hotManual()}else if(act==='jurpp')hotToggle();else if(act==='news')openNews(id);else if(act==='tender')openTender(id);
+  else if(act==='jur')pick(+i);else if(act==='news')openNews(id);else if(act==='tender')openTender(id);
   else if(act==='service')openService(+i);else if(act==='tslide')setT(+i);else if(act==='nslide')setN(+i);else if(act==='inquire')KHIP.wa(KLang.t('wa_service',{x:q}));
   else if(act==='retry')load();
   else if(act==='share'){const u=location.origin+location.pathname+'#news-'+id;(navigator.share?navigator.share({url:u}):navigator.clipboard.writeText(u)).then(()=>t.textContent=KLang.t('link_copied')).catch(()=>{})}

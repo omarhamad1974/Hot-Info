@@ -13,6 +13,7 @@ window.KLang=(function(){
       brand:'Intellectual Properties',nav_about:'About',nav_jur:'HOT News',nav_services:'IP Services',nav_news:'News',nav_files:'My files',
       bar_home:'Home',bar_services:'IP Services',bar_news:'News',bar_jur:'HOT News',bar_about:'About',bar_files:'My files',bar_tenders:'Tenders',tn_new:'{x} new tenders in your sectors',tn_new1:'1 new tender in your sectors',tn_view:'View tenders',
       more:'More',jur_title:'HOT News',svc_title:'IP Services',news_title:'Latest news',testi_title:'Client endorsements',
+      blk_open:'Open picture',blk_prev:'Previous picture',blk_next:'Next picture',
       load_err:"We couldn't load the latest content.",try_again:'Try again',close:'Close',
       no_country:'No matching country. Message us and we will check for you.',ip_guidelines:'IP guidelines available upon inquiry.',
       view_req:'View Filing Requirements',pct:'PCT Filing Guidelines',copy_link:'Copy link',link_copied:'Link copied',related:'Related news',
@@ -20,7 +21,7 @@ window.KLang=(function(){
       wa_jur:'IP filings and legal procedures in {x}',general:'General',msg_wa:'Message HOT INFORMATION on WhatsApp',send:'Send',
       switch_to:'العربية',flag_aria:'{x} flag',testimonial_n:'Testimonial {x}',news_n:'News {x}',
       nav_scope:'Our Regional Scope',nav_value:'Value',nav_adv:'Advantages',nav_team:'Team',nav_contact:'Contact',
-      follow_li:'Follow us on LinkedIn',address:'Address',hot_more:'More',hot_less:'Close',hot_pause:'Pause automatic changes',hot_play:'Resume automatic changes',hot_pub:'Published',hot_entity:'Publishing entity',hot_gov:'Governorate',hot_session:'Session date',hot_gone:'This tender is no longer available.',hot_sub_only:'Booklet price, bid bond and documents are available to subscribers.',hot_n:'{x} active tenders',hot_n1:'1 active tender',hot_cta:'See all tenders',hot_note:'Full details are available to subscribers.',phone:'Phone',email:'Email',open_maps:'Open in Google Maps',filing_guidelines:'Filing guidelines',
+      follow_li:'Follow us on LinkedIn',address:'Address',hot_more:'More',hot_less:'Close',hot_pub:'Published',hot_entity:'Publishing entity',hot_gov:'Governorate',hot_session:'Session date',hot_gone:'This tender is no longer available.',hot_sub_only:'Booklet price, bid bond and documents are available to subscribers.',hot_n:'{x} active tenders',hot_n1:'1 active tender',hot_cta:'See all tenders',hot_note:'Full details are available to subscribers.',phone:'Phone',email:'Email',open_maps:'Open in Google Maps',filing_guidelines:'Filing guidelines',
       wa_us:'WhatsApp us',team_prev:'Previous team members',team_next:'Next team members',
       nav_directory:'Directory',bar_directory:'Directory',dir_title:'Directory',dir_sub:'Companies, institutions and freelancers. Search, filter and contact them directly on WhatsApp.',
       dir_search:'Search',dir_search_ph:'Name, city or phone',dir_sector:'Sector',dir_all_sectors:'All sectors',dir_all:'All',dir_company:'Company',dir_companies:'Companies',dir_institution:'Institution',dir_institutions:'Institutions',dir_freelancer:'Freelancer',dir_freelancers:'Freelancers',
@@ -224,7 +225,7 @@ window.KLang=(function(){
       mf_nomatch_sub:"Nothing in this folder matches \"{x}\".",
       mf_folders:"Folders",
       mf_docs:"Documents",
-      mf_new:"New",mf_u_b:"B",mf_u_kb:"KB",mf_u_mb:"MB",mf_k_image:"Image",mf_k_file:"File",mf_k_word:"Word",mf_k_excel:"Excel",mf_k_ppt:"PowerPoint",nav_main:"Main",
+      mf_new:"New",
       mf_added:"Added {x}",
       mf_open:"Open",
       mf_download:"Download",
@@ -254,6 +255,7 @@ window.KLang=(function(){
       brand:'للملكية الفكرية',nav_about:'من نحن',nav_jur:'أخبار HOT',nav_services:'خدمات الملكية الفكرية',nav_news:'الأخبار',nav_files:'ملفاتي',
       bar_home:'الرئيسية',bar_services:'الخدمات',bar_news:'الأخبار',bar_jur:'أخبار HOT',bar_about:'من نحن',bar_files:'ملفاتي',bar_tenders:'المناقصات',tn_new:'{x} مناقصات جديدة في قطاعاتك',tn_new1:'مناقصة جديدة في قطاعاتك',tn_view:'عرض المناقصات',
       more:'المزيد',jur_title:'أخبار HOT',svc_title:'خدمات الملكية الفكرية',news_title:'آخر الأخبار',testi_title:'آراء العملاء',
+      blk_open:'فتح الصورة',blk_prev:'الصورة السابقة',blk_next:'الصورة التالية',
       load_err:'تعذر تحميل أحدث المحتوى.',try_again:'حاول مرة أخرى',close:'إغلاق',
       no_country:'لا توجد دولة مطابقة. راسلنا وسنتحقق لك.',ip_guidelines:'إرشادات الملكية الفكرية متاحة عند الاستفسار.',
       view_req:'عرض متطلبات التسجيل',pct:'إرشادات تقديم طلبات معاهدة التعاون بشأن البراءات (PCT)',copy_link:'نسخ الرابط',link_copied:'تم نسخ الرابط',related:'أخبار ذات صلة',
@@ -261,7 +263,7 @@ window.KLang=(function(){
       wa_jur:'إجراءات تسجيل الملكية الفكرية والإجراءات القانونية في {x}',general:'عام',msg_wa:'راسل HOT INFORMATION عبر واتساب',send:'إرسال',
       switch_to:'English',flag_aria:'علم {x}',testimonial_n:'الرأي {x}',news_n:'الخبر {x}',
       nav_scope:'نطاقنا الإقليمي',nav_value:'القيمة',nav_adv:'المزايا',nav_team:'الفريق',nav_contact:'اتصل بنا',
-      follow_li:'تابعنا على لينكدإن',address:'العنوان',hot_more:'المزيد',hot_less:'إغلاق',hot_pause:'إيقاف التغيير التلقائي',hot_play:'استئناف التغيير التلقائي',hot_pub:'تاريخ النشر',hot_entity:'الجهة المعلنة',hot_gov:'المحافظة',hot_session:'موعد الجلسة',hot_gone:'هذه المناقصة لم تعد متاحة.',hot_sub_only:'ثمن الكراسة والتأمين والمستندات متاحة للمشتركين.',hot_n:'{x} مناقصات سارية',hot_n1:'مناقصة سارية واحدة',hot_cta:'عرض كل المناقصات',hot_note:'التفاصيل الكاملة متاحة للمشتركين.',phone:'الهاتف',email:'البريد الإلكتروني',open_maps:'افتح في خرائط جوجل',filing_guidelines:'إرشادات التسجيل',
+      follow_li:'تابعنا على لينكدإن',address:'العنوان',hot_more:'المزيد',hot_less:'إغلاق',hot_pub:'تاريخ النشر',hot_entity:'الجهة المعلنة',hot_gov:'المحافظة',hot_session:'موعد الجلسة',hot_gone:'هذه المناقصة لم تعد متاحة.',hot_sub_only:'ثمن الكراسة والتأمين والمستندات متاحة للمشتركين.',hot_n:'{x} مناقصات سارية',hot_n1:'مناقصة سارية واحدة',hot_cta:'عرض كل المناقصات',hot_note:'التفاصيل الكاملة متاحة للمشتركين.',phone:'الهاتف',email:'البريد الإلكتروني',open_maps:'افتح في خرائط جوجل',filing_guidelines:'إرشادات التسجيل',
       wa_us:'راسلنا عبر واتساب',team_prev:'أعضاء الفريق السابقون',team_next:'أعضاء الفريق التاليون',
       nav_directory:'الدليل',bar_directory:'الدليل',dir_title:'الدليل',dir_sub:'شركات وجهات ومستقلون. ابحث وصفِّ وتواصل معهم مباشرة عبر واتساب.',
       dir_search:'بحث',dir_search_ph:'الاسم أو المدينة أو الهاتف',dir_sector:'القطاع',dir_all_sectors:'كل القطاعات',dir_all:'الكل',dir_company:'شركة',dir_companies:'شركات',dir_institution:'جهة',dir_institutions:'جهات',dir_freelancer:'مستقل',dir_freelancers:'مستقلون',
@@ -465,7 +467,7 @@ window.KLang=(function(){
       mf_nomatch_sub:"لا شيء في هذا المجلد يطابق \"{x}\".",
       mf_folders:"المجلدات",
       mf_docs:"المستندات",
-      mf_new:"جديد",mf_u_b:"بايت",mf_u_kb:"ك.ب",mf_u_mb:"م.ب",mf_k_image:"صورة",mf_k_file:"ملف",mf_k_word:"وورد",mf_k_excel:"إكسل",mf_k_ppt:"باوربوينت",nav_main:"التنقل الرئيسي",
+      mf_new:"جديد",
       mf_added:"أُضيف {x}",
       mf_open:"فتح",
       mf_download:"تنزيل",
@@ -559,7 +561,7 @@ window.KLang=(function(){
     const enC=en.newsCategories||[],arC=ar.newsCategories||[],cm={};
     enC.forEach((c,i)=>{if(txt(arC[i]))cm[c]=arC[i]});
     o.newsCategories=enC.map(c=>cm[c]||c);
-    for(const sec of ['carousel','jurisdictions','news','services','testimonials','employees','products']){
+    for(const sec of ['carousel','jurisdictions','news','services','testimonials','employees','products','faq','cards','gallery','blocks']){
       const a=ar[sec];if(!Array.isArray(a)||!Array.isArray(o[sec]))continue;
       const by=new Map(a.filter(x=>x&&x.id!=null).map(x=>[String(x.id),x]));
       o[sec].forEach((it,i)=>{const x=by.get(String(it.id))||(it.id==null?a[i]:null);if(!x)return;

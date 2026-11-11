@@ -23,7 +23,7 @@
 <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-xl border-b border-stone-200">
   <div class="wrap py-3 flex items-center justify-between">
     <a href="index.html" class="inline-flex items-center font-display text-[clamp(.95rem,4.2vw,1.5rem)] font-semibold whitespace-nowrap tracking-wide"><img data-brand-logo src="assets/khip-logo.jpg" alt="HOT INFORMATION" class="brand-logo" decoding="async"><span data-brand-name hidden class="khip khip-lg">HOT INFORMATION</span> <span class="mx-1.5 font-light brand-ink">|</span><span data-brand-tag class="font-medium brand-ink" data-i18n="brand">Intellectual Properties</span></a>
-    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main" data-i18n-attr="aria-label:nav_main">
+    <nav class="hidden lg:flex gap-8 text-sm text-stone-600" aria-label="Main">
       <a href="index.html" class="hover:text-brand-600 transition" data-i18n="bar_home">Home</a><a href="patents.html" class="hover:text-brand-600 transition" data-svc-page="patents.html">Patents</a><a href="trademarks.html" class="hover:text-brand-600 transition" data-svc-page="trademarks.html">Trademarks</a><a href="translation.html" class="hover:text-brand-600 transition" data-svc-page="translation.html">Translation</a><a href="about.html" class="hover:text-brand-600 transition" data-i18n="bar_about">About</a><a href="my-stuff.html" class="text-brand-700 font-normal transition" aria-current="page" data-i18n="nav_files">My files</a><a href="subscribe.html" class="hover:text-brand-600 transition" data-i18n="pay_nav">Subscribe</a><a href="tenders.html" class="hover:text-brand-600 transition" data-i18n="bar_tenders">Tenders</a><a href="directory.html" class="hover:text-brand-600 transition" data-i18n="nav_directory">Directory</a></nav>
     <div class="flex items-center gap-2"><div id="lang-switch"></div><span data-social class="flex gap-2"><a href="https://www.linkedin.com/company/khip/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-10 h-10 rounded-full border border-stone-200 text-stone-600 hover:text-brand-600 hover:border-brand-600 flex items-center justify-center transition"><i class="ph-light ph-linkedin-logo text-xl"></i></a></span></div>
   </div>
@@ -54,10 +54,7 @@ const langInit=()=>langP||(langP=(async()=>{if(!K)return;try{await K.data('./app
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const X={pdf:['ph-file-pdf','text-red-700','bg-red-50','PDF'],doc:['ph-file-doc','text-blue-700','bg-blue-50','Word'],docx:['ph-file-doc','text-blue-700','bg-blue-50','Word'],xls:['ph-file-xls','text-emerald-700','bg-emerald-50','Excel'],xlsx:['ph-file-xls','text-emerald-700','bg-emerald-50','Excel'],csv:['ph-file-csv','text-emerald-700','bg-emerald-50','CSV'],ppt:['ph-file-ppt','text-orange-700','bg-orange-50','PowerPoint'],pptx:['ph-file-ppt','text-orange-700','bg-orange-50','PowerPoint'],zip:['ph-file-zip','text-stone-600','bg-stone-100','ZIP'],png:['ph-file-image','text-violet-700','bg-violet-50','Image'],jpg:['ph-file-image','text-violet-700','bg-violet-50','Image'],jpeg:['ph-file-image','text-violet-700','bg-violet-50','Image']};
-const size=b=>b<1024?b+' '+T('mf_u_b'):b<1048576?Math.round(b/1024)+' '+T('mf_u_kb'):(b/1048576).toFixed(1)+' '+T('mf_u_mb');
-// Sector names: Arabic name when Arabic is showing and the admin entered one (sectors.name_ar, see supabase-step13-hot-news.sql)
-const secLabel=x=>rtl()&&x.name_ar?x.name_ar:x.name;
-async function loadSectors(sb){let r=await sb.from('sectors').select('id,name,name_ar').order('name');if(r.error)r=await sb.from('sectors').select('id,name').order('name');return r}
+const size=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
 const day=d=>new Date(d+'T00:00:00Z').toLocaleDateString(LOC(),{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
 const ago=d=>{const n=Math.floor((Date.now()-Date.parse(d))/864e5);return n<=0?T('ago_today'):n===1?T('ago_yday'):n<30?T('ago_days',{x:n}):new Date(d).toLocaleDateString(LOC(),{day:'numeric',month:'short',year:'numeric'})};
 // Folders made by the admin for tender issues are called issue-00012: show them as "Issue 12"
@@ -75,7 +72,7 @@ function crumbs(){ // the trail is shown in the page banner (banner.js)
 }
 async function home(){ // sector cards: only the sectors this user currently subscribes to
   await langInit();const sb=KHIPAuth.client(),u=KHIPAuth.user();sec=null;path=[];all=[];crumbs();skeleton();
-  const [r,pr,pf,rq]=await Promise.all([loadSectors(sb),sb.from('subscription_periods').select('sector_id,start_date,end_date'),sb.from('client_profiles').select('full_name').eq('user_id',u.id).maybeSingle(),sb.from('subscription_requests').select('items,sector_ids').eq('status','pending')]);
+  const [r,pr,pf,rq]=await Promise.all([sb.from('sectors').select('id,name').order('name'),sb.from('subscription_periods').select('sector_id,start_date,end_date'),sb.from('client_profiles').select('full_name').eq('user_id',u.id).maybeSingle(),sb.from('subscription_requests').select('items,sector_ids').eq('status','pending')]);
   const first=((pf.data&&pf.data.full_name)||'').trim().split(/\s+/)[0];
   $('who').textContent=first?T('mf_welcome',{x:first}):T('mf_pick');
   if(r.error)return note('ph-warning-circle',T('mf_err_sectors'),T('mf_refresh'));
@@ -83,7 +80,7 @@ async function home(){ // sector cards: only the sectors this user currently sub
   ((rq&&!rq.error&&rq.data)||[]).forEach(q=>(q.items&&q.items.length?q.items.map(i=>i.sector_id):(q.sector_ids||[])).forEach(id=>waiting.add(id)));
   const t=new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'}),until={};
   (pr.data||[]).forEach(p=>{if(t>=p.start_date&&t<=p.end_date&&(!until[p.sector_id]||p.end_date>until[p.sector_id]))until[p.sector_id]=p.end_date});
-  sectors=(r.data||[]).filter(x=>until[x.id]).map(x=>({...x,name:secLabel(x),until:until[x.id],left:Math.round((Date.parse(until[x.id])-Date.parse(t))/864e5)}));
+  sectors=(r.data||[]).filter(x=>until[x.id]).map(x=>({...x,until:until[x.id],left:Math.round((Date.parse(until[x.id])-Date.parse(t))/864e5)}));
   if(!sectors.length)return note('ph-stack',T('mf_none'),T('mf_none_sub'));
   $('tools').classList.add('hidden');$('tools').classList.remove('flex');
   $('files').innerHTML=`<p class="text-sm text-stone-600 mb-3">${esc(T('mf_active',{x:sectors.length}))}</p><div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">`+sectors.map(x=>{
@@ -109,7 +106,7 @@ function paint(){
   let h='';
   if(folders.length)h+=`<h2 class="text-xs uppercase tracking-wider text-stone-600 mb-2">${T('mf_folders')}</h2><div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-7">`+folders.map(f=>`<button data-open="${esc(f.name)}" class="card p-4 flex items-center gap-4 text-start"><span class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0"><i class="ph-light ph-folder text-2xl text-gold"></i></span><span class="flex-1 min-w-0 font-medium text-ink truncate">${esc(nice(f.name))}</span><i class="ph-light ph-caret-right flip text-stone-600"></i></button>`).join('')+'</div>';
   if(files.length)h+=`<h2 class="text-xs uppercase tracking-wider text-stone-600 mb-2">${T('mf_docs')} <span class="normal-case tracking-normal">(${files.length})</span></h2><div class="grid gap-3">`+files.map(f=>{
-    const ext=f.name.split('.').pop().toLowerCase(),[ic,co,bg,kind0]=X[ext]||['ph-file','text-stone-600','bg-stone-100',ext.length<=4?ext.toUpperCase():'File'],kind=kind0==='Image'?T('mf_k_image'):kind0==='File'?T('mf_k_file'):kind0==='Word'?T('mf_k_word'):kind0==='Excel'?T('mf_k_excel'):kind0==='PowerPoint'?T('mf_k_ppt'):kind0,m=f.metadata||{},d=f.updated_at||f.created_at,isNew=d&&Date.now()-Date.parse(d)<7*864e5;
+    const ext=f.name.split('.').pop().toLowerCase(),[ic,co,bg,kind]=X[ext]||['ph-file','text-stone-600','bg-stone-100',ext.length<=4?ext.toUpperCase():'File'],m=f.metadata||{},d=f.updated_at||f.created_at,isNew=d&&Date.now()-Date.parse(d)<7*864e5;
     return `<div class="card p-4 flex flex-wrap sm:flex-nowrap items-center gap-x-4 gap-y-3"><span class="w-12 h-12 rounded-xl ${bg} flex items-center justify-center flex-shrink-0"><i class="ph-light ${ic} text-3xl ${co}"></i></span><div class="flex-1 min-w-0 basis-40"><p class="font-medium text-ink break-words">${esc(f.name)}${isNew?` <span class="align-middle text-xs uppercase tracking-wide bg-brand-600 text-white rounded-full px-2 py-0.5 ms-1">${T('mf_new')}</span>`:''}</p><p class="text-xs text-stone-600 mt-0.5">${kind}${m.size?' &middot; '+size(m.size):''}${d?' &middot; '+esc(T('mf_added',{x:ago(d)})):''}</p></div>
     <div class="flex items-center gap-2 ms-auto">${VIEW.has(ext)?`<button data-view="${esc(f.name)}" class="text-sm border border-stone-300 hover:border-stone-500 text-ink px-4 py-2 rounded-full transition whitespace-nowrap" aria-label="${esc(T('mf_open_aria',{x:f.name}))}"><i class="ph-light ph-eye"></i> ${T('mf_open')}</button>`:''}<button data-dl="${esc(f.name)}" class="text-sm bg-ink hover:bg-stone-800 text-white px-5 py-2 rounded-full transition whitespace-nowrap" aria-label="${esc(T('mf_dl_aria',{x:f.name}))}"><i class="ph-light ph-download-simple"></i> ${T('mf_download')}</button></div></div>`}).join('')+'</div>';
   $('files').innerHTML=h;
