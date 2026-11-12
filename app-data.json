@@ -422,7 +422,7 @@
             "dir": "to top"
           },
           "mask": {
-            "shape": "squircle",
+            "shape": "file:mask-mw26zxnu-85674.svg",
             "fit": "cover",
             "size": 80,
             "feather": 26
@@ -431,9 +431,9 @@
             "type": "cast",
             "color": "role:ink",
             "angle": 60,
-            "length": 40,
+            "length": 15,
             "blur": 25,
-            "opacity": 55
+            "opacity": 20
           }
         }
       }
@@ -468,7 +468,14 @@
         "name": "Neutral",
         "hex": "#3a4051"
       }
-    ]
+    ],
+    "motion": {
+      "sections": {
+        "home-offers": {
+          "type": "fade-down"
+        }
+      }
+    }
   },
   "newsCategories": [
     "مناقصات",
