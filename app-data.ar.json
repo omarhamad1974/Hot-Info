@@ -12,7 +12,11 @@
     "nav_news": "آخر الأخبار",
     "nav_files": "ملفاتي",
     "bar_services": "خدمات",
-    "svc_title": "خدمات هوت"
+    "svc_title": "خدمات هوت انوفورميشن",
+    "news_title": "أخبار البيزتس اولا بأول",
+    "offers_title": "عروض خاصة لشركة هوت",
+    "offers_sub": "خصومات",
+    "offers_all": "كل العروض"
   },
   "pageText": {
     "about": {
