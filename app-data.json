@@ -139,6 +139,24 @@
       "excerpt": "What will be the future of IP in the region and middle east ",
       "text": "What will be the future of IP in the region and middle east What will be the future of IP in the region and middle east What will be the future of IP in the region and middle east ",
       "category": "General"
+    },
+    {
+      "id": "3",
+      "title": "عنوان الخبر",
+      "image": "slider1.jpg",
+      "excerpt": "ملخص قصير يظهر على بطاقة الخبر.",
+      "text": "نص الخبر. يمكنك استخدام **الخط العريض**.\n\n## عنوان فرعي\nفقرة تحت العنوان الفرعي.\n\n- نقطة أولى\n- نقطة ثانية",
+      "category": "مناقصات",
+      "date": "2026-11-10"
+    },
+    {
+      "id": "4",
+      "title": "Second article (English)",
+      "image": "",
+      "excerpt": "If \"excerpt:\" is missing, the first paragraph is used as the short summary.",
+      "text": "If \"excerpt:\" is missing, the first paragraph is used as the short summary.",
+      "category": "مناقصات خاصة",
+      "date": "2026-11-12"
     }
   ],
   "services": [
