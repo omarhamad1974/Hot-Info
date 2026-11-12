@@ -156,7 +156,12 @@
       "excerpt": "If \"excerpt:\" is missing, the first paragraph is used as the short summary.",
       "text": "If \"excerpt:\" is missing, the first paragraph is used as the short summary.",
       "category": "مناقصات خاصة",
-      "date": "2026-11-12"
+      "date": "2026-11-12",
+      "imageFx": {
+        "mask": {
+          "shape": "blob1"
+        }
+      }
     }
   ],
   "services": [
