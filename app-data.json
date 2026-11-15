@@ -8,7 +8,7 @@
       "title": "Using Legal Skills with Technical Knowledge (copy)",
       "subtitle": "Discover legal and IP services.",
       "tag": "Featured",
-      "image": "mvvcnuma-84331.jpg"
+      "image": "mwie1imu-zizi-zi-Brlj6pi-g1I-unsplash.jpg"
     },
     {
       "id": "2",
@@ -421,10 +421,10 @@
       }
     },
     "hero": {
-      "unit": "vh",
-      "mobile": 25,
-      "tablet": 25,
-      "desktop": 25
+      "unit": "px",
+      "mobile": 120,
+      "tablet": 160,
+      "desktop": 200
     }
   },
   "newsCategories": [
