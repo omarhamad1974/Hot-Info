@@ -529,5 +529,58 @@
       "enabled": true,
       "only": true
     }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "intro": "These are some FAQ",
+    "pages": {
+      "home": {
+        "items": [
+          {
+            "id": "1",
+            "q": "What is a patent",
+            "a": "Patent is bla bla bla abla;jfla;sjdfl ;asjfkl;a sfd"
+          },
+          {
+            "id": "2",
+            "q": "What is trade mark",
+            "a": "Trade marks are bla bla bla bla"
+          }
+        ]
+      },
+      "about": {
+        "items": [
+          {
+            "id": "1",
+            "q": "What is the about seciton",
+            "a": "asfdasfasdfasdf"
+          },
+          {
+            "id": "2",
+            "q": "What is love",
+            "a": "I don't konw"
+          }
+        ]
+      },
+      "trademarks": {
+        "items": [
+          {
+            "id": "1",
+            "q": "What is a trade mark",
+            "a": "asdfasdfasgdasdasf"
+          },
+          {
+            "id": "2",
+            "q": "What time is it?",
+            "a": "asdfasdfasdf fasdf asdfasdf"
+          },
+          {
+            "id": "3",
+            "q": "How come",
+            "a": "asfdaasdfasfdasfd"
+          }
+        ]
+      }
+    }
   }
 }
