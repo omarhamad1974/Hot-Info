@@ -382,7 +382,13 @@
       },
       "home-jurisdictions": {
         "mode": "color",
-        "color": "role:text"
+        "color": "role:sand"
+      },
+      "home-services": {
+        "mode": "image",
+        "color": "role:accent",
+        "overlay": "15",
+        "image": "mwicntbo-88379.jpg"
       }
     },
     "sectionWidthTablet": "68",
