@@ -413,38 +413,13 @@
     "custom": [],
     "sectionWidth": "85",
     "sections": {
-      "home-about": {
-        "mode": "image",
-        "overlay": 0,
-        "image": "mwcrx2wa-3d-modern-lighting-lamp-design.jpg",
-        "imageFx": {
-          "ov": {
-            "type": "gradient",
-            "color": "#1760de",
-            "opacity": 100,
-            "color2": "#1760de",
-            "opacity2": 25,
-            "dir": "to top"
-          },
-          "mask": {
-            "shape": "file:mask-mw26zxnu-85674.svg",
-            "fit": "cover",
-            "size": 80,
-            "feather": 26
-          },
-          "shadow": {
-            "type": "cast",
-            "color": "role:ink",
-            "angle": 60,
-            "length": 15,
-            "blur": 25,
-            "opacity": 20
-          }
-        }
-      },
       "about-map": {
         "mode": "color",
         "color": "role:ink"
+      },
+      "home-jurisdictions": {
+        "mode": "color",
+        "color": "role:text"
       }
     },
     "sectionWidthTablet": "68",
